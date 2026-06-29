@@ -1,0 +1,14 @@
+{
+  "_todo": "TODO: 补齐 student 版本分享文案。defaultViralCopy 是 P0 必需兜底，但当前文字仍为占位，不是正式文案。",
+  "pathShareCard": {
+    "title": "TODO",
+    "companyWarnings": {},
+    "workWarnings": {},
+    "footer": "TODO"
+  },
+  "defaultViralCopy": {
+    "targetText": "TODO",
+    "copyText": "TODO"
+  },
+  "viralCopies": {}
+}

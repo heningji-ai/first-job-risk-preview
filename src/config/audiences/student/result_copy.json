@@ -1,0 +1,18 @@
+{
+  "_todo": "TODO: 补齐 student 版本结果页正式文案。本占位文件不是正式文案。",
+  "loadingScreen": {
+    "title": "TODO",
+    "steps": [],
+    "completeText": "TODO"
+  },
+  "pathScreen": {
+    "title": "TODO",
+    "subText": "TODO",
+    "closingText": "TODO"
+  },
+  "riskIndexScreen": {
+    "title": "TODO",
+    "subText": "TODO"
+  },
+  "riskLevelTexts": {}
+}

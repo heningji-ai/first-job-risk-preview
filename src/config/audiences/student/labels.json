@@ -1,0 +1,11 @@
+{
+  "_todo": "TODO: 补齐 student 版本中文标签。本占位文件不是完整标签配置。",
+  "companyTypeLabels": {},
+  "workTypeLabels": {},
+  "riskLabels": {},
+  "riskLevelLabels": {
+    "low": "TODO",
+    "medium": "TODO",
+    "high": "TODO"
+  }
+}

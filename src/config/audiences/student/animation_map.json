@@ -1,0 +1,7 @@
+{
+  "_todo": "TODO: 补齐 student 版本动画映射。第一版允许 CSS / SVG 占位和静音 fallback。",
+  "screenAnimations": {},
+  "riskCardAnimations": {},
+  "fallbackRiskCardAnimation": "TODO",
+  "musicMap": {}
+}

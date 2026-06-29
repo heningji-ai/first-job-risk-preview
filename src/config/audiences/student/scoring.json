@@ -1,0 +1,11 @@
+{
+  "_todo": "TODO: 补齐 student 版本 dimensions、finalRisks、riskFormulas 和 thresholds。本占位文件不是正式评分配置。",
+  "dimensions": [],
+  "finalRisks": [],
+  "riskFormulas": {},
+  "thresholds": {
+    "low": [0, 34],
+    "medium": [35, 64],
+    "high": [65, 100]
+  }
+}
