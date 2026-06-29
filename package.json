@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc -b && vite build",
+    "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "validate-config": "node --experimental-strip-types scripts/validate-config.ts",
     "test-risk-logic": "node --experimental-strip-types scripts/test-risk-logic.ts"
