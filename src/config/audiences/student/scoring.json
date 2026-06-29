@@ -1,11 +1,61 @@
 {
-  "_todo": "TODO: 补齐 student 版本 dimensions、finalRisks、riskFormulas 和 thresholds。本占位文件不是正式评分配置。",
-  "dimensions": [],
-  "finalRisks": [],
-  "riskFormulas": {},
+  "_todo": "TODO_PLACEHOLDER: engineering structure only. Formal scoring weights must be supplied by product. Option scores only use unconditional source markings.",
+  "dimensions": [
+    "V1_social_exhaustion",
+    "V2_rejection_conflict_exhaustion",
+    "V3_rule_process_pressure",
+    "V4_uncertainty_anxiety",
+    "V5_feedback_sensitivity",
+    "V6_execution_gap",
+    "V7_low_initiative",
+    "V8_job_action_misunderstanding",
+    "V9_learning_transfer_pressure",
+    "V10_peer_platform_anxiety",
+    "V11_education_filter_pressure",
+    "V12_exam_delay_risk",
+    "V13_market_bias_risk"
+  ],
+  "finalRisks": [
+    "R1_adaptation_risk",
+    "R2_reality_gap_risk",
+    "R3_direction_misjudgment_risk",
+    "R4_quit_6_18_month_risk",
+    "R5_three_year_flexibility_risk"
+  ],
+  "riskFormulas": {
+    "R1_adaptation_risk": {
+      "directRWeight": 1,
+      "dimensionWeights": {}
+    },
+    "R2_reality_gap_risk": {
+      "directRWeight": 1,
+      "dimensionWeights": {}
+    },
+    "R3_direction_misjudgment_risk": {
+      "directRWeight": 1,
+      "dimensionWeights": {}
+    },
+    "R4_quit_6_18_month_risk": {
+      "directRWeight": 1,
+      "dimensionWeights": {}
+    },
+    "R5_three_year_flexibility_risk": {
+      "directRWeight": 1,
+      "dimensionWeights": {}
+    }
+  },
   "thresholds": {
-    "low": [0, 34],
-    "medium": [35, 64],
-    "high": [65, 100]
+    "low": [
+      0,
+      34
+    ],
+    "medium": [
+      35,
+      64
+    ],
+    "high": [
+      65,
+      100
+    ]
   }
 }

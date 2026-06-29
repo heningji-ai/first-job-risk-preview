@@ -1,4 +1,49 @@
 {
-  "_todo": "TODO: 补齐 student 版本局部答案风险逻辑测试用例。本占位文件不是正式验收用例。",
-  "testCases": []
+  "_todo": "ENGINEERING_SAMPLE_ONLY: partial-answer test cases. Not formal user data or final acceptance cases.",
+  "testCases": [
+    {
+      "id": "case_growth_exhaustion_partial",
+      "name": "ENGINEERING_SAMPLE_GROWTH_EXHAUSTION_PARTIAL",
+      "answers": {
+        "work_type": "GROWTH",
+        "g1_1": "D",
+        "g1_2": "C"
+      },
+      "expected": {
+        "mustTrigger": [
+          "H3_GROWTH_EXHAUSTION"
+        ]
+      }
+    },
+    {
+      "id": "case_soe_process_partial",
+      "name": "ENGINEERING_SAMPLE_SOE_PROCESS_PARTIAL",
+      "answers": {
+        "company_type": "SOE",
+        "f1_1": "D",
+        "f1_2": "C"
+      },
+      "expected": {
+        "mustTrigger": [
+          "H5_SOE_PROCESS_PRESSURE"
+        ]
+      }
+    },
+    {
+      "id": "case_exam_delay_partial",
+      "name": "ENGINEERING_SAMPLE_EXAM_DELAY_PARTIAL",
+      "answers": {
+        "postgraduate_exam": "avoid_job_pressure",
+        "choice_reason": "uncertain_try"
+      },
+      "expected": {
+        "mustTrigger": [
+          "H16_EXAM_DELAY_PROBLEM"
+        ],
+        "viralCopy": {
+          "targetText": "ENGINEERING_SAMPLE_H16_VIRAL_TARGET_PLACEHOLDER"
+        }
+      }
+    }
+  ]
 }

@@ -68,3 +68,23 @@ const BASE_FIELDS = [
 
 1. `postgraduate_exam` 属于基础字段。
 2. `postgraduate_exam` 可以被 showWhen、risk card condition、test_cases 和 validate-config 引用。
+
+## 7. Q1-Q3 编号规则
+
+已确认：
+
+1. `docs/SOURCE_STUDENT_QUESTIONS.md` 没有 Q1-Q2-Q3。
+2. Q1-Q3 缺失不阻塞第一版。
+3. 第一版以 `docs/SOURCE_STUDENT_QUESTIONS.md` 的 A/C/D/E/F/G 编号为准。
+4. `questions.json` 中 `sourceCode` 保留 A1、A2、C1、G1-1 等源文档编号。
+5. 工程 `id` 使用 `current_status`、`education`、`c1`、`g1_1` 等字段。
+
+## 8. A9 / mbti_known
+
+已确认：
+
+1. 源文档存在 A9：是否知道 MBTI，若知道进入 B1，若不知道进入 C 组快速倾向题。
+2. A9 工程字段为 `mbti_known`。
+3. A9 使用产品方确认的最小工程化选项：`known` 和 `unknown`。
+4. 这不是 Codex 自行补题，而是产品方确认的工程化分流字段。
+5. 如果源文档没有 B1 或 16 型 MBTI 选项，当前阶段不自行补齐 `mbti_type`。

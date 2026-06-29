@@ -1,4 +1,3392 @@
 {
-  "_todo": "TODO: 补齐 student 版本完整题库。本占位文件不是正式题库，不得用于线上业务。",
-  "questions": []
+  "_source": "docs/SOURCE_STUDENT_QUESTIONS.md",
+  "_todo": "TODO_PLACEHOLDER: extracted from docs/SOURCE_STUDENT_QUESTIONS.md. Q1-Q3 are not required for V1; A9/mbti_known uses product-confirmed minimal options.",
+  "questions": [
+    {
+      "id": "current_status",
+      "sourceCode": "A1",
+      "group": "base_profile",
+      "order": 1,
+      "text": "当前状态",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "student_internship",
+          "text": "在校生，准备找实习",
+          "scores": {
+            "dimensions": {},
+            "directR": {
+              "R1_adaptation_risk": 5
+            }
+          }
+        },
+        {
+          "id": "fresh_graduate",
+          "text": "应届毕业生，正在找第一份正式工作",
+          "scores": {
+            "dimensions": {},
+            "directR": {
+              "R1_adaptation_risk": 5,
+              "R3_direction_misjudgment_risk": 5
+            }
+          }
+        },
+        {
+          "id": "offer_not_started",
+          "text": "已拿到offer，但还没入职",
+          "scores": {
+            "dimensions": {},
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          }
+        },
+        {
+          "id": "early_working_recheck",
+          "text": "刚工作不久，想重新判断方向",
+          "scores": {
+            "dimensions": {},
+            "directR": {
+              "R3_direction_misjudgment_risk": 10,
+              "R4_quit_6_18_month_risk": 10
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "education",
+      "sourceCode": "A2",
+      "group": "base_profile",
+      "order": 2,
+      "text": "第一学历",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "associate_or_below",
+          "text": "大专及以下",
+          "scores": {
+            "dimensions": {
+              "V11_education_filter_pressure": 20
+            },
+            "directR": {
+              "R3_direction_misjudgment_risk": 10,
+              "R5_three_year_flexibility_risk": 10
+            }
+          }
+        },
+        {
+          "id": "regular_bachelor",
+          "text": "普通本科",
+          "scores": {
+            "dimensions": {
+              "V11_education_filter_pressure": 10
+            },
+            "directR": {
+              "R3_direction_misjudgment_risk": 5
+            }
+          }
+        },
+        {
+          "id": "key_university",
+          "text": "重点本科 / 双一流 / 985 / 211",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "master_or_above",
+          "text": "硕士及以上",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "overseas",
+          "text": "海外学历",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": "gender",
+      "sourceCode": "A3",
+      "group": "base_profile",
+      "order": 3,
+      "text": "性别",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "male",
+          "text": "男",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "female",
+          "text": "女",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          },
+          "flags": {
+            "female": true
+          }
+        },
+        {
+          "id": "prefer_not_to_say",
+          "text": "不方便透露",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": "postgraduate_exam",
+      "sourceCode": "A4",
+      "group": "base_profile",
+      "order": 4,
+      "text": "是否考虑考研",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "decided",
+          "text": "已经决定考研",
+          "scores": {
+            "dimensions": {
+              "V12_exam_delay_risk": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "both_exam_and_job",
+          "text": "考研和就业都在考虑",
+          "scores": {
+            "dimensions": {
+              "V12_exam_delay_risk": 15
+            },
+            "directR": {
+              "R3_direction_misjudgment_risk": 5
+            }
+          }
+        },
+        {
+          "id": "job_first_hesitant",
+          "text": "主要想就业，但也有点犹豫",
+          "scores": {
+            "dimensions": {
+              "V12_exam_delay_risk": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "no_exam",
+          "text": "不考虑考研",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "avoid_job_pressure",
+          "text": "只是想先避开就业压力，还没想清楚",
+          "scores": {
+            "dimensions": {
+              "V12_exam_delay_risk": 25
+            },
+            "directR": {
+              "R3_direction_misjudgment_risk": 15,
+              "R5_three_year_flexibility_risk": 10
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "company_type",
+      "sourceCode": "A5",
+      "group": "base_profile",
+      "order": 5,
+      "text": "想测试的公司类型",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "SOE",
+          "text": "国企 / 央企 / 体制型组织",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "MNC",
+          "text": "外企 / 规范型组织",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "PLATFORM",
+          "text": "大型民企 / 平台型公司",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "PRIVATE_SME",
+          "text": "传统中小民企",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "STARTUP",
+          "text": "创业公司 / 新业务团队",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": "work_type",
+      "sourceCode": "A6",
+      "group": "base_profile",
+      "order": 6,
+      "text": "想测试的工作类型",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "GROWTH",
+          "text": "商业增长型",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "CONTENT",
+          "text": "内容影响型",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "PRODUCT_OPS",
+          "text": "产品运营型",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "FUNCTION",
+          "text": "专业职能型",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "TECH",
+          "text": "技术研发型",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": "choice_reason",
+      "sourceCode": "A7",
+      "group": "base_profile",
+      "order": 7,
+      "text": "选择方向的主要原因",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "stability",
+          "text": "听起来稳定，有安全感",
+          "scores": {
+            "dimensions": {},
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          },
+          "flags": {
+            "stability_motivation": true
+          }
+        },
+        {
+          "id": "growth_income",
+          "text": "看起来收入或成长空间不错",
+          "scores": {
+            "dimensions": {
+              "V10_peer_platform_anxiety": 5
+            },
+            "directR": {}
+          },
+          "flags": {
+            "growth_income_motivation": true
+          }
+        },
+        {
+          "id": "major_related",
+          "text": "和我的专业或经历比较接近",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          },
+          "flags": {
+            "major_related": true
+          }
+        },
+        {
+          "id": "external_advice",
+          "text": "父母、老师或身边人建议我选",
+          "scores": {
+            "dimensions": {
+              "V10_peer_platform_anxiety": 5
+            },
+            "directR": {
+              "R3_direction_misjudgment_risk": 10
+            }
+          },
+          "flags": {
+            "external_choice": true
+          }
+        },
+        {
+          "id": "uncertain_try",
+          "text": "我也不确定，只是先试试",
+          "scores": {
+            "dimensions": {
+              "V12_exam_delay_risk": 5
+            },
+            "directR": {
+              "R3_direction_misjudgment_risk": 15
+            }
+          },
+          "flags": {
+            "direction_unclear": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "main_concern",
+      "sourceCode": "A8",
+      "group": "base_profile",
+      "order": 8,
+      "text": "当前最担心的问题",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "no_offer",
+          "text": "找不到工作",
+          "scores": {
+            "dimensions": {
+              "V11_education_filter_pressure": 5
+            },
+            "directR": {
+              "R3_direction_misjudgment_risk": 5
+            }
+          }
+        },
+        {
+          "id": "wrong_first_job",
+          "text": "选错第一份工作",
+          "scores": {
+            "dimensions": {},
+            "directR": {
+              "R3_direction_misjudgment_risk": 10
+            }
+          }
+        },
+        {
+          "id": "interview_fail",
+          "text": "面试不过",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "adaptation_worry",
+          "text": "入职后不适应",
+          "scores": {
+            "dimensions": {},
+            "directR": {
+              "R1_adaptation_risk": 10
+            }
+          }
+        },
+        {
+          "id": "no_development",
+          "text": "以后没有发展",
+          "scores": {
+            "dimensions": {},
+            "directR": {
+              "R5_three_year_flexibility_risk": 10
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "mbti_known",
+      "sourceCode": "A9",
+      "group": "base_profile",
+      "order": 9,
+      "text": "是否知道自己的 MBTI",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "known",
+          "text": "知道",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "unknown",
+          "text": "不知道 / 不确定",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": "c1",
+      "sourceCode": "C1",
+      "group": "quick_tendency",
+      "order": 10,
+      "text": "长时间和陌生人沟通后，你通常是什么状态？",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "更有能量，越聊越进入状态",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "可以接受，但需要中间休息",
+          "scores": {
+            "dimensions": {
+              "V1_social_exhaustion": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "会明显消耗，更想一个人待着",
+          "scores": {
+            "dimensions": {
+              "V1_social_exhaustion": 10
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "D",
+          "text": "如果不是必要，我会尽量避免",
+          "scores": {
+            "dimensions": {
+              "V1_social_exhaustion": 15
+            },
+            "directR": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": "c2",
+      "sourceCode": "C2",
+      "group": "quick_tendency",
+      "order": 11,
+      "text": "你更喜欢哪类任务？",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "目标清楚、流程明确、标准稳定的任务",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 5
+            },
+            "directR": {
+              "R1_adaptation_risk": 5
+            }
+          }
+        },
+        {
+          "id": "B",
+          "text": "大方向清楚，但过程可以自己探索",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "变化多、有新鲜感、能试错",
+          "scores": {
+            "dimensions": {
+              "V3_rule_process_pressure": 5
+            },
+            "directR": {}
+          },
+          "flags": {
+            "innovation_drive": true
+          }
+        },
+        {
+          "id": "D",
+          "text": "只要结果重要，过程混乱也能接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": "c3",
+      "sourceCode": "C3",
+      "group": "quick_tendency",
+      "order": 12,
+      "text": "当别人否定你的想法时，你更接近哪种反应？",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "先判断他说得有没有道理",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "会不舒服，但还能继续沟通",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "会比较受影响，容易怀疑自己",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 10,
+              "V2_rejection_conflict_exhaustion": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "D",
+          "text": "会下意识回避这种场景",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 15,
+              "V2_rejection_conflict_exhaustion": 10
+            },
+            "directR": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": "c4",
+      "sourceCode": "C4",
+      "group": "quick_tendency",
+      "order": 13,
+      "text": "做事情时，你更像哪一种？",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "喜欢先计划清楚，再按步骤推进",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "先有一个大概计划，然后边做边修正",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "先动起来，过程中自然会找到方向",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "D",
+          "text": "容易开始，但不一定能坚持收尾",
+          "scores": {
+            "dimensions": {
+              "V6_execution_gap": 10,
+              "V7_low_initiative": 10
+            },
+            "directR": {}
+          }
+        }
+      ]
+    },
+    {
+      "id": "d1",
+      "sourceCode": "D1",
+      "group": "common_reaction",
+      "order": 14,
+      "text": "目标不清楚但要先推进",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "先问清楚目标、标准和边界",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "先做初版，再根据反馈调整",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "先找相关人聊一圈",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "D",
+          "text": "明显焦虑，担心方向错、结果差",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 10,
+              "V5_feedback_sensitivity": 5
+            },
+            "directR": {
+              "R1_adaptation_risk": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "d2",
+      "sourceCode": "D2",
+      "group": "common_reaction",
+      "order": 15,
+      "text": "努力一个月但没结果、没人表扬",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "继续做",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "复盘方法",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "怀疑自己是不是不适合",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 10
+            },
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "很容易失去动力",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 15,
+              "V6_execution_gap": 10
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "d3",
+      "sourceCode": "D3",
+      "group": "common_reaction",
+      "order": 16,
+      "text": "需要主动找人问问题、要资源、推进事情",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以主动沟通",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "可以做，但会先想清楚怎么说",
+          "scores": {
+            "dimensions": {
+              "V1_social_exhaustion": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "有压力，担心打扰别人或被拒绝",
+          "scores": {
+            "dimensions": {
+              "V1_social_exhaustion": 10,
+              "V2_rejection_conflict_exhaustion": 5,
+              "V7_low_initiative": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "D",
+          "text": "希望别人安排清楚",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 15,
+              "V1_social_exhaustion": 10
+            },
+            "directR": {
+              "R1_adaptation_risk": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "d4",
+      "sourceCode": "D4",
+      "group": "common_reaction",
+      "order": 17,
+      "text": "每天被数据、进度、转化率或结果衡量",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "可以接受，但不希望只有数据",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "会有压力，容易被数据影响情绪",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 10,
+              "V2_rejection_conflict_exhaustion": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "D",
+          "text": "不喜欢持续被比较",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 15,
+              "V10_peer_platform_anxiety": 10
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "d5",
+      "sourceCode": "D5",
+      "group": "common_reaction",
+      "order": 18,
+      "text": "大量重复细节、表格、核对、流程确认",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "能接受一部分",
+          "scores": {
+            "dimensions": {
+              "V6_execution_gap": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "会觉得无聊，希望更多变化",
+          "scores": {
+            "dimensions": {
+              "V6_execution_gap": 10
+            },
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "重复工作会明显消耗",
+          "scores": {
+            "dimensions": {
+              "V6_execution_gap": 15
+            },
+            "directR": {
+              "R2_reality_gap_risk": 10
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "d6",
+      "sourceCode": "D6",
+      "group": "common_reaction",
+      "order": 19,
+      "text": "真实工作和想象不一样",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "先适应一段时间",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "找前辈或同事了解",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "会失落，但可能继续坚持",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 5
+            },
+            "directR": {
+              "R2_reality_gap_risk": 10
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "马上怀疑自己选错方向",
+          "scores": {
+            "dimensions": {},
+            "directR": {
+              "R2_reality_gap_risk": 15,
+              "R3_direction_misjudgment_risk": 10,
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "e1",
+      "sourceCode": "E1",
+      "group": "student_specific",
+      "order": 20,
+      "text": "第一份工作前6个月主要是执行",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "能接受，先练基本功",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "可以接受，但希望知道价值",
+          "scores": {
+            "dimensions": {
+              "V6_execution_gap": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "会有落差，觉得学不到东西",
+          "scores": {
+            "dimensions": {
+              "V6_execution_gap": 10
+            },
+            "directR": {
+              "R2_reality_gap_risk": 10
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "很难接受，希望一开始就做更有挑战的事",
+          "scores": {
+            "dimensions": {
+              "V6_execution_gap": 15
+            },
+            "directR": {
+              "R2_reality_gap_risk": 15,
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "e2",
+      "sourceCode": "E2",
+      "group": "student_specific",
+      "order": 21,
+      "text": "同学进了更知名平台、薪资更高",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "不太受影响",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "会有压力，但还能继续自己的事",
+          "scores": {
+            "dimensions": {
+              "V10_peer_platform_anxiety": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "明显焦虑，怀疑自己落后",
+          "scores": {
+            "dimensions": {
+              "V10_peer_platform_anxiety": 10,
+              "V5_feedback_sensitivity": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "D",
+          "text": "立刻想换方向或重新找工作",
+          "scores": {
+            "dimensions": {
+              "V10_peer_platform_anxiety": 15
+            },
+            "directR": {
+              "R3_direction_misjudgment_risk": 10,
+              "R4_quit_6_18_month_risk": 10
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "e3",
+      "sourceCode": "E3",
+      "group": "student_specific",
+      "order": 22,
+      "text": "入职后没人系统带，需要自己摸索",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以自己找资料、问人、试错",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "可以接受，但希望有人给基本方向",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "会比较吃力，不知道怎么开始",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 10
+            },
+            "directR": {
+              "R1_adaptation_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "很难适应，需要明确指导",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 15
+            },
+            "directR": {
+              "R1_adaptation_risk": 10
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "e4",
+      "sourceCode": "E4",
+      "group": "student_specific",
+      "order": 23,
+      "text": "第一份工作不是最理想，但能积累经验",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受，先积累可迁移经验",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "可以接受，但要看成长空间",
+          "scores": {
+            "dimensions": {},
+            "directR": {
+              "R5_three_year_flexibility_risk": 5
+            }
+          }
+        },
+        {
+          "id": "C",
+          "text": "会纠结，担心浪费时间",
+          "scores": {
+            "dimensions": {},
+            "directR": {
+              "R3_direction_misjudgment_risk": 10,
+              "R5_three_year_flexibility_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "不太能接受，怕第一步选错就完了",
+          "scores": {
+            "dimensions": {},
+            "directR": {
+              "R3_direction_misjudgment_risk": 15,
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "e5",
+      "sourceCode": "E5",
+      "group": "student_specific",
+      "order": 24,
+      "text": "对“好工作”的理解",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "稳定、体面、风险低",
+          "scores": {
+            "dimensions": {},
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          },
+          "flags": {
+            "stability_motivation": true
+          }
+        },
+        {
+          "id": "B",
+          "text": "平台好、履历好看",
+          "scores": {
+            "dimensions": {
+              "V10_peer_platform_anxiety": 10
+            },
+            "directR": {}
+          },
+          "flags": {
+            "platform_motivation": true
+          }
+        },
+        {
+          "id": "C",
+          "text": "成长快、能学东西",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          },
+          "flags": {
+            "growth_motivation": true
+          }
+        },
+        {
+          "id": "D",
+          "text": "收入高、上升快",
+          "scores": {
+            "dimensions": {
+              "V10_peer_platform_anxiety": 5
+            },
+            "directR": {}
+          },
+          "flags": {
+            "growth_income_motivation": true
+          }
+        },
+        {
+          "id": "E",
+          "text": "做起来不痛苦，适合自己",
+          "scores": {
+            "dimensions": {},
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          },
+          "flags": {
+            "comfort_motivation": true
+          }
+        }
+      ]
+    },
+    {
+      "id": "f1_1",
+      "sourceCode": "F1-1",
+      "group": "company_environment",
+      "order": 25,
+      "text": "层层汇报、审批、等待",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "能接受一部分",
+          "scores": {
+            "dimensions": {
+              "V3_rule_process_pressure": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "会有压抑感",
+          "scores": {
+            "dimensions": {
+              "V3_rule_process_pressure": 10
+            },
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "很难长期接受慢反馈",
+          "scores": {
+            "dimensions": {
+              "V3_rule_process_pressure": 15
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "company_type",
+          "operator": "eq",
+          "value": "SOE"
+        }
+      ]
+    },
+    {
+      "id": "f1_2",
+      "sourceCode": "F1-2",
+      "group": "company_environment",
+      "order": 26,
+      "text": "想法合理但短期无法推动",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "接受规则",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "找合适方式推进",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "失望，觉得发挥不了价值",
+          "scores": {
+            "dimensions": {
+              "V3_rule_process_pressure": 10
+            },
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "明显想离开",
+          "scores": {
+            "dimensions": {
+              "V3_rule_process_pressure": 15
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "company_type",
+          "operator": "eq",
+          "value": "SOE"
+        }
+      ]
+    },
+    {
+      "id": "f1_3",
+      "sourceCode": "F1-3",
+      "group": "company_environment",
+      "order": 27,
+      "text": "晋升不完全看能力",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "能接受，但希望公平空间",
+          "scores": {
+            "dimensions": {
+              "V3_rule_process_pressure": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "不舒服，觉得努力未必有用",
+          "scores": {
+            "dimensions": {
+              "V3_rule_process_pressure": 10,
+              "V5_feedback_sensitivity": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "D",
+          "text": "很难接受",
+          "scores": {
+            "dimensions": {
+              "V3_rule_process_pressure": 15
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "company_type",
+          "operator": "eq",
+          "value": "SOE"
+        }
+      ]
+    },
+    {
+      "id": "f2_1",
+      "sourceCode": "F2-1",
+      "group": "company_environment",
+      "order": 28,
+      "text": "流程规范，但上升不一定快",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "希望有明确成长路径",
+          "scores": {
+            "dimensions": {},
+            "directR": {
+              "R5_three_year_flexibility_risk": 5
+            }
+          }
+        },
+        {
+          "id": "C",
+          "text": "担心成长慢、存在感不够",
+          "scores": {
+            "dimensions": {
+              "V10_peer_platform_anxiety": 5
+            },
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "不接受，更希望快速上升",
+          "scores": {
+            "dimensions": {},
+            "directR": {
+              "R2_reality_gap_risk": 10,
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "company_type",
+          "operator": "eq",
+          "value": "MNC"
+        }
+      ]
+    },
+    {
+      "id": "f2_2",
+      "sourceCode": "F2-2",
+      "group": "company_environment",
+      "order": 29,
+      "text": "清晰表达、邮件沟通、跨部门协作",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "需要时间训练表达",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "怕自己说不清楚",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 10,
+              "V1_social_exhaustion": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "D",
+          "text": "更习惯别人安排具体任务",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 15
+            },
+            "directR": {
+              "R1_adaptation_risk": 5
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "company_type",
+          "operator": "eq",
+          "value": "MNC"
+        }
+      ]
+    },
+    {
+      "id": "f2_3",
+      "sourceCode": "F2-3",
+      "group": "company_environment",
+      "order": 30,
+      "text": "组织不会主动给机会",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "主动争取",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "先做好本职，再慢慢争取",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "容易被动，不知道怎么表现",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 10
+            },
+            "directR": {
+              "R5_three_year_flexibility_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "只完成别人交代的事",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 15
+            },
+            "directR": {
+              "R5_three_year_flexibility_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "company_type",
+          "operator": "eq",
+          "value": "MNC"
+        }
+      ]
+    },
+    {
+      "id": "f3_1",
+      "sourceCode": "F3-1",
+      "group": "company_environment",
+      "order": 31,
+      "text": "节奏快、目标经常变化",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "希望目标别变太频繁",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "有压力，需要时间适应",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 10
+            },
+            "directR": {
+              "R1_adaptation_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "更需要稳定节奏",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 15
+            },
+            "directR": {
+              "R1_adaptation_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "company_type",
+          "operator": "eq",
+          "value": "PLATFORM"
+        }
+      ]
+    },
+    {
+      "id": "f3_2",
+      "sourceCode": "F3-2",
+      "group": "company_environment",
+      "order": 32,
+      "text": "竞争强、数据透明、结果导向",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "能接受，但不希望长期高压",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "会焦虑，担心跟不上",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 10,
+              "V10_peer_platform_anxiety": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "D",
+          "text": "不喜欢持续比较",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 15,
+              "V10_peer_platform_anxiety": 10
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "company_type",
+          "operator": "eq",
+          "value": "PLATFORM"
+        }
+      ]
+    },
+    {
+      "id": "f3_3",
+      "sourceCode": "F3-3",
+      "group": "company_environment",
+      "order": 33,
+      "text": "没有太多保护期，很快要交付结果",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "愿意快速上手",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "需要基本培训和资源",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "怕准备不足",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 10
+            },
+            "directR": {
+              "R1_adaptation_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "需要更长适应期",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 15
+            },
+            "directR": {
+              "R1_adaptation_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "company_type",
+          "operator": "eq",
+          "value": "PLATFORM"
+        }
+      ]
+    },
+    {
+      "id": "f4_1",
+      "sourceCode": "F4-1",
+      "group": "company_environment",
+      "order": 34,
+      "text": "老板影响很大",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受，只要方向明确",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "希望规则相对清楚",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "怕反复变化",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 10
+            },
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "不喜欢强个人风格管理",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 15
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "company_type",
+          "operator": "eq",
+          "value": "PRIVATE_SME"
+        }
+      ]
+    },
+    {
+      "id": "f4_2",
+      "sourceCode": "F4-2",
+      "group": "company_environment",
+      "order": 35,
+      "text": "岗位边界不清，什么都要做",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以，这样学得快",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "可以，但不能长期混乱",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 5
+            },
+            "directR": {
+              "R5_three_year_flexibility_risk": 5
+            }
+          }
+        },
+        {
+          "id": "C",
+          "text": "担心没有清晰成长",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 10
+            },
+            "directR": {
+              "R5_three_year_flexibility_risk": 10
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "需要明确职责",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 15
+            },
+            "directR": {
+              "R1_adaptation_risk": 5,
+              "R5_three_year_flexibility_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "company_type",
+          "operator": "eq",
+          "value": "PRIVATE_SME"
+        }
+      ]
+    },
+    {
+      "id": "f4_3",
+      "sourceCode": "F4-3",
+      "group": "company_environment",
+      "order": 36,
+      "text": "资源有限，很多事要自己想办法",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以自己找方法、找人、找资源",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "希望有人给方向",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "会比较吃力",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 10
+            },
+            "directR": {
+              "R1_adaptation_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "需要成熟体系支持",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 15
+            },
+            "directR": {
+              "R1_adaptation_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "company_type",
+          "operator": "eq",
+          "value": "PRIVATE_SME"
+        }
+      ]
+    },
+    {
+      "id": "f5_1",
+      "sourceCode": "F5-1",
+      "group": "company_environment",
+      "order": 37,
+      "text": "公司方向变化，工作内容经常调整",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以，变化里有成长",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "希望大方向别频繁推翻",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "担心一直在试错",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 10
+            },
+            "directR": {
+              "R3_direction_misjudgment_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "需要稳定岗位边界",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 15
+            },
+            "directR": {
+              "R1_adaptation_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "company_type",
+          "operator": "eq",
+          "value": "STARTUP"
+        }
+      ]
+    },
+    {
+      "id": "f5_2",
+      "sourceCode": "F5-2",
+      "group": "company_environment",
+      "order": 38,
+      "text": "同时做运营、销售、内容、产品测试",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "希望知道主线",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 5
+            },
+            "directR": {
+              "R5_three_year_flexibility_risk": 5
+            }
+          }
+        },
+        {
+          "id": "C",
+          "text": "担心什么都做、什么都不精",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 10
+            },
+            "directR": {
+              "R5_three_year_flexibility_risk": 10
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "希望岗位能力更聚焦",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 15
+            },
+            "directR": {
+              "R5_three_year_flexibility_risk": 15
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "company_type",
+          "operator": "eq",
+          "value": "STARTUP"
+        }
+      ]
+    },
+    {
+      "id": "f5_3",
+      "sourceCode": "F5-3",
+      "group": "company_environment",
+      "order": 39,
+      "text": "公司成长快，但也可能失败",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "希望公司已有基础",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "担心不稳定影响职业起点",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 10
+            },
+            "directR": {
+              "R3_direction_misjudgment_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "更需要确定性",
+          "scores": {
+            "dimensions": {
+              "V4_uncertainty_anxiety": 15
+            },
+            "directR": {
+              "R1_adaptation_risk": 5
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "company_type",
+          "operator": "eq",
+          "value": "STARTUP"
+        }
+      ]
+    },
+    {
+      "id": "g1_1",
+      "sourceCode": "G1-1",
+      "group": "work_type_specific",
+      "order": 40,
+      "text": "持续主动联系陌生客户或合作方",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "希望对方有明确需求",
+          "scores": {
+            "dimensions": {
+              "V1_social_exhaustion": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "会消耗，但能撑一段时间",
+          "scores": {
+            "dimensions": {
+              "V1_social_exhaustion": 10
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "很难长期做陌生沟通",
+          "scores": {
+            "dimensions": {
+              "V1_social_exhaustion": 15
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "GROWTH"
+        }
+      ]
+    },
+    {
+      "id": "g1_2",
+      "sourceCode": "G1-2",
+      "group": "work_type_specific",
+      "order": 41,
+      "text": "面对拒绝、已读不回、客户犹豫、领导追问转化",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "有压力，但可以复盘",
+          "scores": {
+            "dimensions": {
+              "V2_rejection_conflict_exhaustion": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "明显消耗，容易怀疑自己",
+          "scores": {
+            "dimensions": {
+              "V2_rejection_conflict_exhaustion": 10,
+              "V5_feedback_sensitivity": 5
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "很难接受高拒绝环境",
+          "scores": {
+            "dimensions": {
+              "V2_rejection_conflict_exhaustion": 15,
+              "V5_feedback_sensitivity": 10
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "GROWTH"
+        }
+      ]
+    },
+    {
+      "id": "g1_3",
+      "sourceCode": "G1-3",
+      "group": "work_type_specific",
+      "order": 42,
+      "text": "收入和结果强相关",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "不能只有短期指标",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "担心扛不住",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 10
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "更喜欢稳定收入和清晰任务",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 15
+            },
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "GROWTH"
+        }
+      ]
+    },
+    {
+      "id": "g1_4",
+      "sourceCode": "G1-4",
+      "group": "work_type_specific",
+      "order": 43,
+      "text": "商业增长不是聊天，而是线索、转化、跟进、复盘",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "理解，并愿意做",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "理解，但担心坚持不住",
+          "scores": {
+            "dimensions": {
+              "V8_job_action_misunderstanding": 5,
+              "V6_execution_gap": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "之前没想这么细，有点犹豫",
+          "scores": {
+            "dimensions": {
+              "V8_job_action_misunderstanding": 10
+            },
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "不想做重复推进动作",
+          "scores": {
+            "dimensions": {
+              "V8_job_action_misunderstanding": 15,
+              "V6_execution_gap": 10
+            },
+            "directR": {
+              "R2_reality_gap_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "GROWTH"
+        }
+      ]
+    },
+    {
+      "id": "g2_1",
+      "sourceCode": "G2-1",
+      "group": "work_type_specific",
+      "order": 44,
+      "text": "持续做内容但数据不好",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "继续复盘",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "有压力但还能做",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "明显受影响，怀疑自己",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 10
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "很难坚持被数据否定",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 15
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "CONTENT"
+        }
+      ]
+    },
+    {
+      "id": "g2_2",
+      "sourceCode": "G2-2",
+      "group": "work_type_specific",
+      "order": 45,
+      "text": "内容工作不是表达自己，而是研究用户",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "希望保留自己表达",
+          "scores": {
+            "dimensions": {
+              "V8_job_action_misunderstanding": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "有落差，觉得不自由",
+          "scores": {
+            "dimensions": {
+              "V8_job_action_misunderstanding": 10
+            },
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "更想表达自己喜欢的东西",
+          "scores": {
+            "dimensions": {
+              "V8_job_action_misunderstanding": 15
+            },
+            "directR": {
+              "R2_reality_gap_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "CONTENT"
+        }
+      ]
+    },
+    {
+      "id": "g2_3",
+      "sourceCode": "G2-3",
+      "group": "work_type_specific",
+      "order": 46,
+      "text": "长期追热点、看数据、改标题、改脚本",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "不能每天都这样",
+          "scores": {
+            "dimensions": {
+              "V6_execution_gap": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "会觉得消耗",
+          "scores": {
+            "dimensions": {
+              "V6_execution_gap": 10
+            },
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "不喜欢被流量牵着走",
+          "scores": {
+            "dimensions": {
+              "V6_execution_gap": 15
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "CONTENT"
+        }
+      ]
+    },
+    {
+      "id": "g2_4",
+      "sourceCode": "G2-4",
+      "group": "work_type_specific",
+      "order": 47,
+      "text": "内容被批评、没人看、被要求重做",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "继续改",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "不舒服，但能调整",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "很受伤，影响状态",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 10
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "很难接受作品被反复否定",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 15
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "CONTENT"
+        }
+      ]
+    },
+    {
+      "id": "g3_1",
+      "sourceCode": "G3-1",
+      "group": "work_type_specific",
+      "order": 48,
+      "text": "把模糊需求整理成流程、表格、方案和计划",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "需要业务方讲清楚背景",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "怕理解错",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 10,
+              "V4_uncertainty_anxiety": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "D",
+          "text": "不喜欢处理模糊需求",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 15,
+              "V4_uncertainty_anxiety": 10
+            },
+            "directR": {
+              "R1_adaptation_risk": 5
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "PRODUCT_OPS"
+        }
+      ]
+    },
+    {
+      "id": "g3_2",
+      "sourceCode": "G3-2",
+      "group": "work_type_specific",
+      "order": 49,
+      "text": "夹在用户、技术、业务、老板之间",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "需要明确优先级",
+          "scores": {
+            "dimensions": {
+              "V2_rejection_conflict_exhaustion": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "怕各方都不满意",
+          "scores": {
+            "dimensions": {
+              "V2_rejection_conflict_exhaustion": 10,
+              "V5_feedback_sensitivity": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "D",
+          "text": "不喜欢夹在中间推动事情",
+          "scores": {
+            "dimensions": {
+              "V2_rejection_conflict_exhaustion": 15
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "PRODUCT_OPS"
+        }
+      ]
+    },
+    {
+      "id": "g3_3",
+      "sourceCode": "G3-3",
+      "group": "work_type_specific",
+      "order": 50,
+      "text": "方案经常被改、被推翻",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "正常",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "不舒服，但可以调整",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "怀疑自己能力不够",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 10
+            },
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "反复改会明显消耗",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 15
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "PRODUCT_OPS"
+        }
+      ]
+    },
+    {
+      "id": "g3_4",
+      "sourceCode": "G3-4",
+      "group": "work_type_specific",
+      "order": 51,
+      "text": "产品运营不只是想点子，还要需求梳理、数据分析、沟通推进",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "理解，并愿意做",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "担心推进能力不够",
+          "scores": {
+            "dimensions": {
+              "V8_job_action_misunderstanding": 5,
+              "V7_low_initiative": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "之前没想这么细，有点犹豫",
+          "scores": {
+            "dimensions": {
+              "V8_job_action_misunderstanding": 10
+            },
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "不想做琐碎推进动作",
+          "scores": {
+            "dimensions": {
+              "V8_job_action_misunderstanding": 15,
+              "V6_execution_gap": 10
+            },
+            "directR": {
+              "R2_reality_gap_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "PRODUCT_OPS"
+        }
+      ]
+    },
+    {
+      "id": "g4_1",
+      "sourceCode": "G4-1",
+      "group": "work_type_specific",
+      "order": 52,
+      "text": "大量流程、制度、表格、核对、资料和沟通确认",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "希望有业务参与感",
+          "scores": {
+            "dimensions": {
+              "V6_execution_gap": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "觉得重复，担心成长慢",
+          "scores": {
+            "dimensions": {
+              "V6_execution_gap": 10
+            },
+            "directR": {
+              "R5_three_year_flexibility_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "不喜欢大量细节事务",
+          "scores": {
+            "dimensions": {
+              "V6_execution_gap": 15
+            },
+            "directR": {
+              "R2_reality_gap_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "FUNCTION"
+        }
+      ]
+    },
+    {
+      "id": "g4_2",
+      "sourceCode": "G4-2",
+      "group": "work_type_specific",
+      "order": 53,
+      "text": "成果不一定被看见，但一出错就会被发现",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "希望贡献被认可",
+          "scores": {
+            "dimensions": {
+              "V10_peer_platform_anxiety": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "吃力不讨好",
+          "scores": {
+            "dimensions": {
+              "V10_peer_platform_anxiety": 10,
+              "V5_feedback_sensitivity": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "D",
+          "text": "希望成果更容易被看见",
+          "scores": {
+            "dimensions": {
+              "V10_peer_platform_anxiety": 15
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "FUNCTION"
+        }
+      ]
+    },
+    {
+      "id": "g4_3",
+      "sourceCode": "G4-3",
+      "group": "work_type_specific",
+      "order": 54,
+      "text": "业务部门不配合，还要催材料、讲规则",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以推进",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "希望规则更明确",
+          "scores": {
+            "dimensions": {
+              "V2_rejection_conflict_exhaustion": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "会觉得消耗",
+          "scores": {
+            "dimensions": {
+              "V2_rejection_conflict_exhaustion": 10,
+              "V1_social_exhaustion": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "D",
+          "text": "不喜欢反复催人",
+          "scores": {
+            "dimensions": {
+              "V2_rejection_conflict_exhaustion": 15,
+              "V1_social_exhaustion": 10
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "FUNCTION"
+        }
+      ]
+    },
+    {
+      "id": "g4_4",
+      "sourceCode": "G4-4",
+      "group": "work_type_specific",
+      "order": 55,
+      "text": "职能岗位不等于轻松稳定，也可能琐碎、压力和背锅",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "理解，可以接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "希望组织规范",
+          "scores": {
+            "dimensions": {
+              "V8_job_action_misunderstanding": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "有点犹豫",
+          "scores": {
+            "dimensions": {
+              "V8_job_action_misunderstanding": 10
+            },
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "可能不想走这类路",
+          "scores": {
+            "dimensions": {
+              "V8_job_action_misunderstanding": 15
+            },
+            "directR": {
+              "R3_direction_misjudgment_risk": 5
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "FUNCTION"
+        }
+      ]
+    },
+    {
+      "id": "g5_1",
+      "sourceCode": "G5-1",
+      "group": "work_type_specific",
+      "order": 56,
+      "text": "长期学习新技术、新工具、新方法",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "需要明确学习方向",
+          "scores": {
+            "dimensions": {
+              "V9_learning_transfer_pressure": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "怕跟不上",
+          "scores": {
+            "dimensions": {
+              "V9_learning_transfer_pressure": 10
+            },
+            "directR": {
+              "R1_adaptation_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "不喜欢持续更新知识",
+          "scores": {
+            "dimensions": {
+              "V9_learning_transfer_pressure": 15
+            },
+            "directR": {
+              "R5_three_year_flexibility_risk": 10
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "TECH"
+        }
+      ]
+    },
+    {
+      "id": "g5_2",
+      "sourceCode": "G5-2",
+      "group": "work_type_specific",
+      "order": 57,
+      "text": "短期没人理解，需要持续调试、排错、优化",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "希望有人指导",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "怕长期没有结果",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 10,
+              "V9_learning_transfer_pressure": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "D",
+          "text": "很难坚持长时间卡住",
+          "scores": {
+            "dimensions": {
+              "V5_feedback_sensitivity": 15,
+              "V9_learning_transfer_pressure": 10
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "TECH"
+        }
+      ]
+    },
+    {
+      "id": "g5_3",
+      "sourceCode": "G5-3",
+      "group": "work_type_specific",
+      "order": 58,
+      "text": "技术岗位需要和产品、业务、客户解释方案",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "可以",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "表达需要训练",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "怕自己说不清楚",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 10,
+              "V1_social_exhaustion": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "D",
+          "text": "更想只做技术本身",
+          "scores": {
+            "dimensions": {
+              "V7_low_initiative": 15
+            },
+            "directR": {
+              "R5_three_year_flexibility_risk": 5
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "TECH"
+        }
+      ]
+    },
+    {
+      "id": "g5_4",
+      "sourceCode": "G5-4",
+      "group": "work_type_specific",
+      "order": 59,
+      "text": "技术研发也要面对需求变化、协作、交付和业务目标",
+      "type": "single_choice",
+      "required": true,
+      "options": [
+        {
+          "id": "A",
+          "text": "理解，并可以接受",
+          "scores": {
+            "dimensions": {},
+            "directR": {}
+          }
+        },
+        {
+          "id": "B",
+          "text": "希望技术占主要部分",
+          "scores": {
+            "dimensions": {
+              "V8_job_action_misunderstanding": 5
+            },
+            "directR": {}
+          }
+        },
+        {
+          "id": "C",
+          "text": "之前没想这么细，有点犹豫",
+          "scores": {
+            "dimensions": {
+              "V8_job_action_misunderstanding": 10
+            },
+            "directR": {
+              "R2_reality_gap_risk": 5
+            }
+          }
+        },
+        {
+          "id": "D",
+          "text": "大量协作和交付会消耗",
+          "scores": {
+            "dimensions": {
+              "V8_job_action_misunderstanding": 15
+            },
+            "directR": {
+              "R4_quit_6_18_month_risk": 5
+            }
+          }
+        }
+      ],
+      "showWhen": [
+        {
+          "field": "work_type",
+          "operator": "eq",
+          "value": "TECH"
+        }
+      ]
+    }
+  ]
 }

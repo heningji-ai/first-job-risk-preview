@@ -1,4 +1,204 @@
 {
-  "_todo": "TODO: 补齐 student 版本风险卡配置。本占位文件不包含正式风险卡文案、分值或触发条件。",
-  "riskCards": []
+  "_todo": "ENGINEERING_SAMPLE_ONLY: contains 3 sample risk cards from source logic. Not the complete formal 16-card set.",
+  "riskCards": [
+    {
+      "id": "H3_GROWTH_EXHAUSTION",
+      "title": "ENGINEERING_SAMPLE_H3_GROWTH_EXHAUSTION",
+      "mainText": "TODO_PLACEHOLDER",
+      "subText": "TODO_PLACEHOLDER",
+      "stingText": "TODO_PLACEHOLDER",
+      "priority": "high",
+      "baseTriggerScore": 30,
+      "relatedRisks": [
+        "R1_adaptation_risk",
+        "R4_quit_6_18_month_risk"
+      ],
+      "strongMatch": {
+        "workType": [
+          "GROWTH"
+        ]
+      },
+      "conditions": [
+        {
+          "type": "dimension",
+          "field": "V1_social_exhaustion",
+          "operator": "gte",
+          "value": 20,
+          "score": 20
+        },
+        {
+          "type": "dimension",
+          "field": "V2_rejection_conflict_exhaustion",
+          "operator": "gte",
+          "value": 20,
+          "score": 20
+        },
+        {
+          "type": "answer",
+          "field": "g1_1",
+          "operator": "in",
+          "value": [
+            "C",
+            "D"
+          ],
+          "score": 20
+        },
+        {
+          "type": "answer",
+          "field": "g1_2",
+          "operator": "in",
+          "value": [
+            "C",
+            "D"
+          ],
+          "score": 20
+        }
+      ],
+      "animationType": "growth_exhaustion",
+      "musicType": "high_risk"
+    },
+    {
+      "id": "H5_SOE_PROCESS_PRESSURE",
+      "title": "ENGINEERING_SAMPLE_H5_SOE_PROCESS_PRESSURE",
+      "mainText": "TODO_PLACEHOLDER",
+      "subText": "TODO_PLACEHOLDER",
+      "stingText": "TODO_PLACEHOLDER",
+      "priority": "high",
+      "baseTriggerScore": 30,
+      "relatedRisks": [
+        "R2_reality_gap_risk",
+        "R4_quit_6_18_month_risk"
+      ],
+      "strongMatch": {
+        "companyType": [
+          "SOE"
+        ]
+      },
+      "conditions": [
+        {
+          "type": "dimension",
+          "field": "V3_rule_process_pressure",
+          "operator": "gte",
+          "value": 20,
+          "score": 20
+        },
+        {
+          "type": "flag",
+          "field": "innovation_drive",
+          "operator": "eq",
+          "value": true,
+          "score": 5
+        },
+        {
+          "type": "answer",
+          "field": "f1_1",
+          "operator": "in",
+          "value": [
+            "C",
+            "D"
+          ],
+          "score": 20
+        },
+        {
+          "type": "answer",
+          "field": "f1_2",
+          "operator": "in",
+          "value": [
+            "C",
+            "D"
+          ],
+          "score": 20
+        },
+        {
+          "type": "answer",
+          "field": "f1_3",
+          "operator": "in",
+          "value": [
+            "C",
+            "D"
+          ],
+          "score": 20
+        }
+      ],
+      "animationType": "soe_process_pressure",
+      "musicType": "high_risk"
+    },
+    {
+      "id": "H16_EXAM_DELAY_PROBLEM",
+      "title": "ENGINEERING_SAMPLE_H16_EXAM_DELAY_PROBLEM",
+      "mainText": "TODO_PLACEHOLDER",
+      "subText": "TODO_PLACEHOLDER",
+      "stingText": "TODO_PLACEHOLDER",
+      "priority": "high",
+      "baseTriggerScore": 30,
+      "relatedRisks": [
+        "R2_reality_gap_risk",
+        "R3_direction_misjudgment_risk",
+        "R5_three_year_flexibility_risk"
+      ],
+      "conditions": [
+        {
+          "type": "answer",
+          "field": "postgraduate_exam",
+          "operator": "in",
+          "value": [
+            "both_exam_and_job",
+            "avoid_job_pressure"
+          ],
+          "score": 20
+        },
+        {
+          "type": "dimension",
+          "field": "V12_exam_delay_risk",
+          "operator": "gte",
+          "value": 15,
+          "score": 20
+        },
+        {
+          "type": "flag",
+          "field": "direction_unclear",
+          "operator": "eq",
+          "value": true,
+          "score": 5
+        },
+        {
+          "type": "dimension",
+          "field": "V8_job_action_misunderstanding",
+          "operator": "gte",
+          "value": 15,
+          "score": 20
+        },
+        {
+          "type": "finalRisk",
+          "field": "R3_direction_misjudgment_risk",
+          "operator": "gte",
+          "value": 40,
+          "score": 20
+        },
+        {
+          "type": "finalRisk",
+          "field": "R2_reality_gap_risk",
+          "operator": "gte",
+          "value": 40,
+          "score": 20
+        }
+      ],
+      "protectRules": [
+        {
+          "type": "field",
+          "field": "work_type",
+          "operator": "eq",
+          "value": "TECH"
+        },
+        {
+          "type": "answer",
+          "field": "postgraduate_exam",
+          "operator": "eq",
+          "value": "decided"
+        }
+      ],
+      "animationType": "exam_delay_problem",
+      "musicType": "high_risk"
+    }
+  ]
 }

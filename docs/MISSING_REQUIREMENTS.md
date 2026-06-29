@@ -2,7 +2,7 @@
 
 ## 1. 当前还缺哪些配置
 
-产品规格定义了配置目录和 schema，但当前项目尚未提供以下正式配置文件：
+产品规格定义了配置目录和 schema。当前已从 `docs/SOURCE_STUDENT_QUESTIONS.md` 工程化生成部分 student 配置，但仍不是完整正式配置。
 
 ```txt
 src/config/audiences/student/questions.json
@@ -16,7 +16,17 @@ src/config/audiences/student/labels.json
 src/config/audiences/student/test_cases.json
 ```
 
-这些配置不能由 Codex 自行编造为正式业务内容，尤其是完整题库、评分分值、风险卡文案和高刺痛分享文案。
+这些配置中仍含 TODO 标记，不能冒充正式业务内容，尤其是完整评分权重、完整 16 张风险卡文案和高刺痛分享文案。
+
+源题目检查结果：
+
+1. 已确认：`docs/SOURCE_STUDENT_QUESTIONS.md` 中没有 `Q1`、`Q2`、`Q3` 字样。
+2. 已确认：Q1-Q3 缺失不阻塞第一版，当前以 `SOURCE_STUDENT_QUESTIONS.md` 的 A/C/D/E/F/G 编号为准。
+3. 已确认：源文档题目编号从 `A1` 开始，当前 `questions.json` 整理源文档中已有的 A/C/D/E/F/G 题目。
+4. 已确认：`A9. 是否知道MBTI` 已按产品方确认的最小工程化选项写入 `questions.json`，字段为 `mbti_known`。
+5. 待补充：B1 / `mbti_type` 正式选项仍需产品方提供。
+6. 已确认：当前第一版可以先通过 `mbti_known=unknown` 进入 C 组快速倾向题。
+7. 待补充：`mbti_known=known` 后续需要 B1 承接。
 
 ## 2. 需要补齐或确认的字段
 
@@ -84,7 +94,8 @@ src/config/audiences/student/test_cases.json
 
 仍需后续补充确认：
 
-1. 正式题库、选项、顺序和 showWhen。
-2. 正式评分分值和风险卡业务内容。
-3. 风险卡专属动画素材是否提供。
-4. 加载页、风险指数页、服务页是否提供统一视觉素材。
+1. B1 / `mbti_type` 的正式题干、16 型选项和分流规则。
+2. 正式题库、选项、顺序和 showWhen。
+3. 正式评分权重和完整风险卡业务内容。
+4. 风险卡专属动画素材是否提供。
+5. 加载页、风险指数页、服务页是否提供统一视觉素材。

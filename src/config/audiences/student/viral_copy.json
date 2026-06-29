@@ -1,14 +1,19 @@
 {
-  "_todo": "TODO: 补齐 student 版本分享文案。defaultViralCopy 是 P0 必需兜底，但当前文字仍为占位，不是正式文案。",
+  "_todo": "ENGINEERING_SAMPLE_ONLY: placeholder viral copy structure. Formal copy must be supplied by product.",
   "pathShareCard": {
-    "title": "TODO",
+    "title": "TODO_PLACEHOLDER",
     "companyWarnings": {},
     "workWarnings": {},
-    "footer": "TODO"
+    "footer": "TODO_PLACEHOLDER"
   },
   "defaultViralCopy": {
-    "targetText": "TODO",
-    "copyText": "TODO"
+    "targetText": "DEFAULT_VIRAL_COPY_PLACEHOLDER",
+    "copyText": "DEFAULT_VIRAL_COPY_PLACEHOLDER"
   },
-  "viralCopies": {}
+  "viralCopies": {
+    "H16_EXAM_DELAY_PROBLEM": {
+      "targetText": "ENGINEERING_SAMPLE_H16_VIRAL_TARGET_PLACEHOLDER",
+      "copyText": "ENGINEERING_SAMPLE_H16_VIRAL_COPY_PLACEHOLDER"
+    }
+  }
 }
