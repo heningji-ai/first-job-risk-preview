@@ -101,6 +101,8 @@ if (riskCardCopyRaw._todo) {
   console.warn("[test-risk-logic] WARNING: risk_card_copy.json is ENGINEERING_PLACEHOLDER; copy is not formal");
 }
 
+console.log(`[test-risk-logic] risk card count: ${riskCards.length}`);
+
 let failed = 0;
 
 for (const testCase of testCases) {

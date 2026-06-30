@@ -276,6 +276,10 @@ if (scoringIsPlaceholder) {
   warn("scoring.json is TODO_PLACEHOLDER; scoring values are engineering-only");
 }
 
+if (riskCards.length !== 16) {
+  fail(`risk_cards.json must contain 16 H1-H16 risk cards, found ${riskCards.length}`);
+}
+
 for (const [riskKey, formula] of Object.entries(riskFormulas)) {
   if (riskKey.startsWith("direct_R")) {
     fail(`riskFormulas contains forbidden direct_R* key: ${riskKey}`);

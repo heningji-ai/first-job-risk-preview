@@ -1,9 +1,103 @@
 {
-  "_todo": "ENGINEERING_SAMPLE_ONLY: contains 3 sample risk cards from source logic. Not the complete formal 16-card set.",
+  "_todo": "INTERNAL_RULES_DRAFT_ONLY: H1-H16 internal trigger rules. Not formal final product judgment.",
   "riskCards": [
     {
+      "id": "H1_ADAPTATION_BREAK_RISK",
+      "title": "INTERNAL_DRAFT_H1_ADAPTATION_BREAK_RISK",
+      "mainText": "TODO_PLACEHOLDER",
+      "subText": "TODO_PLACEHOLDER",
+      "stingText": "TODO_PLACEHOLDER",
+      "priority": "medium",
+      "baseTriggerScore": 30,
+      "relatedRisks": [
+        "R1_adaptation_risk",
+        "R4_quit_6_18_month_risk"
+      ],
+      "conditions": [
+        {
+          "type": "finalRisk",
+          "field": "R1_adaptation_risk",
+          "operator": "gte",
+          "value": 40,
+          "score": 20
+        },
+        {
+          "type": "dimension",
+          "field": "V5_feedback_sensitivity",
+          "operator": "gte",
+          "value": 20,
+          "score": 15
+        },
+        {
+          "type": "dimension",
+          "field": "V7_low_initiative",
+          "operator": "gte",
+          "value": 20,
+          "score": 15
+        },
+        {
+          "type": "answer",
+          "field": "main_concern",
+          "operator": "eq",
+          "value": "adaptation_worry",
+          "score": 20
+        }
+      ],
+      "animationType": "adaptation_break",
+      "musicType": "high_risk"
+    },
+    {
+      "id": "H2_REALITY_GAP_RISK",
+      "title": "INTERNAL_DRAFT_H2_REALITY_GAP_RISK",
+      "mainText": "TODO_PLACEHOLDER",
+      "subText": "TODO_PLACEHOLDER",
+      "stingText": "TODO_PLACEHOLDER",
+      "priority": "medium",
+      "baseTriggerScore": 30,
+      "relatedRisks": [
+        "R2_reality_gap_risk",
+        "R3_direction_misjudgment_risk"
+      ],
+      "conditions": [
+        {
+          "type": "finalRisk",
+          "field": "R2_reality_gap_risk",
+          "operator": "gte",
+          "value": 40,
+          "score": 20
+        },
+        {
+          "type": "dimension",
+          "field": "V8_job_action_misunderstanding",
+          "operator": "gte",
+          "value": 20,
+          "score": 20
+        },
+        {
+          "type": "answer",
+          "field": "choice_reason",
+          "operator": "in",
+          "value": [
+            "growth_income",
+            "external_advice",
+            "uncertain_try"
+          ],
+          "score": 20
+        },
+        {
+          "type": "flag",
+          "field": "platform_motivation",
+          "operator": "eq",
+          "value": true,
+          "score": 5
+        }
+      ],
+      "animationType": "reality_gap",
+      "musicType": "medium_risk"
+    },
+    {
       "id": "H3_GROWTH_EXHAUSTION",
-      "title": "ENGINEERING_SAMPLE_H3_GROWTH_EXHAUSTION",
+      "title": "INTERNAL_DRAFT_H3_GROWTH_EXHAUSTION",
       "mainText": "TODO_PLACEHOLDER",
       "subText": "TODO_PLACEHOLDER",
       "stingText": "TODO_PLACEHOLDER",
@@ -58,8 +152,57 @@
       "musicType": "high_risk"
     },
     {
+      "id": "H4_DIRECTION_MISJUDGMENT_RISK",
+      "title": "INTERNAL_DRAFT_H4_DIRECTION_MISJUDGMENT_RISK",
+      "mainText": "TODO_PLACEHOLDER",
+      "subText": "TODO_PLACEHOLDER",
+      "stingText": "TODO_PLACEHOLDER",
+      "priority": "high",
+      "baseTriggerScore": 30,
+      "relatedRisks": [
+        "R3_direction_misjudgment_risk",
+        "R5_three_year_flexibility_risk"
+      ],
+      "conditions": [
+        {
+          "type": "finalRisk",
+          "field": "R3_direction_misjudgment_risk",
+          "operator": "gte",
+          "value": 40,
+          "score": 20
+        },
+        {
+          "type": "dimension",
+          "field": "V8_job_action_misunderstanding",
+          "operator": "gte",
+          "value": 20,
+          "score": 20
+        },
+        {
+          "type": "answer",
+          "field": "choice_reason",
+          "operator": "in",
+          "value": [
+            "external_advice",
+            "uncertain_try",
+            "major_related"
+          ],
+          "score": 20
+        },
+        {
+          "type": "flag",
+          "field": "external_choice",
+          "operator": "eq",
+          "value": true,
+          "score": 5
+        }
+      ],
+      "animationType": "direction_misjudgment",
+      "musicType": "high_risk"
+    },
+    {
       "id": "H5_SOE_PROCESS_PRESSURE",
-      "title": "ENGINEERING_SAMPLE_H5_SOE_PROCESS_PRESSURE",
+      "title": "INTERNAL_DRAFT_H5_SOE_PROCESS_PRESSURE",
       "mainText": "TODO_PLACEHOLDER",
       "subText": "TODO_PLACEHOLDER",
       "stingText": "TODO_PLACEHOLDER",
@@ -124,8 +267,505 @@
       "musicType": "high_risk"
     },
     {
+      "id": "H6_LOW_INITIATIVE_RISK",
+      "title": "INTERNAL_DRAFT_H6_LOW_INITIATIVE_RISK",
+      "mainText": "TODO_PLACEHOLDER",
+      "subText": "TODO_PLACEHOLDER",
+      "stingText": "TODO_PLACEHOLDER",
+      "priority": "medium",
+      "baseTriggerScore": 30,
+      "relatedRisks": [
+        "R1_adaptation_risk",
+        "R3_direction_misjudgment_risk",
+        "R4_quit_6_18_month_risk"
+      ],
+      "conditions": [
+        {
+          "type": "dimension",
+          "field": "V7_low_initiative",
+          "operator": "gte",
+          "value": 20,
+          "score": 25
+        },
+        {
+          "type": "dimension",
+          "field": "V6_execution_gap",
+          "operator": "gte",
+          "value": 20,
+          "score": 20
+        },
+        {
+          "type": "answer",
+          "field": "current_status",
+          "operator": "in",
+          "value": [
+            "student_internship",
+            "offer_not_started"
+          ],
+          "score": 10
+        },
+        {
+          "type": "finalRisk",
+          "field": "R1_adaptation_risk",
+          "operator": "gte",
+          "value": 40,
+          "score": 15
+        }
+      ],
+      "animationType": "low_initiative",
+      "musicType": "medium_risk"
+    },
+    {
+      "id": "H7_EXECUTION_GAP_RISK",
+      "title": "INTERNAL_DRAFT_H7_EXECUTION_GAP_RISK",
+      "mainText": "TODO_PLACEHOLDER",
+      "subText": "TODO_PLACEHOLDER",
+      "stingText": "TODO_PLACEHOLDER",
+      "priority": "medium",
+      "baseTriggerScore": 30,
+      "relatedRisks": [
+        "R1_adaptation_risk",
+        "R4_quit_6_18_month_risk",
+        "R5_three_year_flexibility_risk"
+      ],
+      "conditions": [
+        {
+          "type": "dimension",
+          "field": "V6_execution_gap",
+          "operator": "gte",
+          "value": 20,
+          "score": 25
+        },
+        {
+          "type": "dimension",
+          "field": "V7_low_initiative",
+          "operator": "gte",
+          "value": 20,
+          "score": 15
+        },
+        {
+          "type": "answer",
+          "field": "choice_reason",
+          "operator": "in",
+          "value": [
+            "growth_income",
+            "uncertain_try"
+          ],
+          "score": 15
+        },
+        {
+          "type": "finalRisk",
+          "field": "R4_quit_6_18_month_risk",
+          "operator": "gte",
+          "value": 40,
+          "score": 15
+        }
+      ],
+      "animationType": "execution_gap",
+      "musicType": "medium_risk"
+    },
+    {
+      "id": "H8_SOCIAL_COLLABORATION_EXHAUSTION_RISK",
+      "title": "INTERNAL_DRAFT_H8_SOCIAL_COLLABORATION_EXHAUSTION_RISK",
+      "mainText": "TODO_PLACEHOLDER",
+      "subText": "TODO_PLACEHOLDER",
+      "stingText": "TODO_PLACEHOLDER",
+      "priority": "medium",
+      "baseTriggerScore": 30,
+      "relatedRisks": [
+        "R1_adaptation_risk",
+        "R2_reality_gap_risk",
+        "R4_quit_6_18_month_risk"
+      ],
+      "conditions": [
+        {
+          "type": "dimension",
+          "field": "V1_social_exhaustion",
+          "operator": "gte",
+          "value": 20,
+          "score": 25
+        },
+        {
+          "type": "dimension",
+          "field": "V2_rejection_conflict_exhaustion",
+          "operator": "gte",
+          "value": 20,
+          "score": 20
+        },
+        {
+          "type": "dimension",
+          "field": "V5_feedback_sensitivity",
+          "operator": "gte",
+          "value": 20,
+          "score": 15
+        },
+        {
+          "type": "answer",
+          "field": "work_type",
+          "operator": "in",
+          "value": [
+            "GROWTH",
+            "CONTENT",
+            "PRODUCT_OPS"
+          ],
+          "score": 10
+        }
+      ],
+      "animationType": "social_collaboration_exhaustion",
+      "musicType": "medium_risk"
+    },
+    {
+      "id": "H9_FEEDBACK_SENSITIVITY_SELF_DOUBT_RISK",
+      "title": "INTERNAL_DRAFT_H9_FEEDBACK_SENSITIVITY_SELF_DOUBT_RISK",
+      "mainText": "TODO_PLACEHOLDER",
+      "subText": "TODO_PLACEHOLDER",
+      "stingText": "TODO_PLACEHOLDER",
+      "priority": "medium",
+      "baseTriggerScore": 30,
+      "relatedRisks": [
+        "R1_adaptation_risk",
+        "R4_quit_6_18_month_risk"
+      ],
+      "conditions": [
+        {
+          "type": "dimension",
+          "field": "V5_feedback_sensitivity",
+          "operator": "gte",
+          "value": 20,
+          "score": 25
+        },
+        {
+          "type": "dimension",
+          "field": "V2_rejection_conflict_exhaustion",
+          "operator": "gte",
+          "value": 20,
+          "score": 15
+        },
+        {
+          "type": "answer",
+          "field": "main_concern",
+          "operator": "in",
+          "value": [
+            "interview_fail",
+            "adaptation_worry"
+          ],
+          "score": 20
+        },
+        {
+          "type": "finalRisk",
+          "field": "R4_quit_6_18_month_risk",
+          "operator": "gte",
+          "value": 40,
+          "score": 10
+        }
+      ],
+      "animationType": "feedback_sensitivity_self_doubt",
+      "musicType": "medium_risk"
+    },
+    {
+      "id": "H10_PEER_PLATFORM_ANXIETY_RISK",
+      "title": "INTERNAL_DRAFT_H10_PEER_PLATFORM_ANXIETY_RISK",
+      "mainText": "TODO_PLACEHOLDER",
+      "subText": "TODO_PLACEHOLDER",
+      "stingText": "TODO_PLACEHOLDER",
+      "priority": "medium",
+      "baseTriggerScore": 30,
+      "relatedRisks": [
+        "R2_reality_gap_risk",
+        "R3_direction_misjudgment_risk",
+        "R5_three_year_flexibility_risk"
+      ],
+      "conditions": [
+        {
+          "type": "dimension",
+          "field": "V10_peer_platform_anxiety",
+          "operator": "gte",
+          "value": 20,
+          "score": 25
+        },
+        {
+          "type": "dimension",
+          "field": "V11_education_filter_pressure",
+          "operator": "gte",
+          "value": 20,
+          "score": 15
+        },
+        {
+          "type": "answer",
+          "field": "choice_reason",
+          "operator": "in",
+          "value": [
+            "external_advice",
+            "stability"
+          ],
+          "score": 15
+        },
+        {
+          "type": "flag",
+          "field": "platform_motivation",
+          "operator": "eq",
+          "value": true,
+          "score": 5
+        }
+      ],
+      "animationType": "peer_platform_anxiety",
+      "musicType": "medium_risk"
+    },
+    {
+      "id": "H11_EDUCATION_FILTER_PRESSURE_RISK",
+      "title": "INTERNAL_DRAFT_H11_EDUCATION_FILTER_PRESSURE_RISK",
+      "mainText": "TODO_PLACEHOLDER",
+      "subText": "TODO_PLACEHOLDER",
+      "stingText": "TODO_PLACEHOLDER",
+      "priority": "medium",
+      "baseTriggerScore": 30,
+      "relatedRisks": [
+        "R3_direction_misjudgment_risk",
+        "R5_three_year_flexibility_risk"
+      ],
+      "conditions": [
+        {
+          "type": "dimension",
+          "field": "V11_education_filter_pressure",
+          "operator": "gte",
+          "value": 20,
+          "score": 25
+        },
+        {
+          "type": "answer",
+          "field": "education",
+          "operator": "in",
+          "value": [
+            "associate_or_below",
+            "regular_bachelor"
+          ],
+          "score": 20
+        },
+        {
+          "type": "answer",
+          "field": "company_type",
+          "operator": "in",
+          "value": [
+            "SOE",
+            "MNC",
+            "PLATFORM"
+          ],
+          "score": 15
+        },
+        {
+          "type": "answer",
+          "field": "main_concern",
+          "operator": "eq",
+          "value": "no_offer",
+          "score": 15
+        }
+      ],
+      "protectRules": [
+        {
+          "type": "answer",
+          "field": "education",
+          "operator": "in",
+          "value": [
+            "key_university",
+            "master_or_above",
+            "overseas"
+          ]
+        }
+      ],
+      "animationType": "education_filter_pressure",
+      "musicType": "medium_risk"
+    },
+    {
+      "id": "H12_STABILITY_PREFERENCE_MISMATCH_RISK",
+      "title": "INTERNAL_DRAFT_H12_STABILITY_PREFERENCE_MISMATCH_RISK",
+      "mainText": "TODO_PLACEHOLDER",
+      "subText": "TODO_PLACEHOLDER",
+      "stingText": "TODO_PLACEHOLDER",
+      "priority": "medium",
+      "baseTriggerScore": 30,
+      "relatedRisks": [
+        "R2_reality_gap_risk",
+        "R3_direction_misjudgment_risk",
+        "R4_quit_6_18_month_risk",
+        "R5_three_year_flexibility_risk"
+      ],
+      "conditions": [
+        {
+          "type": "answer",
+          "field": "choice_reason",
+          "operator": "eq",
+          "value": "stability",
+          "score": 25
+        },
+        {
+          "type": "dimension",
+          "field": "V10_peer_platform_anxiety",
+          "operator": "gte",
+          "value": 20,
+          "score": 15
+        },
+        {
+          "type": "finalRisk",
+          "field": "R2_reality_gap_risk",
+          "operator": "gte",
+          "value": 40,
+          "score": 15
+        },
+        {
+          "type": "flag",
+          "field": "stability_motivation",
+          "operator": "eq",
+          "value": true,
+          "score": 5
+        }
+      ],
+      "animationType": "stability_preference_mismatch",
+      "musicType": "medium_risk"
+    },
+    {
+      "id": "H13_MAJOR_PATH_SWING_RISK",
+      "title": "INTERNAL_DRAFT_H13_MAJOR_PATH_SWING_RISK",
+      "mainText": "TODO_PLACEHOLDER",
+      "subText": "TODO_PLACEHOLDER",
+      "stingText": "TODO_PLACEHOLDER",
+      "priority": "medium",
+      "baseTriggerScore": 30,
+      "relatedRisks": [
+        "R2_reality_gap_risk",
+        "R3_direction_misjudgment_risk",
+        "R5_three_year_flexibility_risk"
+      ],
+      "conditions": [
+        {
+          "type": "answer",
+          "field": "choice_reason",
+          "operator": "eq",
+          "value": "major_related",
+          "score": 20
+        },
+        {
+          "type": "dimension",
+          "field": "V8_job_action_misunderstanding",
+          "operator": "gte",
+          "value": 20,
+          "score": 20
+        },
+        {
+          "type": "dimension",
+          "field": "V11_education_filter_pressure",
+          "operator": "gte",
+          "value": 20,
+          "score": 15
+        },
+        {
+          "type": "finalRisk",
+          "field": "R3_direction_misjudgment_risk",
+          "operator": "gte",
+          "value": 40,
+          "score": 15
+        }
+      ],
+      "animationType": "major_path_swing",
+      "musicType": "medium_risk"
+    },
+    {
+      "id": "H14_GROWTH_SPEED_MISJUDGMENT_RISK",
+      "title": "INTERNAL_DRAFT_H14_GROWTH_SPEED_MISJUDGMENT_RISK",
+      "mainText": "TODO_PLACEHOLDER",
+      "subText": "TODO_PLACEHOLDER",
+      "stingText": "TODO_PLACEHOLDER",
+      "priority": "medium",
+      "baseTriggerScore": 30,
+      "relatedRisks": [
+        "R2_reality_gap_risk",
+        "R3_direction_misjudgment_risk",
+        "R5_three_year_flexibility_risk"
+      ],
+      "conditions": [
+        {
+          "type": "answer",
+          "field": "choice_reason",
+          "operator": "eq",
+          "value": "growth_income",
+          "score": 20
+        },
+        {
+          "type": "dimension",
+          "field": "V10_peer_platform_anxiety",
+          "operator": "gte",
+          "value": 20,
+          "score": 15
+        },
+        {
+          "type": "dimension",
+          "field": "V8_job_action_misunderstanding",
+          "operator": "gte",
+          "value": 20,
+          "score": 20
+        },
+        {
+          "type": "flag",
+          "field": "growth_motivation",
+          "operator": "eq",
+          "value": true,
+          "score": 5
+        }
+      ],
+      "animationType": "growth_speed_misjudgment",
+      "musicType": "medium_risk"
+    },
+    {
+      "id": "H15_LOW_TOLERANCE_ROLE_PRESSURE_RISK",
+      "title": "INTERNAL_DRAFT_H15_LOW_TOLERANCE_ROLE_PRESSURE_RISK",
+      "mainText": "TODO_PLACEHOLDER",
+      "subText": "TODO_PLACEHOLDER",
+      "stingText": "TODO_PLACEHOLDER",
+      "priority": "medium",
+      "baseTriggerScore": 30,
+      "relatedRisks": [
+        "R1_adaptation_risk",
+        "R2_reality_gap_risk",
+        "R4_quit_6_18_month_risk"
+      ],
+      "conditions": [
+        {
+          "type": "answer",
+          "field": "work_type",
+          "operator": "in",
+          "value": [
+            "FUNCTION",
+            "TECH"
+          ],
+          "score": 15
+        },
+        {
+          "type": "dimension",
+          "field": "V5_feedback_sensitivity",
+          "operator": "gte",
+          "value": 20,
+          "score": 15
+        },
+        {
+          "type": "dimension",
+          "field": "V6_execution_gap",
+          "operator": "gte",
+          "value": 20,
+          "score": 20
+        },
+        {
+          "type": "dimension",
+          "field": "V8_job_action_misunderstanding",
+          "operator": "gte",
+          "value": 20,
+          "score": 15
+        }
+      ],
+      "animationType": "low_tolerance_role_pressure",
+      "musicType": "medium_risk"
+    },
+    {
       "id": "H16_EXAM_DELAY_PROBLEM",
-      "title": "ENGINEERING_SAMPLE_H16_EXAM_DELAY_PROBLEM",
+      "title": "INTERNAL_DRAFT_H16_EXAM_DELAY_PROBLEM",
       "mainText": "TODO_PLACEHOLDER",
       "subText": "TODO_PLACEHOLDER",
       "stingText": "TODO_PLACEHOLDER",
