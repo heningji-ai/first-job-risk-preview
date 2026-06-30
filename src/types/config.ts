@@ -35,6 +35,7 @@ export type QuestionOption = {
   id: string;
   text: string;
   label?: string;
+  description?: string;
   scores?: {
     dimensions?: Record<string, number>;
     directR?: Record<string, number>;
