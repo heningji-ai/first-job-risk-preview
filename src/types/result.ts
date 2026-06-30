@@ -1,5 +1,7 @@
 import type { AudienceType } from "./config";
+import type { RiskCardEngineResult } from "./riskCard";
 import type { RiskLevel } from "./session";
+import type { StoredTestSession } from "./session";
 
 export type ScoreDetail = {
   actualScore: number;
@@ -33,4 +35,11 @@ export type ResultDraft = {
   finalRiskScores: Record<string, FinalRiskScore>;
   warnings: string[];
   createdAt: string;
+};
+
+export type ResultPageData = {
+  session: StoredTestSession;
+  resultDraft: ResultDraft;
+  riskCardResult: RiskCardEngineResult;
+  warnings: string[];
 };

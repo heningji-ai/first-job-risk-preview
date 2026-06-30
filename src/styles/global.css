@@ -35,7 +35,8 @@ button:disabled {
 }
 
 .app-shell,
-.test-shell {
+.test-shell,
+.result-shell {
   min-height: 100vh;
   padding: 24px;
 }
@@ -46,6 +47,11 @@ button:disabled {
 }
 
 .test-shell {
+  display: flex;
+  justify-content: center;
+}
+
+.result-shell {
   display: flex;
   justify-content: center;
 }
@@ -205,9 +211,79 @@ p {
   overflow-wrap: anywhere;
 }
 
+.result-panel-wide {
+  width: min(100%, 880px);
+}
+
+.inline-warning {
+  margin-top: 12px;
+  padding: 12px;
+  border-left: 3px solid #9c5a00;
+  background: #fff7eb;
+  color: #65400b;
+}
+
+.result-section {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.result-section h2 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 0;
+}
+
+.risk-card-list {
+  display: grid;
+  gap: 12px;
+}
+
+.risk-card-debug {
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid #d8dde3;
+  border-radius: 8px;
+  background: #f8fafb;
+}
+
+.risk-card-debug h3 {
+  margin: 0;
+  font-size: 16px;
+  letter-spacing: 0;
+  overflow-wrap: anywhere;
+}
+
+.risk-card-debug dl {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+}
+
+.risk-card-debug dt,
+.warning-list {
+  color: #5d6b78;
+}
+
+.risk-card-debug dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.warning-list {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 20px;
+  overflow-wrap: anywhere;
+}
+
 @media (max-width: 520px) {
   .app-shell,
-  .test-shell {
+  .test-shell,
+  .result-shell {
     padding: 16px;
   }
 
