@@ -78,10 +78,12 @@ const { evaluateRiskCards } = (await import(riskCardEngineUrl)) as RiskCardModul
 const questionsRaw = readJson("questions.json");
 const scoring = readJson("scoring.json") as ScoringConfig & { _todo?: string };
 const riskCardsRaw = readJson("risk_cards.json");
+const riskCardCopyRaw = readJson("risk_card_copy.json");
 const testCasesRaw = readJson("test_cases.json");
 
 const questions = asArray<Question>(questionsRaw.questions ?? questionsRaw);
 const riskCards = asArray<RiskCard>(riskCardsRaw.riskCards ?? riskCardsRaw);
+const riskCardCopies = (riskCardCopyRaw.riskCardCopies ?? {}) as Record<string, { status?: string }>;
 const testCases = asArray<TestCase>(testCasesRaw.testCases ?? testCasesRaw);
 
 if (testCases.length === 0) {
@@ -94,6 +96,9 @@ if (scoring._todo) {
 }
 if (riskCardsRaw._todo) {
   console.warn("[test-risk-logic] WARNING: risk_cards.json is ENGINEERING_SAMPLE_ONLY; output is engineering-only");
+}
+if (riskCardCopyRaw._todo) {
+  console.warn("[test-risk-logic] WARNING: risk_card_copy.json is ENGINEERING_PLACEHOLDER; copy is not formal");
 }
 
 let failed = 0;
@@ -124,6 +129,12 @@ for (const testCase of testCases) {
 
   const triggeredIds = riskResult.triggeredRiskCards.map((card) => card.cardId);
   const topIds = riskResult.topRiskCards.map((card) => card.cardId);
+  const topCopyResults = riskResult.topRiskCards.map((card) => {
+    const copy = riskCardCopies[card.cardId];
+    if (!copy) return `${card.cardId}:missing`;
+    if (copy.status === "ENGINEERING_PLACEHOLDER") return `${card.cardId}:copy-found-placeholder`;
+    return `${card.cardId}:copy-found`;
+  });
   const protectedIds = riskResult.protectedCards.map((card) => card.cardId);
   const skippedIds = riskResult.skippedCards.map((card) => card.cardId);
   const warnings = [...resultDraft.warnings, ...riskResult.warnings];
@@ -132,6 +143,7 @@ for (const testCase of testCases) {
   console.log(`  answered question count: ${resultDraft.answeredCount}`);
   console.log(`  triggeredRiskCards ids: ${formatIds(triggeredIds)}`);
   console.log(`  topRiskCards ids: ${formatIds(topIds)}`);
+  console.log(`  topRiskCards copy: ${formatIds(topCopyResults)}`);
   console.log(`  protected / skipped ids: ${formatIds([...protectedIds, ...skippedIds])}`);
   console.log(`  warnings: ${warnings.length > 0 ? warnings.join(", ") : "(none)"}`);
 }

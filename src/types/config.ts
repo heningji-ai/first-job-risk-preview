@@ -22,7 +22,7 @@ export type AudienceType =
   | "career_change"
   | "manager";
 
-export type RuleOperator = "eq" | "neq" | "in" | "not_in" | "gte" | "lte";
+export type RuleOperator = "eq" | "neq" | "in" | "not_in" | "gte" | "lte" | "gt" | "lt";
 export type ShowWhenOperator = "eq" | "neq" | "in" | "not_in" | "equals" | "notEquals" | "notIn";
 
 export type ShowWhenRule = {

@@ -28,6 +28,7 @@ const requiredFiles = [
   "questions.json",
   "scoring.json",
   "risk_cards.json",
+  "risk_card_copy.json",
   "result_copy.json",
   "viral_copy.json",
   "animation_map.json",
@@ -82,6 +83,34 @@ function findBadPlaceholders(value: unknown, trail = "$"): string[] {
   return typeof value === "string" && value.includes("????") ? [trail] : [];
 }
 
+function findBadText(value: unknown, pattern: RegExp, trail = "$"): string[] {
+  if (Array.isArray(value)) {
+    return value.flatMap((item, index) => findBadText(item, pattern, `${trail}[${index}]`));
+  }
+
+  if (value && typeof value === "object") {
+    return Object.entries(value).flatMap(([key, nested]) => findBadText(nested, pattern, `${trail}.${key}`));
+  }
+
+  return typeof value === "string" && pattern.test(value) ? [trail] : [];
+}
+
+function findForbiddenKeys(value: unknown, forbiddenKeys: Set<string>, trail = "$"): string[] {
+  if (Array.isArray(value)) {
+    return value.flatMap((item, index) => findForbiddenKeys(item, forbiddenKeys, `${trail}[${index}]`));
+  }
+
+  if (value && typeof value === "object") {
+    return Object.entries(value).flatMap(([key, nested]) => {
+      const currentTrail = `${trail}.${key}`;
+      const currentMatch = forbiddenKeys.has(key) ? [currentTrail] : [];
+      return [...currentMatch, ...findForbiddenKeys(nested, forbiddenKeys, currentTrail)];
+    });
+  }
+
+  return [];
+}
+
 console.log(`[validate-config] audience_type=${audienceType}`);
 
 if (!fs.existsSync(configDir)) {
@@ -111,8 +140,10 @@ for (const fileName of requiredFiles) {
 const questions = asArray(configs["questions.json"]?.questions ?? configs["questions.json"]);
 const scoring = configs["scoring.json"] ?? {};
 const riskCards = asArray(configs["risk_cards.json"]?.riskCards ?? configs["risk_cards.json"]);
+const riskCardCopy = configs["risk_card_copy.json"] ?? {};
 const viralCopy = configs["viral_copy.json"] ?? {};
 const testCases = asArray(configs["test_cases.json"]?.testCases ?? configs["test_cases.json"]);
+const riskCardCopies = (riskCardCopy.riskCardCopies ?? {}) as JsonObject;
 
 const questionIds = new Set<string>();
 const flagKeys = new Set<string>();
@@ -123,6 +154,20 @@ const scoringIsPlaceholder = typeof scoring._todo === "string";
 const riskCardIds = new Set<string>();
 const companyTypeOptions = new Set<string>();
 const workTypeOptions = new Set<string>();
+const requiredRiskCardCopyFields = [
+  "cardId",
+  "displayName",
+  "oneLineRiskPrompt",
+  "typicalScenes",
+  "notSaying",
+  "riskReductionActions",
+  "preChoiceValidationChecklist",
+  "whoToAsk",
+  "jiGeCanHelpWith",
+  "resultShortCopy",
+  "shareShortCopy",
+  "status"
+];
 
 for (const question of questions) {
   if (typeof question.id !== "string" || question.id.length === 0) {
@@ -193,6 +238,39 @@ for (const [fileName, config] of Object.entries(configs)) {
   }
 }
 
+const badMojibakePattern = /鏈|寰|鍐|涓|���/;
+for (const badPath of findBadText(riskCardCopy, badMojibakePattern)) {
+  fail(`risk_card_copy.json contains mojibake at ${badPath}`);
+}
+
+const formalJudgmentPattern = /你就是|你的职业诊断是|你不适合|必须放弃/;
+for (const badPath of findBadText(riskCardCopy, formalJudgmentPattern)) {
+  fail(`risk_card_copy.json contains formal judgment wording at ${badPath}`);
+}
+
+const forbiddenRiskCardCopyKeys = new Set([
+  "triggerBoundary",
+  "protectBoundary",
+  "strongMatch",
+  "primaryRiskSignals",
+  "auxiliarySignals",
+  "matchedSignals",
+  "score",
+  "finalRisk",
+  "dimension",
+  "conditions",
+  "protectRules",
+  "priority",
+  "test_cases"
+]);
+for (const badPath of findForbiddenKeys(riskCardCopy, forbiddenRiskCardCopyKeys)) {
+  fail(`risk_card_copy.json contains internal-only field at ${badPath}`);
+}
+
+if (!riskCardCopies.H0_GENERAL_REMINDER) {
+  fail("risk_card_copy.json is missing H0_GENERAL_REMINDER");
+}
+
 const riskFormulas = scoring.riskFormulas ?? {};
 if (scoringIsPlaceholder) {
   warn("scoring.json is TODO_PLACEHOLDER; scoring values are engineering-only");
@@ -256,6 +334,15 @@ for (const card of riskCards) {
   }
   riskCardIds.add(card.id);
 
+  const cardCopy = riskCardCopies[card.id] as JsonObject | undefined;
+  if (!cardCopy) {
+    fail(`risk_card_copy.json is missing copy for risk card: ${card.id}`);
+  } else {
+    if (cardCopy.cardId !== card.id) {
+      fail(`risk_card_copy.json cardId mismatch for ${card.id}`);
+    }
+  }
+
   const conditions = asArray(card.conditions);
   if (!conditions.some((condition) => primaryRiskTypes.has(condition.type))) {
     fail(`risk card ${card.id} has no answer/dimension/finalRisk primary signal`);
@@ -307,6 +394,21 @@ for (const card of riskCards) {
 
   if (!viralCopy.viralCopies?.[card.id]) {
     warn(`risk card ${card.id} has no dedicated viral copy; defaultViralCopy will be used`);
+  }
+}
+
+for (const [copyId, copy] of Object.entries(riskCardCopies)) {
+  const copyObject = copy as JsonObject;
+  if (copyObject.cardId !== copyId) {
+    fail(`risk_card_copy.json entry ${copyId} must include matching cardId`);
+  }
+  for (const field of requiredRiskCardCopyFields) {
+    if (!(field in copyObject)) {
+      fail(`risk_card_copy.json entry ${copyId} is missing required field: ${field}`);
+    }
+  }
+  if (copyObject.status === "ENGINEERING_PLACEHOLDER") {
+    warn(`risk_card_copy.json copy for ${copyId} is ENGINEERING_PLACEHOLDER`);
   }
 }
 
