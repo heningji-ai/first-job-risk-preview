@@ -414,6 +414,51 @@ p {
   font-size: 13px;
 }
 
+.cta-card {
+  gap: 16px;
+  border-color: #cfe1da;
+  background: #fbfdfc;
+}
+
+.cta-card h4 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  line-height: 1.4;
+  letter-spacing: 0;
+}
+
+.cta-steps {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding-left: 22px;
+}
+
+.copy-script {
+  margin: 0;
+  padding: 14px;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  border: 1px solid #d8dde3;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #172026;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.copy-action-row {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.copy-status {
+  color: #5d6b78;
+  font-size: 13px;
+}
+
 .risk-card-debug {
   display: grid;
   gap: 10px;
