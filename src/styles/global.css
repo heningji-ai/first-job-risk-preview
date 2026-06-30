@@ -332,6 +332,10 @@ p {
   padding: 18px;
 }
 
+.result-risk-card-compact {
+  gap: 14px;
+}
+
 .result-card-header {
   display: grid;
   gap: 6px;
@@ -363,6 +367,24 @@ p {
 .result-card-block {
   display: grid;
   gap: 8px;
+}
+
+.result-more-details {
+  padding-top: 4px;
+}
+
+.result-more-details summary {
+  cursor: pointer;
+  color: #172026;
+  font-weight: 600;
+}
+
+.result-more-content {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+  padding-top: 14px;
+  border-top: 1px solid #edf0f2;
 }
 
 .result-text-list,
@@ -414,10 +436,18 @@ p {
   font-size: 13px;
 }
 
+.result-limit-card {
+  gap: 8px;
+}
+
 .cta-card {
   gap: 16px;
   border-color: #cfe1da;
   background: #fbfdfc;
+}
+
+.cta-card-compact {
+  gap: 12px;
 }
 
 .cta-card h4 {
@@ -432,6 +462,10 @@ p {
   gap: 12px;
 }
 
+.cta-entry-list-compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
 .cta-entry {
   display: grid;
   gap: 8px;
@@ -439,6 +473,11 @@ p {
   border: 1px solid #d8dde3;
   border-radius: 8px;
   background: #ffffff;
+}
+
+.cta-entry-compact {
+  gap: 6px;
+  padding: 12px;
 }
 
 .cta-entry h3 {
@@ -470,6 +509,12 @@ p {
   margin: 0;
   color: #172026;
   overflow-wrap: anywhere;
+}
+
+.cta-placeholder-text {
+  color: #5d6b78;
+  font-size: 13px;
+  line-height: 1.5;
 }
 
 .risk-card-debug {
@@ -566,5 +611,9 @@ p {
 
   .result-risk-card h3 {
     font-size: 18px;
+  }
+
+  .cta-entry-list-compact {
+    grid-template-columns: 1fr;
   }
 }

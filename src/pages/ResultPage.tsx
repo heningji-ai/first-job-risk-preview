@@ -32,38 +32,34 @@ type QuestionsConfigFile = {
 
 const QUESTION_CONFIG = questionsConfig as QuestionsConfigFile;
 const FALLBACK_RISK_CARD_ID = "H0_GENERAL_REMINDER";
+const MAX_VISIBLE_VALIDATION_ITEMS = 3;
 
 const RESULT_TEXT = {
   title: "第一份工作风险预演结果",
   intro: "这是基于你当前答题生成的风险预演，不是正式职业诊断。",
   basicChoice: "你的基础选择",
-  riskFocus: "这次最需要留意的主风险",
+  riskFocus: "这次最需要先验证的一件事",
   riskCardLabel: "风险预演卡",
   fallbackLabel: "兜底提醒",
+  validationTitle: "下一步先验证这 3 件事",
+  moreDetails: "展开看更多解释",
   typicalScenes: "典型场景",
   notSaying: "这不是在说你什么",
   riskReductionActions: "降低风险的做法",
-  nextStep: "下一步你要验证什么",
   whoToAsk: "可以找谁验证",
-  jiGeCanHelpWith: "找猎头季哥可以帮你判断什么",
+  jiGeCanHelpWith: "找猎头季哥可以帮你看什么",
   shareLine: "适合分享的一句话",
   currentLimits: "当前结果怎么看",
-  limitOne: "当前文案仍是 PRODUCT_DRAFT，需要产品方终审后才能升级为 APPROVED。",
-  limitTwo: "风险规则仍是 draft，结果不能替代真实岗位访谈、面试判断和职业咨询。",
-  limitThree: "本页只整理展示风险预演信息，没有新增分享、登录、支付或后端链路。",
+  limitSummary: "当前结果仍是产品草稿，只适合作为求职前的风险预演，不能替代真实岗位访谈、面试判断和职业咨询。",
   ctaTitle: "找工作还有其他卡点，可以继续看",
   ctaIntro:
-    "这次结果只是一次风险预演。如果你在找工作中还有方向选择、简历修改、面试准备、Offer 判断、试用期适应等问题，可以继续关注「猎头季哥人才重估实验室」。如果你想进一步沟通自己的具体情况，也可以添加猎头季哥企业微信。",
+    "如果你还在纠结方向、简历、面试、Offer 或试用期问题，可以继续关注「猎头季哥人才重估实验室」，也可以添加猎头季哥企业微信进一步说明情况。",
   publicAccountLabel: "公众号",
   publicAccountName: "猎头季哥人才重估实验室",
-  publicAccountDescription: "适合继续看求职判断、面试准备、岗位选择和职场适应相关内容。",
   wecomLabel: "企业微信",
   wecomName: "猎头季哥",
-  wecomPlaceholderLabel: "微信 / 二维码",
   wecomPlaceholder: "【上线前补充】",
-  wecomDescription: "适合想进一步说明自己当前求职卡点的人。",
-  ctaBoundary:
-    "说明：关注公众号或添加企业微信，不等于已经进入一对一服务。具体是否需要进一步沟通，以你的实际问题和后续沟通为准。"
+  ctaBoundary: "关注公众号或添加企业微信，不等于进入一对一服务，是否进一步沟通以后续实际问题为准。"
 };
 
 const TEXT = {
@@ -72,9 +68,6 @@ const TEXT = {
   restart: "请返回首页重新开始一次测试。",
   home: "返回首页",
   complete: "测试完成",
-  title: "第一份工作风险预演结果",
-  intro: "这是基于当前答题结果生成的风险预演，不是正式职业诊断。",
-  basicInfo: "基础信息",
   answeredCount: "已回答题目数量",
   audienceType: "测试人群",
   currentStatus: "当前状态",
@@ -84,15 +77,7 @@ const TEXT = {
   choiceReason: "选择原因",
   mainConcern: "主要担心",
   examStatus: "考研/考公状态",
-  riskPreview: "风险预演",
-  nextStep: "下一步你要验证什么",
-  shareLine: "适合分享的一句话",
-  currentLimits: "当前限制说明",
-  limitOne: "当前文案仍是 PRODUCT_DRAFT，需要产品方终审后才能升级为 APPROVED。",
-  limitTwo: "风险卡规则仍是 draft，结果不能替代真实岗位访谈、面试判断和职业咨询。",
-  limitThree: "本页展示文案来自 risk_card_copy.json，不参与风险触发判断。",
   noValue: "未填写",
-  fallbackLabel: "兜底提醒",
   debugInfo: "开发调试信息",
   warnings: "工程 warnings",
   warningTypes: "关键 warning 类型"
@@ -145,11 +130,12 @@ function TextList({ items, className }: { items: string[]; className?: string })
   );
 }
 
-function RiskCopyCard({ item }: { item: ResolvedRiskCardCopy }) {
+function PrimaryRiskSummary({ item }: { item: ResolvedRiskCardCopy }) {
   const { copy, isFallback } = item;
+  const visibleValidationItems = copy.preChoiceValidationChecklist.slice(0, MAX_VISIBLE_VALIDATION_ITEMS);
 
   return (
-    <article className="result-risk-card">
+    <article className="result-risk-card result-risk-card-compact">
       <div className="result-card-header">
         <p className="eyebrow">{isFallback ? RESULT_TEXT.fallbackLabel : RESULT_TEXT.riskCardLabel}</p>
         <h3>{copy.displayName}</h3>
@@ -158,40 +144,45 @@ function RiskCopyCard({ item }: { item: ResolvedRiskCardCopy }) {
       <p className="risk-prompt">{copy.oneLineRiskPrompt}</p>
       <p className="section-note">{copy.resultShortCopy}</p>
 
-      <section className="result-card-block" aria-label={RESULT_TEXT.typicalScenes}>
-        <h4>{RESULT_TEXT.typicalScenes}</h4>
-        <TextList items={copy.typicalScenes} />
+      <section className="result-card-block result-next-step" aria-label={RESULT_TEXT.validationTitle}>
+        <h4>{RESULT_TEXT.validationTitle}</h4>
+        <TextList items={visibleValidationItems} className="validation-list" />
       </section>
 
-      <section className="result-card-block" aria-label={RESULT_TEXT.notSaying}>
-        <h4>{RESULT_TEXT.notSaying}</h4>
-        <p>{copy.notSaying}</p>
-      </section>
+      <details className="result-more-details">
+        <summary>{RESULT_TEXT.moreDetails}</summary>
+        <div className="result-more-content">
+          <section className="result-card-block" aria-label={RESULT_TEXT.typicalScenes}>
+            <h4>{RESULT_TEXT.typicalScenes}</h4>
+            <TextList items={copy.typicalScenes} />
+          </section>
 
-      <section className="result-card-block" aria-label={RESULT_TEXT.riskReductionActions}>
-        <h4>{RESULT_TEXT.riskReductionActions}</h4>
-        <TextList items={copy.riskReductionActions} />
-      </section>
+          <section className="result-card-block" aria-label={RESULT_TEXT.notSaying}>
+            <h4>{RESULT_TEXT.notSaying}</h4>
+            <p>{copy.notSaying}</p>
+          </section>
 
-      <section className="result-card-block result-next-step" aria-label={RESULT_TEXT.nextStep}>
-        <h4>{RESULT_TEXT.nextStep}</h4>
-        <TextList items={copy.preChoiceValidationChecklist} className="validation-list" />
-        <div className="verification-meta">
-          <p>
-            <strong>{RESULT_TEXT.whoToAsk}</strong>
-            <span>{copy.whoToAsk}</span>
-          </p>
-          <p>
-            <strong>{RESULT_TEXT.jiGeCanHelpWith}</strong>
-            <span>{copy.jiGeCanHelpWith}</span>
-          </p>
+          <section className="result-card-block" aria-label={RESULT_TEXT.riskReductionActions}>
+            <h4>{RESULT_TEXT.riskReductionActions}</h4>
+            <TextList items={copy.riskReductionActions} />
+          </section>
+
+          <section className="result-card-block" aria-label={RESULT_TEXT.whoToAsk}>
+            <h4>{RESULT_TEXT.whoToAsk}</h4>
+            <p>{copy.whoToAsk}</p>
+          </section>
+
+          <section className="result-card-block" aria-label={RESULT_TEXT.jiGeCanHelpWith}>
+            <h4>{RESULT_TEXT.jiGeCanHelpWith}</h4>
+            <p>{copy.jiGeCanHelpWith}</p>
+          </section>
+
+          <section className="result-card-block share-copy" aria-label={RESULT_TEXT.shareLine}>
+            <h4>{RESULT_TEXT.shareLine}</h4>
+            <p>{copy.shareShortCopy}</p>
+          </section>
         </div>
-      </section>
-
-      <section className="result-card-block share-copy" aria-label={RESULT_TEXT.shareLine}>
-        <h4>{RESULT_TEXT.shareLine}</h4>
-        <p>{copy.shareShortCopy}</p>
-      </section>
+      </details>
     </article>
   );
 }
@@ -266,43 +257,33 @@ function ResultPage({ testSessionId }: ResultPageProps) {
 
         <section className="result-section" aria-labelledby="risk-preview-title">
           <h2 id="risk-preview-title">{RESULT_TEXT.riskFocus}</h2>
-          <RiskCopyCard item={presentation.primaryRiskCardCopy} />
+          <PrimaryRiskSummary item={presentation.primaryRiskCardCopy} />
         </section>
 
-        <section className="result-section result-card-section cta-card" aria-labelledby="cta-title">
+        <section className="result-section result-card-section result-limit-card" aria-labelledby="limit-title">
+          <h2 id="limit-title">{RESULT_TEXT.currentLimits}</h2>
+          <p>{RESULT_TEXT.limitSummary}</p>
+        </section>
+
+        <section className="result-section result-card-section cta-card cta-card-compact" aria-labelledby="cta-title">
           <p className="eyebrow">继续看求职判断</p>
           <h2 id="cta-title">{RESULT_TEXT.ctaTitle}</h2>
           <p>{RESULT_TEXT.ctaIntro}</p>
 
-          <div className="cta-entry-list">
-            <section className="cta-entry" aria-label={RESULT_TEXT.publicAccountLabel}>
+          <div className="cta-entry-list cta-entry-list-compact">
+            <section className="cta-entry cta-entry-compact" aria-label={RESULT_TEXT.publicAccountLabel}>
               <p className="cta-entry-label">{RESULT_TEXT.publicAccountLabel}</p>
               <h3>{RESULT_TEXT.publicAccountName}</h3>
-              <p>{RESULT_TEXT.publicAccountDescription}</p>
             </section>
 
-            <section className="cta-entry" aria-label={RESULT_TEXT.wecomLabel}>
+            <section className="cta-entry cta-entry-compact" aria-label={RESULT_TEXT.wecomLabel}>
               <p className="cta-entry-label">{RESULT_TEXT.wecomLabel}</p>
               <h3>{RESULT_TEXT.wecomName}</h3>
-              <dl className="cta-placeholder">
-                <div>
-                  <dt>{RESULT_TEXT.wecomPlaceholderLabel}</dt>
-                  <dd>{RESULT_TEXT.wecomPlaceholder}</dd>
-                </div>
-              </dl>
-              <p>{RESULT_TEXT.wecomDescription}</p>
+              <p className="cta-placeholder-text">{RESULT_TEXT.wecomPlaceholder}</p>
             </section>
           </div>
 
           <p className="section-note">{RESULT_TEXT.ctaBoundary}</p>
-        </section>
-
-        <section className="result-section result-card-section" aria-labelledby="limit-title">
-          <h2 id="limit-title">{RESULT_TEXT.currentLimits}</h2>
-          <p>{RESULT_TEXT.limitOne}</p>
-          <p>{RESULT_TEXT.limitTwo}</p>
-          <p>{RESULT_TEXT.limitThree}</p>
-          <p className="copy-status-note">当前 copy 状态：{presentation.copyStatusSummary}</p>
         </section>
 
         {isDev ? (
@@ -318,6 +299,10 @@ function ResultPage({ testSessionId }: ResultPageProps) {
               <div>
                 <dt>{TEXT.warningTypes}</dt>
                 <dd>{presentation.warningSummary.join(", ") || "(none)"}</dd>
+              </div>
+              <div>
+                <dt>risk card copy status</dt>
+                <dd>{presentation.copyStatusSummary}</dd>
               </div>
             </dl>
             <details className="debug-details">
