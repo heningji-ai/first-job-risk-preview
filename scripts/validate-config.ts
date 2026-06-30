@@ -36,6 +36,8 @@ const requiredFiles = [
   "test_cases.json"
 ];
 
+let hasError = false;
+
 function readJson(fileName: string): JsonObject {
   const filePath = path.join(configDir, fileName);
   return JSON.parse(fs.readFileSync(filePath, "utf8"));
@@ -43,6 +45,15 @@ function readJson(fileName: string): JsonObject {
 
 function asArray(value: unknown): JsonObject[] {
   return Array.isArray(value) ? value : [];
+}
+
+function fail(message: string): void {
+  console.error(`[validate-config] ERROR: ${message}`);
+  hasError = true;
+}
+
+function warn(message: string): void {
+  console.warn(`[validate-config] WARNING: ${message}`);
 }
 
 function hasDirectRPrefix(value: unknown): boolean {
@@ -65,42 +76,25 @@ function findBadPlaceholders(value: unknown, trail = "$"): string[] {
   }
 
   if (value && typeof value === "object") {
-    return Object.entries(value).flatMap(([key, nested]) =>
-      findBadPlaceholders(nested, `${trail}.${key}`)
-    );
+    return Object.entries(value).flatMap(([key, nested]) => findBadPlaceholders(nested, `${trail}.${key}`));
   }
 
-  if (typeof value === "string" && value.includes("????")) {
-    return [trail];
-  }
-
-  return [];
-}
-
-function fail(message: string): void {
-  console.error(`[validate-config] ERROR: ${message}`);
-  hasError = true;
-}
-
-function warn(message: string): void {
-  console.warn(`[validate-config] WARNING: ${message}`);
+  return typeof value === "string" && value.includes("????") ? [trail] : [];
 }
 
 console.log(`[validate-config] audience_type=${audienceType}`);
 
 if (!fs.existsSync(configDir)) {
-  console.error(`[validate-config] ERROR: 配置目录不存在: ${configDir}`);
+  fail(`missing config directory: ${configDir}`);
   process.exit(1);
 }
 
-let hasError = false;
 const configs: Record<string, JsonObject> = {};
 
 for (const fileName of requiredFiles) {
   const filePath = path.join(configDir, fileName);
-
   if (!fs.existsSync(filePath)) {
-    fail(`缺少配置文件 ${fileName}`);
+    fail(`missing config file: ${fileName}`);
     continue;
   }
 
@@ -109,7 +103,7 @@ for (const fileName of requiredFiles) {
     const marker = "_todo" in configs[fileName];
     console.log(`[validate-config] OK: ${fileName}${marker ? " (TODO marked)" : ""}`);
   } catch (error) {
-    fail(`${fileName} 不是合法 JSON`);
+    fail(`${fileName} is not valid JSON`);
     console.error(error);
   }
 }
@@ -122,40 +116,46 @@ const testCases = asArray(configs["test_cases.json"]?.testCases ?? configs["test
 
 const questionIds = new Set<string>();
 const flagKeys = new Set<string>();
+const directRKeysFromQuestions = new Set<string>();
 const dimensionKeys = new Set<string>(asArray(scoring.dimensions).map(String));
 const finalRiskKeys = new Set<string>(asArray(scoring.finalRisks).map(String));
+const scoringIsPlaceholder = typeof scoring._todo === "string";
 
 for (const question of questions) {
   if (typeof question.id !== "string" || question.id.length === 0) {
-    fail("存在缺少 id 的 question");
+    fail("question is missing id");
     continue;
   }
 
   if (questionIds.has(question.id)) {
-    fail(`question id 重复: ${question.id}`);
+    fail(`duplicate question id: ${question.id}`);
   }
   questionIds.add(question.id);
 
   const optionIds = new Set<string>();
   for (const option of asArray(question.options)) {
     if (typeof option.id !== "string") {
-      fail(`question ${question.id} 存在缺少 id 的 option`);
+      fail(`question ${question.id} has option without id`);
       continue;
     }
     if (optionIds.has(option.id)) {
-      fail(`question ${question.id} 内 option id 重复: ${option.id}`);
+      fail(`duplicate option id in question ${question.id}: ${option.id}`);
     }
     optionIds.add(option.id);
 
     for (const dimensionKey of Object.keys(option.scores?.dimensions ?? {})) {
       if (!dimensionKeys.has(dimensionKey)) {
-        fail(`question ${question.id} 引用了不存在的 dimension: ${dimensionKey}`);
+        fail(`question ${question.id} references missing dimension: ${dimensionKey}`);
       }
     }
 
     for (const riskKey of Object.keys(option.scores?.directR ?? {})) {
+      directRKeysFromQuestions.add(riskKey);
+      if (riskKey.startsWith("direct_R")) {
+        fail(`question ${question.id} uses forbidden direct_R* key: ${riskKey}`);
+      }
       if (!finalRiskKeys.has(riskKey)) {
-        fail(`question ${question.id} 引用了不存在的 directR/finalRisk: ${riskKey}`);
+        fail(`question ${question.id} references missing directR/finalRisk: ${riskKey}`);
       }
     }
 
@@ -168,90 +168,125 @@ for (const question of questions) {
 for (const question of questions) {
   for (const rule of asArray(question.showWhen)) {
     if (typeof rule.field === "string" && !questionIds.has(rule.field) && !BASE_FIELDS.has(rule.field)) {
-      fail(`question ${question.id} 的 showWhen.field 不合法: ${rule.field}`);
+      fail(`question ${question.id} has invalid showWhen.field: ${rule.field}`);
     }
   }
 }
 
 for (const [fileName, config] of Object.entries(configs)) {
   if (hasDirectRPrefix(config)) {
-    fail(`${fileName} 中出现 direct_R* 命名`);
+    fail(`${fileName} contains forbidden direct_R* naming`);
   }
 
   for (const badPath of findBadPlaceholders(config)) {
-    fail(`${fileName} 中存在 ???? 乱码: ${badPath}`);
+    fail(`${fileName} contains bad placeholder text at ${badPath}`);
+  }
+}
+
+const riskFormulas = scoring.riskFormulas ?? {};
+if (scoringIsPlaceholder) {
+  warn("scoring.json is TODO_PLACEHOLDER; scoring values are engineering-only");
+}
+
+for (const [riskKey, formula] of Object.entries(riskFormulas)) {
+  if (riskKey.startsWith("direct_R")) {
+    fail(`riskFormulas contains forbidden direct_R* key: ${riskKey}`);
+  }
+  if (!finalRiskKeys.has(riskKey)) {
+    fail(`riskFormulas key is not listed in finalRisks: ${riskKey}`);
+  }
+
+  if (Number((formula as JsonObject).directRWeight ?? 0) > 0 && !directRKeysFromQuestions.has(riskKey)) {
+    const message = `riskFormula ${riskKey} uses directRWeight, but no question option provides ${riskKey}`;
+    if (scoringIsPlaceholder) {
+      warn(message);
+    } else {
+      fail(message);
+    }
+  }
+
+  for (const dimensionKey of Object.keys((formula as JsonObject).dimensionWeights ?? {})) {
+    if (!dimensionKeys.has(dimensionKey)) {
+      fail(`riskFormula ${riskKey} references missing dimension: ${dimensionKey}`);
+    }
   }
 }
 
 const mbtiKnownQuestion = questions.find((question) => question.id === "mbti_known");
 if (!mbtiKnownQuestion) {
-  fail("questions.json 缺少 mbti_known / A9");
+  fail("questions.json is missing mbti_known / A9");
 } else {
   const optionIds = new Set(asArray(mbtiKnownQuestion.options).map((option) => option.id));
   if (!optionIds.has("known") || !optionIds.has("unknown")) {
-    fail("mbti_known 必须包含 known 和 unknown 两个选项");
+    fail("mbti_known must include known and unknown options");
   }
 }
 
 const hasMbtiType = questions.some((question) => question.id === "mbti_type" || question.sourceCode === "B1");
 if (!hasMbtiType) {
-  warn("B1 / mbti_type 尚未配置，当前 mbti_known=known 需要后续承接");
+  warn("B1 / mbti_type is not configured yet; this is allowed in V1");
 }
 
 if (!viralCopy.defaultViralCopy?.targetText || !viralCopy.defaultViralCopy?.copyText) {
-  fail("viral_copy.json 缺少必填 defaultViralCopy.targetText/copyText");
+  fail("viral_copy.json is missing required defaultViralCopy.targetText/copyText");
 }
 
 for (const card of riskCards) {
   if (typeof card.id !== "string") {
-    fail("存在缺少 id 的 risk card");
+    fail("risk card is missing id");
     continue;
   }
 
   const conditions = asArray(card.conditions);
   if (!conditions.some((condition) => primaryRiskTypes.has(condition.type))) {
-    fail(`risk card ${card.id} 没有 answer/dimension/finalRisk 主风险信号，不能只靠 flag/field 触发`);
+    fail(`risk card ${card.id} has no answer/dimension/finalRisk primary signal`);
   }
 
   for (const riskKey of asArray(card.relatedRisks).map(String)) {
     if (!finalRiskKeys.has(riskKey)) {
-      fail(`risk card ${card.id} relatedRisks 引用不存在: ${riskKey}`);
+      fail(`risk card ${card.id} references missing relatedRisk: ${riskKey}`);
     }
   }
 
   for (const condition of conditions) {
     if (condition.type === "answer" && !questionIds.has(condition.field) && !BASE_FIELDS.has(condition.field)) {
-      fail(`risk card ${card.id} answer condition field 不合法: ${condition.field}`);
+      fail(`risk card ${card.id} has invalid answer field: ${condition.field}`);
     }
     if (condition.type === "dimension" && !dimensionKeys.has(condition.field)) {
-      fail(`risk card ${card.id} dimension condition field 不合法: ${condition.field}`);
+      fail(`risk card ${card.id} has invalid dimension field: ${condition.field}`);
     }
     if (condition.type === "finalRisk" && !finalRiskKeys.has(condition.field)) {
-      fail(`risk card ${card.id} finalRisk condition field 不合法: ${condition.field}`);
+      fail(`risk card ${card.id} has invalid finalRisk field: ${condition.field}`);
     }
     if (condition.type === "flag" && !flagKeys.has(condition.field)) {
-      warn(`risk card ${card.id} 使用了尚未由 questions 产生的 flag: ${condition.field}`);
+      warn(`risk card ${card.id} uses flag not produced by questions: ${condition.field}`);
     }
     if (condition.type === "field" && !BASE_FIELDS.has(condition.field) && !questionIds.has(condition.field)) {
-      fail(`risk card ${card.id} field condition field 不合法: ${condition.field}`);
+      fail(`risk card ${card.id} has invalid field condition: ${condition.field}`);
     }
   }
 
   for (const rule of asArray(card.protectRules)) {
     if (rule.score === undefined) {
-      console.log(`[validate-config] OK: ${card.id} protectRule 不要求 score`);
+      console.log(`[validate-config] OK: ${card.id} protectRule does not require score`);
     }
   }
 
   if (!viralCopy.viralCopies?.[card.id]) {
-    warn(`risk card ${card.id} 缺少专属 viral copy，将使用 defaultViralCopy`);
+    warn(`risk card ${card.id} has no dedicated viral copy; defaultViralCopy will be used`);
   }
 }
 
 for (const testCase of testCases) {
   for (const cardId of asArray(testCase.expected?.mustTrigger)) {
     if (!riskCards.some((card) => card.id === cardId)) {
-      fail(`test case ${testCase.id} mustTrigger 引用不存在的风险卡: ${cardId}`);
+      fail(`test case ${testCase.id} mustTrigger references missing risk card: ${cardId}`);
+    }
+  }
+
+  for (const riskKey of Object.keys(testCase.expected?.riskLevels ?? {})) {
+    if (!finalRiskKeys.has(riskKey)) {
+      fail(`test case ${testCase.id} riskLevels references missing finalRisk: ${riskKey}`);
     }
   }
 }
