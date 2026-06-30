@@ -59,7 +59,7 @@ type RiskCardCopy = {
   jiGeCanHelpWith: string;
   resultShortCopy: string;
   shareShortCopy: string;
-  status: "ENGINEERING_PLACEHOLDER" | "FORMAL";
+  status: "ENGINEERING_PLACEHOLDER" | "PRODUCT_DRAFT" | "APPROVED";
 };
 ```
 
@@ -109,7 +109,11 @@ type RiskCardCopy = {
 - 不写正式职业建议。
 - 不把工程示例包装成正式判断。
 
-`status = ENGINEERING_PLACEHOLDER` 时，校验脚本只输出 warning，不作为 error。
+`status` 说明：
+
+- `ENGINEERING_PLACEHOLDER`：工程占位，只输出 warning，不作为 error。
+- `PRODUCT_DRAFT`：产品文案草稿，可以进入工程联调，但不是最终上线确认稿。
+- `APPROVED`：产品方最终确认后才能使用。
 
 ## 7. 后续迁移方式
 
@@ -126,6 +130,7 @@ type RiskCardCopy = {
 9. 将“找猎头季哥可以帮你判断什么”迁移到 `jiGeCanHelpWith`。
 10. 将结果页短文案迁移到 `resultShortCopy`。
 11. 将分享页短文案迁移到 `shareShortCopy` 或同步到 `viral_copy.json`。
-12. 产品方确认后再把 `status` 改为 `FORMAL`。
+12. 本阶段迁移后可将 H1-H16 的 `status` 标记为 `PRODUCT_DRAFT`。
+13. 产品方最终确认后再把 `status` 改为 `APPROVED`。
 
 正式迁移完成前，结果页仍应保留工程占位或非正式判断提示。

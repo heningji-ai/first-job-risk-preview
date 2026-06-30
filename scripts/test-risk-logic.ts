@@ -98,7 +98,7 @@ if (riskCardsRaw._todo) {
   console.warn("[test-risk-logic] WARNING: risk_cards.json is ENGINEERING_SAMPLE_ONLY; output is engineering-only");
 }
 if (riskCardCopyRaw._todo) {
-  console.warn("[test-risk-logic] WARNING: risk_card_copy.json is ENGINEERING_PLACEHOLDER; copy is not formal");
+  console.warn("[test-risk-logic] WARNING: risk_card_copy.json is draft copy; copy is not approved final product copy");
 }
 
 console.log(`[test-risk-logic] risk card count: ${riskCards.length}`);
@@ -134,8 +134,7 @@ for (const testCase of testCases) {
   const topCopyResults = riskResult.topRiskCards.map((card) => {
     const copy = riskCardCopies[card.cardId];
     if (!copy) return `${card.cardId}:missing`;
-    if (copy.status === "ENGINEERING_PLACEHOLDER") return `${card.cardId}:copy-found-placeholder`;
-    return `${card.cardId}:copy-found`;
+    return `${card.cardId}:copy-found:${copy.status ?? "UNKNOWN_STATUS"}`;
   });
   const protectedIds = riskResult.protectedCards.map((card) => card.cardId);
   const skippedIds = riskResult.skippedCards.map((card) => card.cardId);

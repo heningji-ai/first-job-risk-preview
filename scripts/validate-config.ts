@@ -168,6 +168,7 @@ const requiredRiskCardCopyFields = [
   "shareShortCopy",
   "status"
 ];
+const allowedRiskCardCopyStatuses = new Set(["ENGINEERING_PLACEHOLDER", "PRODUCT_DRAFT", "APPROVED"]);
 
 for (const question of questions) {
   if (typeof question.id !== "string" || question.id.length === 0) {
@@ -246,6 +247,11 @@ for (const badPath of findBadText(riskCardCopy, badMojibakePattern)) {
 const formalJudgmentPattern = /你就是|你的职业诊断是|你不适合|必须放弃/;
 for (const badPath of findBadText(riskCardCopy, formalJudgmentPattern)) {
   fail(`risk_card_copy.json contains formal judgment wording at ${badPath}`);
+}
+
+const hardSalesPattern = /立即咨询|购买服务|领取方案|限时优惠|保证上岸|保证入职|包过面试/;
+for (const badPath of findBadText(riskCardCopy, hardSalesPattern)) {
+  fail(`risk_card_copy.json contains hard sales wording at ${badPath}`);
 }
 
 const forbiddenRiskCardCopyKeys = new Set([
@@ -410,6 +416,9 @@ for (const [copyId, copy] of Object.entries(riskCardCopies)) {
     if (!(field in copyObject)) {
       fail(`risk_card_copy.json entry ${copyId} is missing required field: ${field}`);
     }
+  }
+  if (!allowedRiskCardCopyStatuses.has(String(copyObject.status))) {
+    fail(`risk_card_copy.json entry ${copyId} has invalid status: ${copyObject.status}`);
   }
   if (copyObject.status === "ENGINEERING_PLACEHOLDER") {
     warn(`risk_card_copy.json copy for ${copyId} is ENGINEERING_PLACEHOLDER`);

@@ -1,4 +1,4 @@
-export type RiskCardCopyStatus = "ENGINEERING_PLACEHOLDER" | "FORMAL";
+export type RiskCardCopyStatus = "ENGINEERING_PLACEHOLDER" | "PRODUCT_DRAFT" | "APPROVED";
 
 export type RiskCardCopy = {
   cardId: string;
