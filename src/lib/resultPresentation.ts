@@ -1,5 +1,6 @@
 import type { ResultPageData, ScoreMap } from "../types/result";
 import type { RiskCardEvaluation, TopRiskCard } from "../types/riskCard";
+import type { ResolvedRiskCardCopy } from "./riskCardCopyResolver";
 
 export type RiskCardViewModel = {
   cardId: string;
@@ -89,4 +90,9 @@ export function buildDebugKeySummary(data: ResultPageData): Array<{ label: strin
       value: data.riskCardResult.skippedCards.map((card) => card.cardId).join(", ") || "(none)"
     }
   ];
+}
+
+export function buildRiskCopyStatusSummary(cards: ResolvedRiskCardCopy[]): string {
+  const statuses = [...new Set(cards.map((card) => card.copy.status))];
+  return statuses.length > 0 ? statuses.join(", ") : "(none)";
 }

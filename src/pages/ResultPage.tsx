@@ -1,15 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
 import { navigateTo } from "../lib/router";
-import {
-  buildDebugKeySummary,
-  buildRiskCardViewModels,
-  buildTriggeredRiskCardViewModels,
-  summarizeWarnings
-} from "../lib/resultPresentation";
+import { buildDebugKeySummary, buildRiskCopyStatusSummary, summarizeWarnings } from "../lib/resultPresentation";
 import { buildResultPageData } from "../lib/resultPipeline";
+import { resolveTopRiskCardCopies } from "../lib/riskCardCopyResolver";
 import { getStoredSession } from "../lib/sessionStorage";
+import type { ResolvedRiskCardCopy } from "../lib/riskCardCopyResolver";
 import type { ResultPageData } from "../types/result";
-import type { RiskCardViewModel } from "../lib/resultPresentation";
 import type { StoredTestSession } from "../types/session";
 
 type ResultPageProps = {
@@ -17,62 +13,88 @@ type ResultPageProps = {
 };
 
 const TEXT = {
-  notFound: "\u672a\u627e\u5230\u6d4b\u8bd5\u8bb0\u5f55",
-  unavailable: "\u8fd9\u4e2a\u7ed3\u679c\u6682\u65f6\u4e0d\u53ef\u7528",
-  restart: "\u8bf7\u8fd4\u56de\u9996\u9875\u91cd\u65b0\u5f00\u59cb\u4e00\u6b21\u6d4b\u8bd5\u3002",
-  home: "\u8fd4\u56de\u9996\u9875",
-  complete: "\u6d4b\u8bd5\u5b8c\u6210",
-  title: "\u7ed3\u679c\u9875\u4fe1\u606f\u7ed3\u6784\u5360\u4f4d\u7248",
-  sampleNotice:
-    "\u5f53\u524d\u98ce\u9669\u5361\u4e3a\u5de5\u7a0b\u793a\u4f8b\uff0c\u4e0d\u4ee3\u8868\u6b63\u5f0f\u804c\u4e1a\u5224\u65ad\u3002",
-  engineeringOnly:
-    "\u5f53\u524d\u7ed3\u679c\u4ec5\u7528\u4e8e\u5de5\u7a0b\u94fe\u8def\u9a8c\u8bc1\uff0c\u4e0d\u53ef\u4f5c\u4e3a\u6b63\u5f0f\u4ea7\u54c1\u5224\u65ad\u3002",
-  answeredCount: "\u5df2\u56de\u7b54\u9898\u76ee\u6570\u91cf",
-  basicInfo: "\u57fa\u7840\u4fe1\u606f",
-  riskPreview: "\u98ce\u9669\u9884\u89c8",
-  riskPreviewNotice:
-    "\u4ee5\u4e0b\u98ce\u9669\u5361\u4e3a\u5de5\u7a0b\u793a\u4f8b\uff0c\u4ec5\u7528\u4e8e\u9a8c\u8bc1\u89e6\u53d1\u94fe\u8def\u3002",
-  triggerExplain: "\u5de5\u7a0b\u89e6\u53d1\u89e3\u91ca",
-  currentLimits: "\u5f53\u524d\u9650\u5236",
-  warningCount: "\u5de5\u7a0b warnings \u6570\u91cf",
-  keyWarnings: "\u5173\u952e warning \u7c7b\u578b",
-  allWarnings: "\u67e5\u770b\u5168\u90e8\u5de5\u7a0b warnings",
-  debugInfo: "\u5f00\u53d1\u8c03\u8bd5\u4fe1\u606f",
-  fallbackYes: "\u662f",
-  fallbackNo: "\u5426"
+  notFound: "未找到测试记录",
+  unavailable: "这个结果暂时不可用",
+  restart: "请返回首页重新开始一次测试。",
+  home: "返回首页",
+  complete: "测试完成",
+  title: "第一份工作风险预演结果",
+  intro: "这是基于当前答题结果生成的风险预演，不是正式职业诊断。",
+  basicInfo: "基础信息",
+  answeredCount: "已回答题目数量",
+  audienceType: "测试人群",
+  currentStatus: "当前状态",
+  education: "学历背景",
+  companyType: "关注公司类型",
+  workType: "关注工作类型",
+  choiceReason: "选择原因",
+  mainConcern: "主要担心",
+  examStatus: "考研/考公状态",
+  riskPreview: "风险预演",
+  nextStep: "下一步你要验证什么",
+  shareLine: "适合分享的一句话",
+  currentLimits: "当前限制说明",
+  limitOne: "当前文案仍是 PRODUCT_DRAFT，需要产品方终审后才能升级为 APPROVED。",
+  limitTwo: "风险卡规则仍是 draft，结果不能替代真实岗位访谈、面试判断和职业咨询。",
+  limitThree: "本页展示文案来自 risk_card_copy.json，不参与风险触发判断。",
+  noValue: "未填写",
+  fallbackLabel: "兜底提醒",
+  debugInfo: "开发调试信息",
+  warnings: "工程 warnings",
+  warningTypes: "关键 warning 类型"
 };
 
-function RiskCardBlock({ card, showTriggered }: { card: RiskCardViewModel; showTriggered?: boolean }) {
+const BASIC_FIELD_LABELS: Array<{ key: string; label: string }> = [
+  { key: "current_status", label: TEXT.currentStatus },
+  { key: "education", label: TEXT.education },
+  { key: "company_type", label: TEXT.companyType },
+  { key: "work_type", label: TEXT.workType },
+  { key: "choice_reason", label: TEXT.choiceReason },
+  { key: "main_concern", label: TEXT.mainConcern },
+  { key: "postgraduate_exam", label: TEXT.examStatus }
+];
+
+function TextList({ items }: { items: string[] }) {
+  if (items.length === 0) return <p>{TEXT.noValue}</p>;
+  return (
+    <ul className="warning-list">
+      {items.map((item) => (
+        <li key={item}>{item}</li>
+      ))}
+    </ul>
+  );
+}
+
+function RiskCopyCard({ item }: { item: ResolvedRiskCardCopy }) {
+  const { copy, isFallback } = item;
+
   return (
     <article className="risk-card-debug">
-      <h3>{card.cardId}</h3>
-      <p>{card.title}</p>
-      <dl>
-        {showTriggered ? (
-          <div>
-            <dt>triggered</dt>
-            <dd>{String(card.triggered)}</dd>
-          </div>
-        ) : null}
-        <div>
-          <dt>score</dt>
-          <dd>{card.score}</dd>
-        </div>
-        <div>
-          <dt>matchedSignals</dt>
-          <dd>{card.matchedSignals}</dd>
-        </div>
-        <div>
-          <dt>H0 fallback</dt>
-          <dd>{card.isFallback ? TEXT.fallbackYes : TEXT.fallbackNo}</dd>
-        </div>
-        {card.skippedReason ? (
-          <div>
-            <dt>skippedReason</dt>
-            <dd>{card.skippedReason}</dd>
-          </div>
-        ) : null}
-      </dl>
+      <p className="eyebrow">{isFallback ? TEXT.fallbackLabel : copy.status}</p>
+      <h3>{copy.displayName}</h3>
+      <p>{copy.oneLineRiskPrompt}</p>
+      <p>{copy.resultShortCopy}</p>
+
+      <h4>典型场景</h4>
+      <TextList items={copy.typicalScenes} />
+
+      <h4>不是在说你什么</h4>
+      <p>{copy.notSaying}</p>
+
+      <h4>降低风险的做法</h4>
+      <TextList items={copy.riskReductionActions} />
+
+      <section aria-label={TEXT.nextStep}>
+        <h4>{TEXT.nextStep}</h4>
+        <TextList items={copy.preChoiceValidationChecklist} />
+        <p>{copy.whoToAsk}</p>
+        <p>{copy.jiGeCanHelpWith}</p>
+      </section>
+
+      <section aria-label={TEXT.shareLine}>
+        <h4>{TEXT.shareLine}</h4>
+        <p>{copy.shareShortCopy}</p>
+      </section>
     </article>
   );
 }
@@ -80,6 +102,7 @@ function RiskCardBlock({ card, showTriggered }: { card: RiskCardViewModel; showT
 function ResultPage({ testSessionId }: ResultPageProps) {
   const [session, setSession] = useState<StoredTestSession | undefined>();
   const [resultData, setResultData] = useState<ResultPageData | undefined>();
+  const isDev = (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV === true;
 
   useEffect(() => {
     const storedSession = getStoredSession(testSessionId);
@@ -89,12 +112,10 @@ function ResultPage({ testSessionId }: ResultPageProps) {
 
   const presentation = useMemo(() => {
     if (!resultData) return undefined;
+    const topRiskCardCopies = resolveTopRiskCardCopies(resultData.riskCardResult.topRiskCards);
     return {
-      topRiskCards: buildRiskCardViewModels(
-        resultData.riskCardResult.topRiskCards,
-        resultData.riskCardResult.evaluatedCards
-      ),
-      triggeredRiskCards: buildTriggeredRiskCardViewModels(resultData.riskCardResult.triggeredRiskCards),
+      topRiskCardCopies,
+      copyStatusSummary: buildRiskCopyStatusSummary(topRiskCardCopies),
       warningSummary: summarizeWarnings(resultData.warnings),
       debugKeys: buildDebugKeySummary(resultData)
     };
@@ -121,88 +142,72 @@ function ResultPage({ testSessionId }: ResultPageProps) {
         <section className="result-hero" aria-labelledby="result-title">
           <p className="eyebrow">{TEXT.complete}</p>
           <h1 id="result-title">{TEXT.title}</h1>
-          <p className="inline-warning">{TEXT.engineeringOnly}</p>
-          <p className="inline-notice">{TEXT.sampleNotice}</p>
+          <p className="inline-warning">{TEXT.intro}</p>
         </section>
 
         <section className="result-section" aria-labelledby="basic-info-title">
           <h2 id="basic-info-title">{TEXT.basicInfo}</h2>
           <dl className="result-list result-list-compact">
             <div>
-              <dt>testSessionId</dt>
-              <dd>{session.id}</dd>
-            </div>
-            <div>
-              <dt>audienceType</dt>
+              <dt>{TEXT.audienceType}</dt>
               <dd>{session.audienceType}</dd>
             </div>
             <div>
               <dt>{TEXT.answeredCount}</dt>
               <dd>{resultData.resultDraft.answeredCount}</dd>
             </div>
+            {BASIC_FIELD_LABELS.map((field) => (
+              <div key={field.key}>
+                <dt>{field.label}</dt>
+                <dd>{session.answers[field.key] ?? TEXT.noValue}</dd>
+              </div>
+            ))}
           </dl>
         </section>
 
         <section className="result-section" aria-labelledby="risk-preview-title">
           <h2 id="risk-preview-title">{TEXT.riskPreview}</h2>
-          <p className="section-note">{TEXT.riskPreviewNotice}</p>
           <div className="risk-card-list">
-            {presentation.topRiskCards.map((card) => (
-              <RiskCardBlock card={card} key={card.cardId} />
+            {presentation.topRiskCardCopies.map((item) => (
+              <RiskCopyCard item={item} key={item.cardId} />
             ))}
-          </div>
-        </section>
-
-        <section className="result-section" aria-labelledby="trigger-explain-title">
-          <h2 id="trigger-explain-title">{TEXT.triggerExplain}</h2>
-          <div className="risk-card-list">
-            {presentation.triggeredRiskCards.length > 0 ? (
-              presentation.triggeredRiskCards.map((card) => (
-                <RiskCardBlock card={card} key={card.cardId} showTriggered />
-              ))
-            ) : (
-              <p>(none)</p>
-            )}
           </div>
         </section>
 
         <section className="result-section" aria-labelledby="limit-title">
           <h2 id="limit-title">{TEXT.currentLimits}</h2>
+          <p>{TEXT.limitOne}</p>
+          <p>{TEXT.limitTwo}</p>
+          <p>{TEXT.limitThree}</p>
           <dl className="result-list result-list-compact">
             <div>
-              <dt>{TEXT.warningCount}</dt>
-              <dd>{resultData.warnings.length}</dd>
-            </div>
-            <div>
-              <dt>{TEXT.keyWarnings}</dt>
-              <dd>{presentation.warningSummary.join(", ") || "(none)"}</dd>
+              <dt>copy status</dt>
+              <dd>{presentation.copyStatusSummary}</dd>
             </div>
           </dl>
-          <details className="debug-details">
-            <summary>{TEXT.allWarnings}</summary>
-            {resultData.warnings.length > 0 ? (
-              <ul className="warning-list">
-                {resultData.warnings.map((warning, index) => (
-                  <li key={`${warning}-${index}`}>{warning}</li>
-                ))}
-              </ul>
-            ) : (
-              <p>(none)</p>
-            )}
-          </details>
         </section>
 
-        <details className="debug-details">
-          <summary>{TEXT.debugInfo}</summary>
-          <dl className="result-list result-list-compact">
-            {presentation.debugKeys.map((item) => (
-              <div key={item.label}>
-                <dt>{item.label}</dt>
-                <dd>{item.value}</dd>
+        {isDev ? (
+          <details className="debug-details">
+            <summary>{TEXT.debugInfo}</summary>
+            <dl className="result-list result-list-compact">
+              {presentation.debugKeys.map((item) => (
+                <div key={item.label}>
+                  <dt>{item.label}</dt>
+                  <dd>{item.value}</dd>
+                </div>
+              ))}
+              <div>
+                <dt>{TEXT.warningTypes}</dt>
+                <dd>{presentation.warningSummary.join(", ") || "(none)"}</dd>
               </div>
-            ))}
-          </dl>
-        </details>
+            </dl>
+            <details className="debug-details">
+              <summary>{TEXT.warnings}</summary>
+              {resultData.warnings.length > 0 ? <TextList items={resultData.warnings} /> : <p>(none)</p>}
+            </details>
+          </details>
+        ) : null}
 
         <button className="secondary-button" type="button" onClick={() => navigateTo("/")}>
           {TEXT.home}
