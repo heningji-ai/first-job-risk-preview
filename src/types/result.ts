@@ -27,6 +27,7 @@ export type ResultDraft = {
   testSessionId: string;
   audienceType: AudienceType;
   answeredCount: number;
+  flags?: Record<string, boolean | string>;
   directRiskScores: ScoreMap;
   dimensionScores: ScoreMap;
   finalRiskScores: Record<string, FinalRiskScore>;

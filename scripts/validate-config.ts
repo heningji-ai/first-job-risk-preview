@@ -120,6 +120,9 @@ const directRKeysFromQuestions = new Set<string>();
 const dimensionKeys = new Set<string>(asArray(scoring.dimensions).map(String));
 const finalRiskKeys = new Set<string>(asArray(scoring.finalRisks).map(String));
 const scoringIsPlaceholder = typeof scoring._todo === "string";
+const riskCardIds = new Set<string>();
+const companyTypeOptions = new Set<string>();
+const workTypeOptions = new Set<string>();
 
 for (const question of questions) {
   if (typeof question.id !== "string" || question.id.length === 0) {
@@ -161,6 +164,13 @@ for (const question of questions) {
 
     for (const flagKey of Object.keys(option.flags ?? {})) {
       flagKeys.add(flagKey);
+    }
+
+    if (question.id === "company_type") {
+      companyTypeOptions.add(option.id);
+    }
+    if (question.id === "work_type") {
+      workTypeOptions.add(option.id);
     }
   }
 }
@@ -237,9 +247,30 @@ for (const card of riskCards) {
     continue;
   }
 
+  if (card.id === "H0_GENERAL_REMINDER") {
+    fail("H0_GENERAL_REMINDER must not be configured as a formal triggerable risk card");
+  }
+
+  if (riskCardIds.has(card.id)) {
+    fail(`duplicate risk card id: ${card.id}`);
+  }
+  riskCardIds.add(card.id);
+
   const conditions = asArray(card.conditions);
   if (!conditions.some((condition) => primaryRiskTypes.has(condition.type))) {
     fail(`risk card ${card.id} has no answer/dimension/finalRisk primary signal`);
+  }
+
+  for (const companyType of asArray(card.strongMatch?.companyType).map(String)) {
+    if (!companyTypeOptions.has(companyType)) {
+      fail(`risk card ${card.id} strongMatch.companyType references invalid option: ${companyType}`);
+    }
+  }
+
+  for (const workType of asArray(card.strongMatch?.workType).map(String)) {
+    if (!workTypeOptions.has(workType)) {
+      fail(`risk card ${card.id} strongMatch.workType references invalid option: ${workType}`);
+    }
   }
 
   for (const riskKey of asArray(card.relatedRisks).map(String)) {
@@ -267,8 +298,10 @@ for (const card of riskCards) {
   }
 
   for (const rule of asArray(card.protectRules)) {
-    if (rule.score === undefined) {
-      console.log(`[validate-config] OK: ${card.id} protectRule does not require score`);
+    if (rule.score !== undefined) {
+      fail(`risk card ${card.id} protectRule must not require score`);
+    } else {
+      console.log(`[validate-config] OK: ${card.id} protectRule has no score`);
     }
   }
 

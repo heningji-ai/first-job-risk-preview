@@ -1,8 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { pathToFileURL, fileURLToPath } from "node:url";
-import type { Question, ScoringConfig, TestCase } from "../src/types/config";
+import type { Question, RiskCard, ScoringConfig, TestCase } from "../src/types/config";
 import type { ResultDraft } from "../src/types/result";
+import type { RiskCardEngineResult } from "../src/types/riskCard";
 
 type JsonObject = Record<string, any>;
 type ScoringModule = {
@@ -14,6 +15,13 @@ type ScoringModule = {
     scoringConfig: ScoringConfig & { _todo?: string };
     createdAt?: string;
   }): ResultDraft;
+};
+type RiskCardModule = {
+  evaluateRiskCards(
+    answers: Record<string, string>,
+    resultDraft: ResultDraft,
+    riskCards: RiskCard[]
+  ): RiskCardEngineResult;
 };
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -43,27 +51,37 @@ function assertExpectedRiskLevels(testCase: TestCase, resultDraft: ResultDraft):
   return failures;
 }
 
-function getExpectedWarnings(testCase: TestCase): string[] {
-  const warnings: string[] = [];
-  if ((testCase.expected?.mustTrigger?.length ?? 0) > 0) {
-    warnings.push("EXPECTED_MUST_TRIGGER_NOT_ASSERTED_IN_SCORING_ENGINE_STAGE");
+function assertExpectedRiskCards(testCase: TestCase, riskResult: RiskCardEngineResult): string[] {
+  const failures: string[] = [];
+  const triggeredIds = new Set(riskResult.triggeredRiskCards.map((card) => card.cardId));
+
+  for (const expectedCardId of testCase.expected?.mustTrigger ?? []) {
+    if (!triggeredIds.has(expectedCardId)) {
+      failures.push(`${expectedCardId} expected in triggeredRiskCards`);
+    }
   }
-  if (testCase.expected?.viralCopy) {
-    warnings.push("EXPECTED_VIRAL_COPY_NOT_ASSERTED_IN_SCORING_ENGINE_STAGE");
-  }
-  return warnings;
+
+  return failures;
+}
+
+function formatIds(ids: string[]): string {
+  return ids.length > 0 ? ids.join(", ") : "(none)";
 }
 
 console.log(`[test-risk-logic] audience_type=${audienceType}`);
 
 const scoringEngineUrl = pathToFileURL(path.join(projectRoot, "src", "lib", "scoringEngine.ts")).href;
+const riskCardEngineUrl = pathToFileURL(path.join(projectRoot, "src", "lib", "riskCardEngine.ts")).href;
 const { buildResultDraft } = (await import(scoringEngineUrl)) as ScoringModule;
+const { evaluateRiskCards } = (await import(riskCardEngineUrl)) as RiskCardModule;
 
 const questionsRaw = readJson("questions.json");
 const scoring = readJson("scoring.json") as ScoringConfig & { _todo?: string };
+const riskCardsRaw = readJson("risk_cards.json");
 const testCasesRaw = readJson("test_cases.json");
 
 const questions = asArray<Question>(questionsRaw.questions ?? questionsRaw);
+const riskCards = asArray<RiskCard>(riskCardsRaw.riskCards ?? riskCardsRaw);
 const testCases = asArray<TestCase>(testCasesRaw.testCases ?? testCasesRaw);
 
 if (testCases.length === 0) {
@@ -73,6 +91,9 @@ if (testCases.length === 0) {
 
 if (scoring._todo) {
   console.warn("[test-risk-logic] WARNING: scoring.json is TODO_PLACEHOLDER; output is engineering-only");
+}
+if (riskCardsRaw._todo) {
+  console.warn("[test-risk-logic] WARNING: risk_cards.json is ENGINEERING_SAMPLE_ONLY; output is engineering-only");
 }
 
 let failed = 0;
@@ -86,8 +107,12 @@ for (const testCase of testCases) {
     scoringConfig: scoring,
     createdAt: "2026-01-01T00:00:00.000Z"
   });
+  const riskResult = evaluateRiskCards(testCase.answers ?? {}, resultDraft, riskCards);
+  const assertionFailures = [
+    ...assertExpectedRiskLevels(testCase, resultDraft),
+    ...assertExpectedRiskCards(testCase, riskResult)
+  ];
 
-  const assertionFailures = assertExpectedRiskLevels(testCase, resultDraft);
   if (assertionFailures.length > 0) {
     failed += 1;
     console.error(`[test-risk-logic] FAIL: ${testCase.id}`);
@@ -97,14 +122,17 @@ for (const testCase of testCases) {
     continue;
   }
 
-  const directRiskKeys = Object.keys(resultDraft.directRiskScores);
-  const finalRiskKeys = Object.keys(resultDraft.finalRiskScores);
-  const warnings = [...resultDraft.warnings, ...getExpectedWarnings(testCase)];
+  const triggeredIds = riskResult.triggeredRiskCards.map((card) => card.cardId);
+  const topIds = riskResult.topRiskCards.map((card) => card.cardId);
+  const protectedIds = riskResult.protectedCards.map((card) => card.cardId);
+  const skippedIds = riskResult.skippedCards.map((card) => card.cardId);
+  const warnings = [...resultDraft.warnings, ...riskResult.warnings];
 
   console.log(`[test-risk-logic] PASS: ${testCase.id}`);
   console.log(`  answered question count: ${resultDraft.answeredCount}`);
-  console.log(`  directRiskScores keys: ${directRiskKeys.length > 0 ? directRiskKeys.join(", ") : "(none)"}`);
-  console.log(`  finalRiskScores keys: ${finalRiskKeys.length > 0 ? finalRiskKeys.join(", ") : "(none)"}`);
+  console.log(`  triggeredRiskCards ids: ${formatIds(triggeredIds)}`);
+  console.log(`  topRiskCards ids: ${formatIds(topIds)}`);
+  console.log(`  protected / skipped ids: ${formatIds([...protectedIds, ...skippedIds])}`);
   console.log(`  warnings: ${warnings.length > 0 ? warnings.join(", ") : "(none)"}`);
 }
 
