@@ -23,16 +23,18 @@ export type AudienceType =
   | "manager";
 
 export type RuleOperator = "eq" | "neq" | "in" | "not_in" | "gte" | "lte";
+export type ShowWhenOperator = "eq" | "neq" | "in" | "not_in" | "equals" | "notEquals" | "notIn";
 
 export type ShowWhenRule = {
   field: string;
-  operator: Extract<RuleOperator, "eq" | "neq" | "in" | "not_in">;
+  operator: ShowWhenOperator;
   value: string | string[];
 };
 
 export type QuestionOption = {
   id: string;
   text: string;
+  label?: string;
   scores?: {
     dimensions?: Record<string, number>;
     directR?: Record<string, number>;
@@ -42,6 +44,7 @@ export type QuestionOption = {
 
 export type Question = {
   id: string;
+  sourceCode?: string;
   group: string;
   order: number;
   text: string;

@@ -49,3 +49,12 @@ export type TestSession = {
   createdAt: string;
   completedAt?: string;
 };
+
+export type StoredTestSession = {
+  id: string;
+  anonymousUserId: string;
+  audienceType: AudienceType;
+  answers: Record<string, string>;
+  createdAt: string;
+  completedAt: string;
+};
