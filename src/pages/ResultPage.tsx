@@ -51,19 +51,19 @@ const RESULT_TEXT = {
   limitOne: "当前文案仍是 PRODUCT_DRAFT，需要产品方终审后才能升级为 APPROVED。",
   limitTwo: "风险规则仍是 draft，结果不能替代真实岗位访谈、面试判断和职业咨询。",
   limitThree: "本页只整理展示风险预演信息，没有新增分享、登录、支付或后端链路。",
-  ctaTitle: "把你正在考虑的岗位发来看看",
+  ctaTitle: "找工作还有其他卡点，可以继续看",
   ctaIntro:
-    "你可以把正在考虑的岗位 JD、招聘截图，或者 offer 信息发给猎头季哥。重点不是重新测一遍，而是判断：这份工作会不会放大你这次结果里提示的风险。",
-  ctaStepsTitle: "可以这样做",
-  ctaStepOne: "复制下面这段话",
-  ctaStepTwo: "把目标岗位 / JD / 招聘截图一起发给猎头季哥",
-  ctaStepThree: "重点确认：新人前三个月会遇到什么、这个岗位会不会放大当前风险",
-  ctaContactHint: "添加猎头季哥后，把岗位截图和上面这段话一起发来。",
-  copyScriptTitle: "可复制话术",
-  copyButton: "复制这段话",
-  copiedButton: "已复制",
-  copyUnsupported: "当前浏览器不支持自动复制，可以手动复制这段话。",
-  copyFailed: "复制失败，可以手动复制这段话。"
+    "这次结果只是一次风险预演。如果你在找工作中还有方向选择、简历修改、面试准备、Offer 判断、试用期适应等问题，可以继续关注「猎头季哥人才重估实验室」。如果你想进一步沟通自己的具体情况，也可以添加猎头季哥企业微信。",
+  publicAccountLabel: "公众号",
+  publicAccountName: "猎头季哥人才重估实验室",
+  publicAccountDescription: "适合继续看求职判断、面试准备、岗位选择和职场适应相关内容。",
+  wecomLabel: "企业微信",
+  wecomName: "猎头季哥",
+  wecomPlaceholderLabel: "微信 / 二维码",
+  wecomPlaceholder: "【上线前补充】",
+  wecomDescription: "适合想进一步说明自己当前求职卡点的人。",
+  ctaBoundary:
+    "说明：关注公众号或添加企业微信，不等于已经进入一对一服务。具体是否需要进一步沟通，以你的实际问题和后续沟通为准。"
 };
 
 const TEXT = {
@@ -134,24 +134,6 @@ function resolvePrimaryRiskCardCopy(topRiskCardCopies: ResolvedRiskCardCopy[]): 
   return primary;
 }
 
-function buildCtaMessage(displayName: string): string {
-  return [
-    "我刚做完「第一份工作风险预演」，结果提示我需要先验证：",
-    "",
-    `【${displayName}】`,
-    "",
-    "这是我正在考虑的岗位 / JD：",
-    "",
-    "【这里粘贴岗位链接、JD 或截图】",
-    "",
-    "想请你帮我判断三件事：",
-    "",
-    "1. 这份工作会不会放大这个风险？",
-    "2. 新人前三个月最容易卡在哪里？",
-    "3. 这个岗位到底是在训练能力，还是在消耗新人？"
-  ].join("\n");
-}
-
 function TextList({ items, className }: { items: string[]; className?: string }) {
   if (items.length === 0) return <p>{TEXT.noValue}</p>;
   return (
@@ -217,7 +199,6 @@ function RiskCopyCard({ item }: { item: ResolvedRiskCardCopy }) {
 function ResultPage({ testSessionId }: ResultPageProps) {
   const [session, setSession] = useState<StoredTestSession | undefined>();
   const [resultData, setResultData] = useState<ResultPageData | undefined>();
-  const [copyState, setCopyState] = useState<"idle" | "copied" | "unsupported" | "failed">("idle");
   const isDev = (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV === true;
 
   useEffect(() => {
@@ -252,23 +233,6 @@ function ResultPage({ testSessionId }: ResultPageProps) {
         </section>
       </main>
     );
-  }
-
-  const ctaMessage = buildCtaMessage(presentation.primaryRiskCardCopy.copy.displayName);
-
-  async function handleCopyCtaMessage() {
-    if (!navigator.clipboard?.writeText) {
-      setCopyState("unsupported");
-      return;
-    }
-
-    try {
-      await navigator.clipboard.writeText(ctaMessage);
-      setCopyState("copied");
-      window.setTimeout(() => setCopyState("idle"), 1800);
-    } catch {
-      setCopyState("failed");
-    }
   }
 
   return (
@@ -306,32 +270,31 @@ function ResultPage({ testSessionId }: ResultPageProps) {
         </section>
 
         <section className="result-section result-card-section cta-card" aria-labelledby="cta-title">
-          <p className="eyebrow">岗位验证路径</p>
+          <p className="eyebrow">继续看求职判断</p>
           <h2 id="cta-title">{RESULT_TEXT.ctaTitle}</h2>
           <p>{RESULT_TEXT.ctaIntro}</p>
 
-          <section className="result-card-block" aria-label={RESULT_TEXT.ctaStepsTitle}>
-            <h4>{RESULT_TEXT.ctaStepsTitle}</h4>
-            <ol className="cta-steps">
-              <li>{RESULT_TEXT.ctaStepOne}</li>
-              <li>{RESULT_TEXT.ctaStepTwo}</li>
-              <li>{RESULT_TEXT.ctaStepThree}</li>
-            </ol>
-          </section>
+          <div className="cta-entry-list">
+            <section className="cta-entry" aria-label={RESULT_TEXT.publicAccountLabel}>
+              <p className="cta-entry-label">{RESULT_TEXT.publicAccountLabel}</p>
+              <h3>{RESULT_TEXT.publicAccountName}</h3>
+              <p>{RESULT_TEXT.publicAccountDescription}</p>
+            </section>
 
-          <section className="result-card-block" aria-label={RESULT_TEXT.copyScriptTitle}>
-            <h4>{RESULT_TEXT.copyScriptTitle}</h4>
-            <pre className="copy-script">{ctaMessage}</pre>
-            <div className="copy-action-row">
-              <button className="primary-button" type="button" onClick={handleCopyCtaMessage}>
-                {copyState === "copied" ? RESULT_TEXT.copiedButton : RESULT_TEXT.copyButton}
-              </button>
-              {copyState === "unsupported" ? <p className="copy-status">{RESULT_TEXT.copyUnsupported}</p> : null}
-              {copyState === "failed" ? <p className="copy-status">{RESULT_TEXT.copyFailed}</p> : null}
-            </div>
-          </section>
+            <section className="cta-entry" aria-label={RESULT_TEXT.wecomLabel}>
+              <p className="cta-entry-label">{RESULT_TEXT.wecomLabel}</p>
+              <h3>{RESULT_TEXT.wecomName}</h3>
+              <dl className="cta-placeholder">
+                <div>
+                  <dt>{RESULT_TEXT.wecomPlaceholderLabel}</dt>
+                  <dd>{RESULT_TEXT.wecomPlaceholder}</dd>
+                </div>
+              </dl>
+              <p>{RESULT_TEXT.wecomDescription}</p>
+            </section>
+          </div>
 
-          <p className="section-note">{RESULT_TEXT.ctaContactHint}</p>
+          <p className="section-note">{RESULT_TEXT.ctaBoundary}</p>
         </section>
 
         <section className="result-section result-card-section" aria-labelledby="limit-title">

@@ -427,36 +427,49 @@ p {
   letter-spacing: 0;
 }
 
-.cta-steps {
+.cta-entry-list {
   display: grid;
-  gap: 8px;
-  margin: 0;
-  padding-left: 22px;
+  gap: 12px;
 }
 
-.copy-script {
-  margin: 0;
+.cta-entry {
+  display: grid;
+  gap: 8px;
   padding: 14px;
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
   border: 1px solid #d8dde3;
   border-radius: 8px;
   background: #ffffff;
-  color: #172026;
-  font-family: inherit;
-  font-size: 14px;
-  line-height: 1.7;
 }
 
-.copy-action-row {
-  display: grid;
-  gap: 10px;
-  justify-items: start;
+.cta-entry h3 {
+  margin: 0;
+  font-size: 17px;
+  line-height: 1.35;
+  letter-spacing: 0;
 }
 
-.copy-status {
+.cta-entry-label,
+.cta-placeholder dt {
+  margin: 0;
   color: #5d6b78;
   font-size: 13px;
+}
+
+.cta-placeholder {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+}
+
+.cta-placeholder div {
+  display: grid;
+  gap: 4px;
+}
+
+.cta-placeholder dd {
+  margin: 0;
+  color: #172026;
+  overflow-wrap: anywhere;
 }
 
 .risk-card-debug {
