@@ -3,7 +3,7 @@ import questionsConfig from "../config/audiences/student/questions.json";
 import { navigateTo } from "../lib/router";
 import { buildDebugKeySummary, buildRiskCopyStatusSummary, summarizeWarnings } from "../lib/resultPresentation";
 import { buildResultPageData } from "../lib/resultPipeline";
-import { resolveTopRiskCardCopies } from "../lib/riskCardCopyResolver";
+import { resolveRiskCardCopy, resolveTopRiskCardCopies } from "../lib/riskCardCopyResolver";
 import { getStoredSession } from "../lib/sessionStorage";
 import type { ResolvedRiskCardCopy } from "../lib/riskCardCopyResolver";
 import type { ResultPageData } from "../types/result";
@@ -31,12 +31,13 @@ type QuestionsConfigFile = {
 };
 
 const QUESTION_CONFIG = questionsConfig as QuestionsConfigFile;
+const FALLBACK_RISK_CARD_ID = "H0_GENERAL_REMINDER";
 
 const RESULT_TEXT = {
   title: "第一份工作风险预演结果",
   intro: "这是基于你当前答题生成的风险预演，不是正式职业诊断。",
   basicChoice: "你的基础选择",
-  riskFocus: "本次需要重点留意的风险",
+  riskFocus: "这次最需要留意的主风险",
   riskCardLabel: "风险预演卡",
   fallbackLabel: "兜底提醒",
   typicalScenes: "典型场景",
@@ -101,6 +102,23 @@ function getAnswerDisplayValue(questionId: string, answerId: string | undefined)
   const option = question?.options?.find((item) => item.id === answerId);
 
   return option?.text ?? option?.label ?? answerId;
+}
+
+function getFallbackRiskCardCopy(): ResolvedRiskCardCopy {
+  return {
+    cardId: FALLBACK_RISK_CARD_ID,
+    isFallback: true,
+    copy: resolveRiskCardCopy(FALLBACK_RISK_CARD_ID)
+  };
+}
+
+function resolvePrimaryRiskCardCopy(topRiskCardCopies: ResolvedRiskCardCopy[]): ResolvedRiskCardCopy {
+  const primary = topRiskCardCopies[0];
+
+  if (!primary) return getFallbackRiskCardCopy();
+  if (primary.copy.cardId !== primary.cardId) return getFallbackRiskCardCopy();
+
+  return primary;
 }
 
 function TextList({ items, className }: { items: string[]; className?: string }) {
@@ -179,9 +197,11 @@ function ResultPage({ testSessionId }: ResultPageProps) {
   const presentation = useMemo(() => {
     if (!resultData) return undefined;
     const topRiskCardCopies = resolveTopRiskCardCopies(resultData.riskCardResult.topRiskCards);
+    const primaryRiskCardCopy = resolvePrimaryRiskCardCopy(topRiskCardCopies);
     return {
       topRiskCardCopies,
-      copyStatusSummary: buildRiskCopyStatusSummary(topRiskCardCopies),
+      primaryRiskCardCopy,
+      copyStatusSummary: buildRiskCopyStatusSummary([primaryRiskCardCopy]),
       warningSummary: summarizeWarnings(resultData.warnings),
       debugKeys: buildDebugKeySummary(resultData)
     };
@@ -233,11 +253,7 @@ function ResultPage({ testSessionId }: ResultPageProps) {
 
         <section className="result-section" aria-labelledby="risk-preview-title">
           <h2 id="risk-preview-title">{RESULT_TEXT.riskFocus}</h2>
-          <div className="risk-card-list">
-            {presentation.topRiskCardCopies.map((item) => (
-              <RiskCopyCard item={item} key={item.cardId} />
-            ))}
-          </div>
+          <RiskCopyCard item={presentation.primaryRiskCardCopy} />
         </section>
 
         <section className="result-section result-card-section" aria-labelledby="limit-title">
