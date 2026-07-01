@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import questionsConfig from "../config/audiences/student/questions.json";
+import { buildResultExperiencePresentation } from "../lib/resultExperiencePresentation";
 import { navigateTo } from "../lib/router";
 import { buildDebugKeySummary, buildRiskCopyStatusSummary, summarizeWarnings } from "../lib/resultPresentation";
 import { buildResultPageData } from "../lib/resultPipeline";
@@ -33,15 +34,23 @@ type QuestionsConfigFile = {
 const QUESTION_CONFIG = questionsConfig as QuestionsConfigFile;
 const FALLBACK_RISK_CARD_ID = "H0_GENERAL_REMINDER";
 const MAX_VISIBLE_VALIDATION_ITEMS = 3;
+const FALLBACK_COMPANY_LABEL = "暂未明确的公司类型";
+const FALLBACK_WORK_LABEL = "暂未明确的岗位类型";
 
 const RESULT_TEXT = {
-  title: "第一份工作风险预演结果",
-  intro: "这是基于你当前答题生成的风险预演，不是正式职业诊断。",
-  basicChoice: "你的基础选择",
-  riskFocus: "这次最需要先验证的一件事",
-  riskCardLabel: "风险预演卡",
-  fallbackLabel: "兜底提醒",
-  validationTitle: "下一步先验证这 3 件事",
+  heroTitle: "第一份工作选择预演",
+  heroIntro: "这是基于你当前选择生成的路径预演，不是正式职业诊断。",
+  audioOn: "氛围音乐入口：已开启",
+  audioOff: "氛围音乐入口：未开启",
+  audioNote: "暂不播放真实音频",
+  selectedPath: "你这次选择的是：",
+  verdictQuestion: "你选的这条路，适不适合你？",
+  scenePrompt: "你可以把这条路想象成：",
+  expectationTitle: "这类公司和岗位，通常更希望新人具备什么？",
+  companyExpectation: "这类公司通常更希望新人具备：",
+  workExpectation: "这类岗位通常更希望新人具备：",
+  possibleFriction: "如果强行选择，可能会卡在哪里？",
+  thinkingTitle: "如果继续走这条路，先想清楚 3 件事",
   moreDetails: "展开看更多解释",
   typicalScenes: "典型场景",
   notSaying: "这不是在说你什么",
@@ -53,7 +62,7 @@ const RESULT_TEXT = {
   limitSummary: "当前结果仍是产品草稿，只适合作为求职前的风险预演，不能替代真实岗位访谈、面试判断和职业咨询。",
   ctaTitle: "找工作还有其他卡点，可以继续看",
   ctaIntro:
-    "如果你还在纠结方向、简历、面试、Offer 或试用期问题，可以继续关注「猎头季哥人才重估实验室」，也可以添加猎头季哥企业微信进一步说明情况。",
+    "如果你还在纠结方向、简历、面试、Offer 或试用期问题，可以关注「猎头季哥人才重估实验室」。这里会持续分享找工作中的判断方法、服务说明，以及优质岗位信息。",
   publicAccountLabel: "公众号",
   publicAccountName: "猎头季哥人才重估实验室",
   wecomLabel: "企业微信",
@@ -67,39 +76,25 @@ const TEXT = {
   unavailable: "这个结果暂时不可用",
   restart: "请返回首页重新开始一次测试。",
   home: "返回首页",
-  complete: "测试完成",
-  answeredCount: "已回答题目数量",
-  audienceType: "测试人群",
-  currentStatus: "当前状态",
-  education: "学历背景",
-  companyType: "关注公司类型",
-  workType: "关注工作类型",
-  choiceReason: "选择原因",
-  mainConcern: "主要担心",
-  examStatus: "考研/考公状态",
   noValue: "未填写",
   debugInfo: "开发调试信息",
   warnings: "工程 warnings",
   warningTypes: "关键 warning 类型"
 };
 
-const BASIC_FIELD_LABELS: Array<{ key: string; label: string }> = [
-  { key: "current_status", label: TEXT.currentStatus },
-  { key: "education", label: TEXT.education },
-  { key: "company_type", label: TEXT.companyType },
-  { key: "work_type", label: TEXT.workType },
-  { key: "choice_reason", label: TEXT.choiceReason },
-  { key: "main_concern", label: TEXT.mainConcern },
-  { key: "postgraduate_exam", label: TEXT.examStatus }
-];
+const COMPANY_TYPE_FIELD = "company_type";
+const WORK_TYPE_FIELD = "work_type";
 
-function getAnswerDisplayValue(questionId: string, answerId: string | undefined): string {
-  if (!answerId) return TEXT.noValue;
+function getAnswerOption(questionId: string, answerId: string | undefined): QuestionOption | undefined {
+  if (!answerId) return undefined;
 
   const question = QUESTION_CONFIG.questions.find((item) => item.id === questionId);
-  const option = question?.options?.find((item) => item.id === answerId);
+  return question?.options?.find((item) => item.id === answerId);
+}
 
-  return option?.text ?? option?.label ?? answerId;
+function getAnswerDisplayValue(questionId: string, answerId: string | undefined, fallback: string): string {
+  const option = getAnswerOption(questionId, answerId);
+  return option?.text ?? option?.label ?? fallback;
 }
 
 function getFallbackRiskCardCopy(): ResolvedRiskCardCopy {
@@ -130,66 +125,10 @@ function TextList({ items, className }: { items: string[]; className?: string })
   );
 }
 
-function PrimaryRiskSummary({ item }: { item: ResolvedRiskCardCopy }) {
-  const { copy, isFallback } = item;
-  const visibleValidationItems = copy.preChoiceValidationChecklist.slice(0, MAX_VISIBLE_VALIDATION_ITEMS);
-
-  return (
-    <article className="result-risk-card result-risk-card-compact">
-      <div className="result-card-header">
-        <p className="eyebrow">{isFallback ? RESULT_TEXT.fallbackLabel : RESULT_TEXT.riskCardLabel}</p>
-        <h3>{copy.displayName}</h3>
-      </div>
-
-      <p className="risk-prompt">{copy.oneLineRiskPrompt}</p>
-      <p className="section-note">{copy.resultShortCopy}</p>
-
-      <section className="result-card-block result-next-step" aria-label={RESULT_TEXT.validationTitle}>
-        <h4>{RESULT_TEXT.validationTitle}</h4>
-        <TextList items={visibleValidationItems} className="validation-list" />
-      </section>
-
-      <details className="result-more-details">
-        <summary>{RESULT_TEXT.moreDetails}</summary>
-        <div className="result-more-content">
-          <section className="result-card-block" aria-label={RESULT_TEXT.typicalScenes}>
-            <h4>{RESULT_TEXT.typicalScenes}</h4>
-            <TextList items={copy.typicalScenes} />
-          </section>
-
-          <section className="result-card-block" aria-label={RESULT_TEXT.notSaying}>
-            <h4>{RESULT_TEXT.notSaying}</h4>
-            <p>{copy.notSaying}</p>
-          </section>
-
-          <section className="result-card-block" aria-label={RESULT_TEXT.riskReductionActions}>
-            <h4>{RESULT_TEXT.riskReductionActions}</h4>
-            <TextList items={copy.riskReductionActions} />
-          </section>
-
-          <section className="result-card-block" aria-label={RESULT_TEXT.whoToAsk}>
-            <h4>{RESULT_TEXT.whoToAsk}</h4>
-            <p>{copy.whoToAsk}</p>
-          </section>
-
-          <section className="result-card-block" aria-label={RESULT_TEXT.jiGeCanHelpWith}>
-            <h4>{RESULT_TEXT.jiGeCanHelpWith}</h4>
-            <p>{copy.jiGeCanHelpWith}</p>
-          </section>
-
-          <section className="result-card-block share-copy" aria-label={RESULT_TEXT.shareLine}>
-            <h4>{RESULT_TEXT.shareLine}</h4>
-            <p>{copy.shareShortCopy}</p>
-          </section>
-        </div>
-      </details>
-    </article>
-  );
-}
-
 function ResultPage({ testSessionId }: ResultPageProps) {
   const [session, setSession] = useState<StoredTestSession | undefined>();
   const [resultData, setResultData] = useState<ResultPageData | undefined>();
+  const [isAudioEntryOn, setIsAudioEntryOn] = useState(false);
   const isDev = (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV === true;
 
   useEffect(() => {
@@ -199,17 +138,36 @@ function ResultPage({ testSessionId }: ResultPageProps) {
   }, [testSessionId]);
 
   const presentation = useMemo(() => {
-    if (!resultData) return undefined;
+    if (!resultData || !session) return undefined;
+
     const topRiskCardCopies = resolveTopRiskCardCopies(resultData.riskCardResult.topRiskCards);
     const primaryRiskCardCopy = resolvePrimaryRiskCardCopy(topRiskCardCopies);
+    const companyTypeId = session.answers[COMPANY_TYPE_FIELD];
+    const workTypeId = session.answers[WORK_TYPE_FIELD];
+    const companyTypeLabel = getAnswerDisplayValue(COMPANY_TYPE_FIELD, companyTypeId, FALLBACK_COMPANY_LABEL);
+    const workTypeLabel = getAnswerDisplayValue(WORK_TYPE_FIELD, workTypeId, FALLBACK_WORK_LABEL);
+    const experience = buildResultExperiencePresentation({
+      riskCardId: primaryRiskCardCopy.cardId,
+      isFallback: primaryRiskCardCopy.isFallback,
+      companyTypeId,
+      workTypeId,
+      companyTypeLabel,
+      workTypeLabel,
+      primaryRiskName: primaryRiskCardCopy.copy.displayName,
+      primaryRiskPrompt: primaryRiskCardCopy.copy.oneLineRiskPrompt,
+      primaryRiskSummary: primaryRiskCardCopy.copy.resultShortCopy
+    });
+
     return {
       topRiskCardCopies,
       primaryRiskCardCopy,
-      copyStatusSummary: buildRiskCopyStatusSummary([primaryRiskCardCopy]),
+      experience,
+      visibleValidationItems: primaryRiskCardCopy.copy.preChoiceValidationChecklist.slice(0, MAX_VISIBLE_VALIDATION_ITEMS),
+      copyStatusForDebug: buildRiskCopyStatusSummary([primaryRiskCardCopy]),
       warningSummary: summarizeWarnings(resultData.warnings),
       debugKeys: buildDebugKeySummary(resultData)
     };
-  }, [resultData]);
+  }, [resultData, session]);
 
   if (!session || !resultData || !presentation) {
     return (
@@ -226,39 +184,125 @@ function ResultPage({ testSessionId }: ResultPageProps) {
     );
   }
 
+  const primaryCopy = presentation.primaryRiskCardCopy.copy;
+  const experience = presentation.experience;
+
   return (
-    <main className="result-shell result-mobile-shell">
-      <section className="result-page" aria-labelledby="result-title">
-        <section className="result-hero result-hero-mobile" aria-labelledby="result-title">
-          <p className="eyebrow">{TEXT.complete}</p>
-          <h1 id="result-title">{RESULT_TEXT.title}</h1>
-          <p>{RESULT_TEXT.intro}</p>
+    <main className={`result-shell result-experience-shell scene-${experience.sceneMood}`}>
+      <section className="result-page result-experience-page" aria-labelledby="result-title">
+        <section className="scene-hero" aria-labelledby="result-title">
+          <button
+            className="audio-toggle"
+            type="button"
+            aria-pressed={isAudioEntryOn}
+            onClick={() => setIsAudioEntryOn((current) => !current)}
+          >
+            <span>{isAudioEntryOn ? RESULT_TEXT.audioOn : RESULT_TEXT.audioOff}</span>
+            <small>{RESULT_TEXT.audioNote}</small>
+          </button>
+
+          <div className="scene-visual" aria-hidden="true">
+            <span className="scene-sun" />
+            <span className="scene-road" />
+            <span className="scene-building scene-building-left" />
+            <span className="scene-building scene-building-right" />
+          </div>
+
+          <div className="scene-hero-content">
+            <p className="eyebrow">{RESULT_TEXT.heroIntro}</p>
+            <h1 id="result-title">{RESULT_TEXT.heroTitle}</h1>
+            <p className="scene-title">{experience.sceneTitle}</p>
+            <p className="scene-subtitle">{experience.sceneSubtitle}</p>
+            <div className="path-chips" aria-label={RESULT_TEXT.selectedPath}>
+              <span>{experience.companyTypeLabel}</span>
+              <span>{experience.workTypeLabel}</span>
+            </div>
+            <p className="scene-verdict-line">{experience.verdictTitle}</p>
+          </div>
         </section>
 
-        <section className="result-section result-card-section" aria-labelledby="basic-info-title">
-          <h2 id="basic-info-title">{RESULT_TEXT.basicChoice}</h2>
-          <dl className="choice-summary">
-            <div>
-              <dt>{TEXT.audienceType}</dt>
-              <dd>{session.audienceType}</dd>
-            </div>
-            <div>
-              <dt>{TEXT.answeredCount}</dt>
-              <dd>{resultData.resultDraft.answeredCount}</dd>
-            </div>
-            {BASIC_FIELD_LABELS.map((field) => (
-              <div key={field.key}>
-                <dt>{field.label}</dt>
-                <dd>{getAnswerDisplayValue(field.key, session.answers[field.key])}</dd>
-              </div>
-            ))}
-          </dl>
+        <section className="result-section result-card-section path-card" aria-labelledby="path-title">
+          <p className="eyebrow">{RESULT_TEXT.selectedPath}</p>
+          <h2 id="path-title">
+            {experience.companyTypeLabel}里的{experience.workTypeLabel}
+          </h2>
         </section>
 
-        <section className="result-section" aria-labelledby="risk-preview-title">
-          <h2 id="risk-preview-title">{RESULT_TEXT.riskFocus}</h2>
-          <PrimaryRiskSummary item={presentation.primaryRiskCardCopy} />
+        <section className="result-section result-card-section verdict-card" aria-labelledby="verdict-title">
+          <p className="eyebrow">{primaryCopy.displayName}</p>
+          <h2 id="verdict-title">{RESULT_TEXT.verdictQuestion}</h2>
+          <p className="verdict-title">{experience.verdictTitle}</p>
+          <p>{experience.verdictBody}</p>
         </section>
+
+        <section className="result-section result-card-section scene-narrative-card" aria-labelledby="scene-title">
+          <p className="eyebrow">{RESULT_TEXT.scenePrompt}</p>
+          <h2 id="scene-title">{experience.sceneTitle}</h2>
+          <p>{experience.sceneNarrative}</p>
+        </section>
+
+        <section className="result-section result-card-section" aria-labelledby="expectation-title">
+          <h2 id="expectation-title">{RESULT_TEXT.expectationTitle}</h2>
+          <div className="expectation-grid">
+            <section className="expectation-panel" aria-label={RESULT_TEXT.companyExpectation}>
+              <p className="eyebrow">{experience.companyTypeLabel}</p>
+              <h3>{RESULT_TEXT.companyExpectation}</h3>
+              <TextList items={experience.companyExpectation} />
+            </section>
+            <section className="expectation-panel" aria-label={RESULT_TEXT.workExpectation}>
+              <p className="eyebrow">{experience.workTypeLabel}</p>
+              <h3>{RESULT_TEXT.workExpectation}</h3>
+              <TextList items={experience.workExpectation} />
+            </section>
+          </div>
+        </section>
+
+        <section className="result-section result-card-section friction-card" aria-labelledby="friction-title">
+          <h2 id="friction-title">{RESULT_TEXT.possibleFriction}</h2>
+          <p className="risk-prompt">{primaryCopy.oneLineRiskPrompt}</p>
+          <p>{primaryCopy.resultShortCopy}</p>
+          <TextList items={experience.longTermImpactCopy} />
+        </section>
+
+        <section className="result-section result-card-section thinking-card" aria-labelledby="thinking-title">
+          <h2 id="thinking-title">{RESULT_TEXT.thinkingTitle}</h2>
+          <TextList items={presentation.visibleValidationItems} className="validation-list" />
+        </section>
+
+        <details className="result-section result-card-section result-more-details">
+          <summary>{RESULT_TEXT.moreDetails}</summary>
+          <div className="result-more-content">
+            <section className="result-card-block" aria-label={RESULT_TEXT.typicalScenes}>
+              <h3>{RESULT_TEXT.typicalScenes}</h3>
+              <TextList items={primaryCopy.typicalScenes} />
+            </section>
+
+            <section className="result-card-block" aria-label={RESULT_TEXT.notSaying}>
+              <h3>{RESULT_TEXT.notSaying}</h3>
+              <p>{primaryCopy.notSaying}</p>
+            </section>
+
+            <section className="result-card-block" aria-label={RESULT_TEXT.riskReductionActions}>
+              <h3>{RESULT_TEXT.riskReductionActions}</h3>
+              <TextList items={primaryCopy.riskReductionActions} />
+            </section>
+
+            <section className="result-card-block" aria-label={RESULT_TEXT.whoToAsk}>
+              <h3>{RESULT_TEXT.whoToAsk}</h3>
+              <p>{primaryCopy.whoToAsk}</p>
+            </section>
+
+            <section className="result-card-block" aria-label={RESULT_TEXT.jiGeCanHelpWith}>
+              <h3>{RESULT_TEXT.jiGeCanHelpWith}</h3>
+              <p>{primaryCopy.jiGeCanHelpWith}</p>
+            </section>
+
+            <section className="result-card-block share-copy" aria-label={RESULT_TEXT.shareLine}>
+              <h3>{RESULT_TEXT.shareLine}</h3>
+              <p>{primaryCopy.shareShortCopy}</p>
+            </section>
+          </div>
+        </details>
 
         <section className="result-section result-card-section result-limit-card" aria-labelledby="limit-title">
           <h2 id="limit-title">{RESULT_TEXT.currentLimits}</h2>
@@ -302,7 +346,7 @@ function ResultPage({ testSessionId }: ResultPageProps) {
               </div>
               <div>
                 <dt>risk card copy status</dt>
-                <dd>{presentation.copyStatusSummary}</dd>
+                <dd>{presentation.copyStatusForDebug}</dd>
               </div>
             </dl>
             <details className="debug-details">
