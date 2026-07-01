@@ -776,30 +776,30 @@ p {
 }
 
 .cta-entry-label,
-.cta-placeholder dt {
+.cta-pending dt {
   margin: 0;
   color: #5d6b78;
   font-size: 13px;
 }
 
-.cta-placeholder {
+.cta-pending {
   display: grid;
   gap: 6px;
   margin: 0;
 }
 
-.cta-placeholder div {
+.cta-pending div {
   display: grid;
   gap: 4px;
 }
 
-.cta-placeholder dd {
+.cta-pending dd {
   margin: 0;
   color: #172026;
   overflow-wrap: anywhere;
 }
 
-.cta-placeholder-text {
+.cta-pending-text {
   color: #5d6b78;
   font-size: 13px;
   line-height: 1.5;

@@ -40,7 +40,7 @@ const RESULT_TEXT = {
   heroTitle: "第一份工作路径适配风险预演",
   heroIntro: "这是基于你当前选择生成的路径适配风险预演，不是正式职业诊断。",
   audioLabel: "氛围音乐：未来接入",
-  audioHint: "未来会根据结果档位匹配不同氛围音乐",
+  audioHint: "未来会根据你的结果匹配不同氛围音乐",
   selectedPath: "你这次选择的是：",
   metricPathFit: "路径适应度参考值",
   metricSixMonth: "6 个月离职风险预演值",
@@ -216,9 +216,7 @@ function ResultPage({ testSessionId }: ResultPageProps) {
               <span>{experience.companyTypeLabel}</span>
               <span>{experience.workTypeLabel}</span>
             </div>
-            <p className="scene-verdict-line">
-              {experience.pathFitBand} 档 · {experience.verdictTitle}
-            </p>
+            <p className="scene-verdict-line">{experience.verdictTitle}</p>
             {showMusicHint ? (
               <p className="music-future-note" id="music-hint">
                 {RESULT_TEXT.audioHint}
@@ -329,7 +327,7 @@ function ResultPage({ testSessionId }: ResultPageProps) {
             <section className="cta-entry cta-entry-compact" aria-label={RESULT_TEXT.wecomLabel}>
               <p className="cta-entry-label">{RESULT_TEXT.wecomLabel}</p>
               <h3>{RESULT_TEXT.wecomName}</h3>
-              <p className="cta-placeholder-text">{RESULT_TEXT.wecomPlaceholder}</p>
+              <p className="cta-pending-text">{RESULT_TEXT.wecomPlaceholder}</p>
             </section>
           </div>
 
