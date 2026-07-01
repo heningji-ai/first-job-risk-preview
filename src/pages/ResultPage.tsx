@@ -33,33 +33,31 @@ type QuestionsConfigFile = {
 
 const QUESTION_CONFIG = questionsConfig as QuestionsConfigFile;
 const FALLBACK_RISK_CARD_ID = "H0_GENERAL_REMINDER";
-const MAX_VISIBLE_VALIDATION_ITEMS = 3;
 const FALLBACK_COMPANY_LABEL = "暂未明确的公司类型";
 const FALLBACK_WORK_LABEL = "暂未明确的岗位类型";
 
 const RESULT_TEXT = {
-  heroTitle: "第一份工作选择预演",
-  heroIntro: "这是基于你当前选择生成的路径预演，不是正式职业诊断。",
-  audioOn: "氛围音乐入口：已开启",
-  audioOff: "氛围音乐入口：未开启",
-  audioNote: "暂不播放真实音频",
+  heroTitle: "第一份工作路径适配风险预演",
+  heroIntro: "这是基于你当前选择生成的路径适配风险预演，不是正式职业诊断。",
+  audioLabel: "氛围音乐：未来接入",
+  audioHint: "未来会根据结果档位匹配不同氛围音乐",
   selectedPath: "你这次选择的是：",
-  verdictQuestion: "你选的这条路，适不适合你？",
-  scenePrompt: "你可以把这条路想象成：",
+  metricPathFit: "路径适应度参考值",
+  metricSixMonth: "6 个月离职风险预演值",
+  metricAge30: "30 岁后职场焦虑风险预演值",
+  metricNote: "这些数值不是对个人能力的评价，也不是真实结果预测，只用于表达这条路径对你当前阶段的适应压力。",
+  verdictQuestion: "这条路径，对你现在是否友好？",
   expectationTitle: "这类公司和岗位，通常更希望新人具备什么？",
   companyExpectation: "这类公司通常更希望新人具备：",
   workExpectation: "这类岗位通常更希望新人具备：",
-  possibleFriction: "如果强行选择，可能会卡在哪里？",
-  thinkingTitle: "如果继续走这条路，先想清楚 3 件事",
+  sensitivePoint: "你当前最敏感的压力点",
+  possibleOutcome: "如果调整不了，可能发生什么？",
   moreDetails: "展开看更多解释",
   typicalScenes: "典型场景",
   notSaying: "这不是在说你什么",
-  riskReductionActions: "降低风险的做法",
-  whoToAsk: "可以找谁验证",
-  jiGeCanHelpWith: "找猎头季哥可以帮你看什么",
   shareLine: "适合分享的一句话",
   currentLimits: "当前结果怎么看",
-  limitSummary: "当前结果仍是产品草稿，只适合作为求职前的风险预演，不能替代真实岗位访谈、面试判断和职业咨询。",
+  limitSummary: "当前结果仍是产品草稿，只适合作为求职前的路径适配风险预演，不能替代真实岗位访谈、面试判断和职业咨询。",
   ctaTitle: "找工作还有其他卡点，可以继续看",
   ctaIntro:
     "如果你还在纠结方向、简历、面试、Offer 或试用期问题，可以关注「猎头季哥人才重估实验室」。这里会持续分享找工作中的判断方法、服务说明，以及优质岗位信息。",
@@ -128,7 +126,7 @@ function TextList({ items, className }: { items: string[]; className?: string })
 function ResultPage({ testSessionId }: ResultPageProps) {
   const [session, setSession] = useState<StoredTestSession | undefined>();
   const [resultData, setResultData] = useState<ResultPageData | undefined>();
-  const [isAudioEntryOn, setIsAudioEntryOn] = useState(false);
+  const [showMusicHint, setShowMusicHint] = useState(false);
   const isDev = (import.meta as unknown as { env?: { DEV?: boolean } }).env?.DEV === true;
 
   useEffect(() => {
@@ -162,7 +160,6 @@ function ResultPage({ testSessionId }: ResultPageProps) {
       topRiskCardCopies,
       primaryRiskCardCopy,
       experience,
-      visibleValidationItems: primaryRiskCardCopy.copy.preChoiceValidationChecklist.slice(0, MAX_VISIBLE_VALIDATION_ITEMS),
       copyStatusForDebug: buildRiskCopyStatusSummary([primaryRiskCardCopy]),
       warningSummary: summarizeWarnings(resultData.warnings),
       debugKeys: buildDebugKeySummary(resultData)
@@ -188,22 +185,23 @@ function ResultPage({ testSessionId }: ResultPageProps) {
   const experience = presentation.experience;
 
   return (
-    <main className={`result-shell result-experience-shell scene-${experience.sceneMood}`}>
+    <main className={`result-shell result-experience-shell scene-${experience.sceneMood} band-${experience.pathFitBand.toLowerCase()}`}>
       <section className="result-page result-experience-page" aria-labelledby="result-title">
         <section className="scene-hero" aria-labelledby="result-title">
           <button
             className="audio-toggle"
             type="button"
-            aria-pressed={isAudioEntryOn}
-            onClick={() => setIsAudioEntryOn((current) => !current)}
+            aria-describedby="music-hint"
+            onClick={() => setShowMusicHint((current) => !current)}
           >
-            <span>{isAudioEntryOn ? RESULT_TEXT.audioOn : RESULT_TEXT.audioOff}</span>
-            <small>{RESULT_TEXT.audioNote}</small>
+            <span>{RESULT_TEXT.audioLabel}</span>
+            <small>{experience.musicMoodLabel}</small>
           </button>
 
           <div className="scene-visual" aria-hidden="true">
             <span className="scene-sun" />
             <span className="scene-road" />
+            <span className="scene-wave" />
             <span className="scene-building scene-building-left" />
             <span className="scene-building scene-building-right" />
           </div>
@@ -217,7 +215,14 @@ function ResultPage({ testSessionId }: ResultPageProps) {
               <span>{experience.companyTypeLabel}</span>
               <span>{experience.workTypeLabel}</span>
             </div>
-            <p className="scene-verdict-line">{experience.verdictTitle}</p>
+            <p className="scene-verdict-line">
+              {experience.pathFitBand} 档 · {experience.verdictTitle}
+            </p>
+            {showMusicHint ? (
+              <p className="music-future-note" id="music-hint">
+                {RESULT_TEXT.audioHint}
+              </p>
+            ) : null}
           </div>
         </section>
 
@@ -228,17 +233,30 @@ function ResultPage({ testSessionId }: ResultPageProps) {
           </h2>
         </section>
 
-        <section className="result-section result-card-section verdict-card" aria-labelledby="verdict-title">
-          <p className="eyebrow">{primaryCopy.displayName}</p>
-          <h2 id="verdict-title">{RESULT_TEXT.verdictQuestion}</h2>
-          <p className="verdict-title">{experience.verdictTitle}</p>
-          <p>{experience.verdictBody}</p>
+        <section className="result-section metric-grid" aria-label="路径适配风险预演指标">
+          <article className="metric-card">
+            <p className="eyebrow">{RESULT_TEXT.metricPathFit}</p>
+            <strong>{experience.pathFitPercent}%</strong>
+            <span>{experience.pathFitLabel}</span>
+          </article>
+          <article className="metric-card">
+            <p className="eyebrow">{RESULT_TEXT.metricSixMonth}</p>
+            <strong>{experience.sixMonthExitRiskLevel}</strong>
+            <span>风险指数：{experience.sixMonthExitRiskIndex}/100</span>
+          </article>
+          <article className="metric-card">
+            <p className="eyebrow">{RESULT_TEXT.metricAge30}</p>
+            <strong>{experience.age30AnxietyRiskLevel}</strong>
+            <span>风险指数：{experience.age30AnxietyRiskIndex}/100</span>
+          </article>
         </section>
 
-        <section className="result-section result-card-section scene-narrative-card" aria-labelledby="scene-title">
-          <p className="eyebrow">{RESULT_TEXT.scenePrompt}</p>
-          <h2 id="scene-title">{experience.sceneTitle}</h2>
-          <p>{experience.sceneNarrative}</p>
+        <p className="metric-note">{RESULT_TEXT.metricNote}</p>
+
+        <section className="result-section result-card-section verdict-card" aria-labelledby="verdict-title">
+          <p className="eyebrow">{RESULT_TEXT.verdictQuestion}</p>
+          <h2 id="verdict-title">{experience.verdictTitle}</h2>
+          <p>{experience.verdictBody}</p>
         </section>
 
         <section className="result-section result-card-section" aria-labelledby="expectation-title">
@@ -258,15 +276,17 @@ function ResultPage({ testSessionId }: ResultPageProps) {
         </section>
 
         <section className="result-section result-card-section friction-card" aria-labelledby="friction-title">
-          <h2 id="friction-title">{RESULT_TEXT.possibleFriction}</h2>
-          <p className="risk-prompt">{primaryCopy.oneLineRiskPrompt}</p>
+          <h2 id="friction-title">{RESULT_TEXT.sensitivePoint}</h2>
+          <p className="risk-prompt">{primaryCopy.displayName}</p>
+          <p>{primaryCopy.oneLineRiskPrompt}</p>
           <p>{primaryCopy.resultShortCopy}</p>
-          <TextList items={experience.longTermImpactCopy} />
         </section>
 
-        <section className="result-section result-card-section thinking-card" aria-labelledby="thinking-title">
-          <h2 id="thinking-title">{RESULT_TEXT.thinkingTitle}</h2>
-          <TextList items={presentation.visibleValidationItems} className="validation-list" />
+        <section className="result-section result-card-section outcome-card" aria-labelledby="outcome-title">
+          <h2 id="outcome-title">{RESULT_TEXT.possibleOutcome}</h2>
+          <p>{experience.sixMonthExitRiskCopy}</p>
+          <p>{experience.age30AnxietyRiskCopy}</p>
+          <p>{experience.adaptationCostCopy}</p>
         </section>
 
         <details className="result-section result-card-section result-more-details">
@@ -280,21 +300,6 @@ function ResultPage({ testSessionId }: ResultPageProps) {
             <section className="result-card-block" aria-label={RESULT_TEXT.notSaying}>
               <h3>{RESULT_TEXT.notSaying}</h3>
               <p>{primaryCopy.notSaying}</p>
-            </section>
-
-            <section className="result-card-block" aria-label={RESULT_TEXT.riskReductionActions}>
-              <h3>{RESULT_TEXT.riskReductionActions}</h3>
-              <TextList items={primaryCopy.riskReductionActions} />
-            </section>
-
-            <section className="result-card-block" aria-label={RESULT_TEXT.whoToAsk}>
-              <h3>{RESULT_TEXT.whoToAsk}</h3>
-              <p>{primaryCopy.whoToAsk}</p>
-            </section>
-
-            <section className="result-card-block" aria-label={RESULT_TEXT.jiGeCanHelpWith}>
-              <h3>{RESULT_TEXT.jiGeCanHelpWith}</h3>
-              <p>{primaryCopy.jiGeCanHelpWith}</p>
             </section>
 
             <section className="result-card-block share-copy" aria-label={RESULT_TEXT.shareLine}>
@@ -347,6 +352,12 @@ function ResultPage({ testSessionId }: ResultPageProps) {
               <div>
                 <dt>risk card copy status</dt>
                 <dd>{presentation.copyStatusForDebug}</dd>
+              </div>
+              <div>
+                <dt>animation / music mood</dt>
+                <dd>
+                  {experience.animationPreset} / {experience.musicMoodKey}
+                </dd>
               </div>
             </dl>
             <details className="debug-details">

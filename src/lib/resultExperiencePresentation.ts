@@ -1,6 +1,8 @@
-export type SceneMood = "hopeful" | "cautious" | "pressure" | "confused" | "stable";
+export type SceneMood = "hopeful" | "cautious" | "pressure" | "confused";
 
-export type VerdictLevel = "bold_try" | "try_carefully" | "avoid_blind_choice" | "recheck_direction";
+export type PathFitBand = "A" | "B" | "C" | "D";
+
+export type RiskPreviewLevel = "较低" | "中等" | "偏高" | "中高" | "较高";
 
 export type ResultExperienceInput = {
   riskCardId: string;
@@ -17,16 +19,27 @@ export type ResultExperienceInput = {
 export type ResultExperiencePresentation = {
   companyTypeLabel: string;
   workTypeLabel: string;
-  verdictLevel: VerdictLevel;
+  pathFitBand: PathFitBand;
+  pathFitPercent: number;
+  pathFitLabel: string;
   verdictTitle: string;
   verdictBody: string;
+  sixMonthExitRiskLevel: RiskPreviewLevel;
+  sixMonthExitRiskIndex: number;
+  sixMonthExitRiskCopy: string;
+  age30AnxietyRiskLevel: RiskPreviewLevel;
+  age30AnxietyRiskIndex: number;
+  age30AnxietyRiskCopy: string;
+  adaptationCostCopy: string;
   sceneMood: SceneMood;
   sceneTitle: string;
   sceneSubtitle: string;
   sceneNarrative: string;
   companyExpectation: string[];
   workExpectation: string[];
-  longTermImpactCopy: string[];
+  animationPreset: string;
+  musicMoodKey: string;
+  musicMoodLabel: string;
 };
 
 const FALLBACK_COMPANY_LABEL = "暂未明确的公司类型";
@@ -48,116 +61,158 @@ const WORK_EXPECTATIONS: Record<string, string[]> = {
   TECH: ["持续学习技术细节", "耐心定位问题", "把复杂任务拆小完成"]
 };
 
-const DEFAULT_EXPECTATION = ["先看清真实工作方式", "确认新人支持机制", "判断自己是否能持续适应"];
+const DEFAULT_EXPECTATION = ["看清真实工作方式", "确认新人支持机制", "判断自己是否能持续适应"];
 
-const VERDICT_BY_CARD_ID: Record<string, VerdictLevel> = {
-  H0_GENERAL_REMINDER: "bold_try",
-  H1_ADAPTATION_BREAK_RISK: "avoid_blind_choice",
-  H2_REALITY_GAP_RISK: "try_carefully",
-  H3_GROWTH_EXHAUSTION: "try_carefully",
-  H4_DIRECTION_MISJUDGMENT_RISK: "recheck_direction",
-  H5_SOE_PROCESS_PRESSURE: "try_carefully",
-  H6_LOW_INITIATIVE_RISK: "try_carefully",
-  H7_EXECUTION_GAP_RISK: "try_carefully",
-  H8_SOCIAL_COLLABORATION_EXHAUSTION_RISK: "try_carefully",
-  H9_FEEDBACK_SENSITIVITY_SELF_DOUBT_RISK: "try_carefully",
-  H10_PEER_PLATFORM_ANXIETY_RISK: "try_carefully",
-  H11_EDUCATION_FILTER_PRESSURE_RISK: "avoid_blind_choice",
-  H12_STABILITY_PREFERENCE_MISMATCH_RISK: "try_carefully",
-  H13_MAJOR_PATH_SWING_RISK: "recheck_direction",
-  H14_GROWTH_SPEED_MISJUDGMENT_RISK: "try_carefully",
-  H15_LOW_TOLERANCE_ROLE_PRESSURE_RISK: "avoid_blind_choice",
-  H16_EXAM_DELAY_PROBLEM: "recheck_direction"
-};
+const C_BAND_CARD_IDS = new Set([
+  "H2_REALITY_GAP_RISK",
+  "H3_GROWTH_EXHAUSTION",
+  "H5_SOE_PROCESS_PRESSURE",
+  "H8_SOCIAL_COLLABORATION_EXHAUSTION_RISK",
+  "H15_LOW_TOLERANCE_ROLE_PRESSURE_RISK",
+  "H16_EXAM_DELAY_PROBLEM"
+]);
 
-const VERDICT_COPY: Record<VerdictLevel, { title: string; body: string; mood: SceneMood }> = {
-  bold_try: {
-    title: "可以大胆尝试",
-    body: "这条路目前没有露出特别强的拦路信号。你可以继续往前看，但仍建议在面试和实习信息里确认真实工作方式。",
-    mood: "hopeful"
+const D_BAND_CARD_IDS = new Set([
+  "H4_DIRECTION_MISJUDGMENT_RISK",
+  "H12_STABILITY_PREFERENCE_MISMATCH_RISK",
+  "H13_MAJOR_PATH_SWING_RISK"
+]);
+
+const BAND_COPY: Record<
+  PathFitBand,
+  {
+    pathFitPercent: number;
+    pathFitLabel: string;
+    verdictTitle: string;
+    verdictBody: string;
+    sixMonthExitRiskLevel: RiskPreviewLevel;
+    sixMonthExitRiskIndex: number;
+    age30AnxietyRiskLevel: RiskPreviewLevel;
+    age30AnxietyRiskIndex: number;
+    sceneMood: SceneMood;
+    sceneTitle: string;
+    sceneSubtitle: string;
+    sceneNarrative: string;
+    animationPreset: string;
+    musicMoodKey: string;
+    musicMoodLabel: string;
+  }
+> = {
+  A: {
+    pathFitPercent: 88,
+    pathFitLabel: "路径适应度较高",
+    verdictTitle: "恭喜你，这条路和你比较匹配",
+    verdictBody:
+      "从这次答题看，你选择的公司类型和岗位类型，和你的性格倾向、工作预期是顺向的。这类岗位要求的工作方式，和你更容易发挥的状态比较接近。只要简历和面试能过关，这条路值得你大胆尝试，它也可能让你未来更有稳定感、成就感和职业幸福感。",
+    sixMonthExitRiskLevel: "较低",
+    sixMonthExitRiskIndex: 18,
+    age30AnxietyRiskLevel: "较低",
+    age30AnxietyRiskIndex: 22,
+    sceneMood: "hopeful",
+    sceneTitle: "门口的灯已经亮了",
+    sceneSubtitle: "这条路可以先往前走几步，再用真实信息校准判断。",
+    sceneNarrative:
+      "你可以把这条路想象成站在一家公司门口，手里拿着第一份 offer。公司和岗位本身没有绝对好坏，真正要看的，是它每天要求你的工作方式，是否和你当前的性格、预期、承压方式相互支持。",
+    animationPreset: "hopeful-rise",
+    musicMoodKey: "warm-upward",
+    musicMoodLabel: "温暖上升"
   },
-  try_carefully: {
-    title: "可以尝试，但不要盲选",
-    body: "这条路不是不能走，关键是先确认它会不会放大你当前最敏感的压力点。看清楚之后再决定，会比只看岗位名字更稳。",
-    mood: "cautious"
+  B: {
+    pathFitPercent: 76,
+    pathFitLabel: "路径适应度中等偏上",
+    verdictTitle: "这条路可以走，但不要只看表面",
+    verdictBody:
+      "这类公司和岗位整体不算明显错配，但它仍然会考验你对真实工作日常的接受程度。如果你选择它，是因为你真的理解它每天要做什么，这条路可以尝试。如果你只是被公司名、岗位名、稳定感或热门程度吸引，入职后可能会出现落差。",
+    sixMonthExitRiskLevel: "中等",
+    sixMonthExitRiskIndex: 38,
+    age30AnxietyRiskLevel: "中等",
+    age30AnxietyRiskIndex: 42,
+    sceneMood: "cautious",
+    sceneTitle: "先把路灯打开",
+    sceneSubtitle: "不是要停下，而是先看清这条路每天会要求你怎样工作。",
+    sceneNarrative:
+      "你可以把这条路想象成一段刚下雨的街道。它能通向机会，但路面有些地方会滑，先确认压力来自哪里，再决定怎么走。",
+    animationPreset: "cautious-branch",
+    musicMoodKey: "thoughtful-light",
+    musicMoodLabel: "轻微思考感"
   },
-  avoid_blind_choice: {
-    title: "不建议盲目硬选",
-    body: "这条路可能会在试用期或前半年放大适应压力。你可以继续了解，但最好先把新人支持、任务节奏和反馈方式问清楚。",
-    mood: "pressure"
+  C: {
+    pathFitPercent: 58,
+    pathFitLabel: "路径适应度偏低",
+    verdictTitle: "这个岗位未必适合你现在的性格和工作预期",
+    verdictBody:
+      "不是说你不能做，而是这类岗位要求的工作方式，和你当前更舒服、更容易发挥的环境之间存在差距。如果你能在入职后的 3 到 6 个月内调整自己，接受这种差距，并适应它的节奏，这条路仍然可以走。但如果调整不好，6 个月内离职风险会增加。",
+    sixMonthExitRiskLevel: "偏高",
+    sixMonthExitRiskIndex: 68,
+    age30AnxietyRiskLevel: "中高",
+    age30AnxietyRiskIndex: 60,
+    sceneMood: "pressure",
+    sceneTitle: "别急着冲进人群",
+    sceneSubtitle: "这条路可能有机会，也可能提前消耗你的适应力。",
+    sceneNarrative:
+      "你可以把这条路想象成一座很忙的办公楼。门开着，但里面的节奏、反馈和要求需要先看清，不必只凭热闹程度做决定。",
+    animationPreset: "pressure-wave",
+    musicMoodKey: "slow-pressure",
+    musicMoodLabel: "低频压力感"
   },
-  recheck_direction: {
-    title: "建议先重新看一眼方向",
-    body: "这次结果提示，你可能还需要先分清这是主动选择，还是被外部压力推着走。方向看清后，再判断岗位会更可靠。",
-    mood: "confused"
+  D: {
+    pathFitPercent: 42,
+    pathFitLabel: "路径适应度较低",
+    verdictTitle: "这条路对你当前阶段不太友好",
+    verdictBody:
+      "这不是在否定你的能力，而是在提醒你：你选择的公司类型和岗位类型，可能会持续放大你当前最敏感的压力点。如果强行进入，短期可能影响试用期适应；中期可能让你一年后怀疑自己是不是选错了方向；更长期看，可能增加你在 30 岁前后的职场焦虑。这条路不是绝对不能走，但你需要非常清楚自己要承担的适应成本。",
+    sixMonthExitRiskLevel: "较高",
+    sixMonthExitRiskIndex: 66,
+    age30AnxietyRiskLevel: "较高",
+    age30AnxietyRiskIndex: 84,
+    sceneMood: "confused",
+    sceneTitle: "先确认自己要去哪里",
+    sceneSubtitle: "方向感比立刻做选择更重要。",
+    sceneNarrative:
+      "你可以把这条路想象成一个岔路口。每条路都有人在走，但你需要先分清自己是想靠近机会，还是只是想暂时离开焦虑。",
+    animationPreset: "foggy-crossroad",
+    musicMoodKey: "low-uncertain",
+    musicMoodLabel: "低频不确定感"
   }
 };
 
-const SCENE_BY_MOOD: Record<SceneMood, { title: string; subtitle: string; narrative: string }> = {
-  hopeful: {
-    title: "门口的灯已经亮了",
-    subtitle: "这条路可以先往前走几步，再用真实信息校准判断。",
-    narrative:
-      "你可以把这条路想象成站在一家公司门口，手里拿着第一份 offer。它没有绝对好坏，关键是你能不能在真实工作节奏里持续成长。"
-  },
-  cautious: {
-    title: "先把路灯打开",
-    subtitle: "不是要停下，而是先看清这条路每天会要求你怎样工作。",
-    narrative:
-      "你可以把这条路想象成一段刚下雨的街道。它能通向机会，但路面有些地方会滑，先确认压力来自哪里，再决定怎么走。"
-  },
-  pressure: {
-    title: "别急着冲进人群",
-    subtitle: "这条路可能有机会，也可能提前消耗你的适应力。",
-    narrative:
-      "你可以把这条路想象成一座很忙的办公楼。门开着，但里面的节奏、反馈和要求需要先看清，不必只凭热闹程度做决定。"
-  },
-  confused: {
-    title: "先确认自己要去哪里",
-    subtitle: "方向感比立刻做选择更重要。",
-    narrative:
-      "你可以把这条路想象成一个岔路口。每条路都有人在走，但你需要先分清自己是想靠近机会，还是只是想暂时离开焦虑。"
-  },
-  stable: {
-    title: "慢一点也可以走稳",
-    subtitle: "先确认规则、支持和成长空间，再决定投入多少期待。",
-    narrative:
-      "你可以把这条路想象成一条安静的走廊。它看起来稳定，但真正重要的是里面有没有适合新人练习和被看见的位置。"
-  }
-};
-
-function pickVerdictLevel(riskCardId: string, isFallback: boolean): VerdictLevel {
-  if (isFallback) return "bold_try";
-  return VERDICT_BY_CARD_ID[riskCardId] ?? "try_carefully";
-}
-
-function pickSceneMood(verdictLevel: VerdictLevel, companyTypeId?: string): SceneMood {
-  if (companyTypeId === "SOE" && verdictLevel === "try_carefully") return "stable";
-  return VERDICT_COPY[verdictLevel].mood;
+function pickPathFitBand(riskCardId: string, isFallback: boolean): PathFitBand {
+  if (isFallback || riskCardId === "H0_GENERAL_REMINDER") return "A";
+  if (D_BAND_CARD_IDS.has(riskCardId)) return "D";
+  if (C_BAND_CARD_IDS.has(riskCardId)) return "C";
+  return "B";
 }
 
 export function buildResultExperiencePresentation(input: ResultExperienceInput): ResultExperiencePresentation {
-  const verdictLevel = pickVerdictLevel(input.riskCardId, input.isFallback);
-  const verdictCopy = VERDICT_COPY[verdictLevel];
-  const sceneMood = pickSceneMood(verdictLevel, input.companyTypeId);
-  const sceneCopy = SCENE_BY_MOOD[sceneMood];
+  const pathFitBand = pickPathFitBand(input.riskCardId, input.isFallback);
+  const bandCopy = BAND_COPY[pathFitBand];
 
   return {
     companyTypeLabel: input.companyTypeLabel || FALLBACK_COMPANY_LABEL,
     workTypeLabel: input.workTypeLabel || FALLBACK_WORK_LABEL,
-    verdictLevel,
-    verdictTitle: verdictCopy.title,
-    verdictBody: verdictCopy.body,
-    sceneMood,
-    sceneTitle: sceneCopy.title,
-    sceneSubtitle: sceneCopy.subtitle,
-    sceneNarrative: sceneCopy.narrative,
+    pathFitBand,
+    pathFitPercent: bandCopy.pathFitPercent,
+    pathFitLabel: bandCopy.pathFitLabel,
+    verdictTitle: bandCopy.verdictTitle,
+    verdictBody: bandCopy.verdictBody,
+    sixMonthExitRiskLevel: bandCopy.sixMonthExitRiskLevel,
+    sixMonthExitRiskIndex: bandCopy.sixMonthExitRiskIndex,
+    sixMonthExitRiskCopy:
+      "这个风险主要来自你的性格、承压方式和岗位日常要求之间的摩擦。如果入职后长期处在不舒服的工作方式里，短期离职风险会被放大。",
+    age30AnxietyRiskLevel: bandCopy.age30AnxietyRiskLevel,
+    age30AnxietyRiskIndex: bandCopy.age30AnxietyRiskIndex,
+    age30AnxietyRiskCopy:
+      "这个风险主要来自你对公司名、岗位名、稳定感、热门程度的想象，和真实工作日常之间的落差。如果长期在一条并不适合自己的路径里积累经验，未来可能影响你在 30 岁前后形成清晰、稳定的职业能力标签。",
+    adaptationCostCopy:
+      "这次结果只提示路径适配风险，不直接告诉你应该换到哪条路。你需要重点看清：如果继续选择这条路，自己要承担多大的适应成本。",
+    sceneMood: bandCopy.sceneMood,
+    sceneTitle: bandCopy.sceneTitle,
+    sceneSubtitle: bandCopy.sceneSubtitle,
+    sceneNarrative: bandCopy.sceneNarrative,
     companyExpectation: input.companyTypeId ? COMPANY_EXPECTATIONS[input.companyTypeId] ?? DEFAULT_EXPECTATION : DEFAULT_EXPECTATION,
     workExpectation: input.workTypeId ? WORK_EXPECTATIONS[input.workTypeId] ?? DEFAULT_EXPECTATION : DEFAULT_EXPECTATION,
-    longTermImpactCopy: [
-      "短期可能影响你进入试用期后的适应速度。",
-      "中期可能让你在一年后重新怀疑这条路是不是选得太快。",
-      "长期可能影响你在 30 岁前后形成清晰的职业能力标签。"
-    ]
+    animationPreset: bandCopy.animationPreset,
+    musicMoodKey: bandCopy.musicMoodKey,
+    musicMoodLabel: bandCopy.musicMoodLabel
   };
 }

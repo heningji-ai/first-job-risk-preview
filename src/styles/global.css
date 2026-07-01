@@ -310,15 +310,24 @@ p {
 }
 
 .scene-cautious .scene-hero,
-.scene-pressure .scene-hero {
+.scene-pressure .scene-hero,
+.band-b .scene-hero,
+.band-c .scene-hero {
   background:
     linear-gradient(160deg, rgba(249, 241, 230, 0.96), rgba(229, 234, 239, 0.96) 62%, rgba(246, 247, 249, 0.98)),
     #ffffff;
 }
 
-.scene-confused .scene-hero {
+.scene-confused .scene-hero,
+.band-d .scene-hero {
   background:
     linear-gradient(160deg, rgba(239, 242, 246, 0.96), rgba(229, 238, 235, 0.96) 62%, rgba(248, 246, 240, 0.98)),
+    #ffffff;
+}
+
+.band-a .scene-hero {
+  background:
+    linear-gradient(160deg, rgba(255, 249, 233, 0.96), rgba(224, 241, 233, 0.96) 58%, rgba(246, 249, 246, 0.98)),
     #ffffff;
 }
 
@@ -421,6 +430,33 @@ p {
   transform: skewX(-16deg);
 }
 
+.scene-wave {
+  position: absolute;
+  left: -12%;
+  bottom: 54px;
+  width: 124%;
+  height: 72px;
+  border-radius: 999px;
+  background: rgba(63, 125, 105, 0.08);
+  transform: rotate(-4deg);
+}
+
+.band-a .scene-sun {
+  animation: sceneGlow 5s ease-in-out infinite;
+}
+
+.band-b .scene-road {
+  animation: sceneBreathe 6s ease-in-out infinite;
+}
+
+.band-c .scene-wave {
+  animation: pressureWave 4.8s ease-in-out infinite;
+}
+
+.band-d .scene-building {
+  animation: softDrift 7s ease-in-out infinite;
+}
+
 .scene-building {
   position: absolute;
   bottom: 0;
@@ -502,8 +538,46 @@ p {
   background: #fffaf2;
 }
 
+.outcome-card {
+  border-color: #eadac6;
+  background: #fffaf2;
+}
+
 .thinking-card {
   border-color: #cfe1da;
+}
+
+.metric-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.metric-card {
+  display: grid;
+  gap: 6px;
+  padding: 16px;
+  border: 1px solid #d8dde3;
+  border-radius: 8px;
+  background: #ffffff;
+}
+
+.metric-card strong {
+  color: #172026;
+  font-size: 26px;
+  line-height: 1.15;
+}
+
+.metric-card span {
+  color: #3f4b55;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.metric-note {
+  margin-top: -4px;
+  color: #5d6b78;
+  font-size: 13px;
 }
 
 .risk-card-list {
@@ -795,6 +869,59 @@ p {
   overflow-wrap: anywhere;
 }
 
+@keyframes sceneGlow {
+  0%,
+  100% {
+    opacity: 0.64;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.86;
+    transform: scale(1.08);
+  }
+}
+
+@keyframes sceneBreathe {
+  0%,
+  100% {
+    transform: skewX(-16deg) translateX(0);
+  }
+  50% {
+    transform: skewX(-16deg) translateX(-10px);
+  }
+}
+
+@keyframes pressureWave {
+  0%,
+  100% {
+    opacity: 0.08;
+    transform: rotate(-4deg) translateY(0);
+  }
+  50% {
+    opacity: 0.18;
+    transform: rotate(-4deg) translateY(-8px);
+  }
+}
+
+@keyframes softDrift {
+  0%,
+  100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(6px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .band-a .scene-sun,
+  .band-b .scene-road,
+  .band-c .scene-wave,
+  .band-d .scene-building {
+    animation: none;
+  }
+}
+
 @media (max-width: 520px) {
   .app-shell,
   .test-shell,
@@ -858,6 +985,10 @@ p {
   }
 
   .expectation-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .metric-grid {
     grid-template-columns: 1fr;
   }
 }

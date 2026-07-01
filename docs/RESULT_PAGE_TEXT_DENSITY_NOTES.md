@@ -8,15 +8,18 @@
 
 后续产品方向进一步确认，结果页会从传统报告页转向场景化结果体验页，因此默认信息密度仍需要保持克制。
 
+最新结果页定位已调整为“第一份工作路径适配风险预演”，默认只展示路径风险预演需要的核心判断，不展示解决方案类内容。
+
 ## 2. 默认展示内容
 
 普通用户默认可见区域只保留：
 
 - 场景化 Hero 和一句说明
-- 单个主风险的 `displayName`
-- 单个主风险的 `oneLineRiskPrompt`
-- 单个主风险的 `resultShortCopy`
-- 最多 3 条 `preChoiceValidationChecklist`
+- A/B/C/D 路径适配档位
+- 路径适应度参考值
+- 6 个月离职风险预演值
+- 30 岁后职场焦虑风险预演值
+- 单个主风险的短说明
 - 一句当前限制说明，不展示 copy 状态
 - 精简后的公众号 / 企业微信承接入口
 
@@ -26,9 +29,6 @@
 
 - `typicalScenes`
 - `notSaying`
-- `riskReductionActions`
-- `whoToAsk`
-- `jiGeCanHelpWith`
 - `shareShortCopy`
 
 这些内容不再默认全部展开，避免挤压主结果阅读。
