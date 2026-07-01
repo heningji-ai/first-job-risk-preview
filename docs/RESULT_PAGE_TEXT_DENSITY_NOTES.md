@@ -48,7 +48,7 @@
 
 本阶段没有修改评分逻辑、风险卡触发逻辑或 resultPipeline。
 
-普通用户默认可见区不展示 `copyStatusSummary`、`PRODUCT_DRAFT`、`APPROVED` 或 `ENGINEERING_PLACEHOLDER`。如需查看 copy 状态，仅保留在开发调试区。
+普通用户默认可见区不展示 copy 状态字段。如需查看相关状态，仅保留在开发调试区。
 
 本阶段没有新增后端、数据库、openid、登录、支付、表单或真实分享链路。
 
