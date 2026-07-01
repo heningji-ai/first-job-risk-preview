@@ -65,8 +65,7 @@ const RESULT_TEXT = {
   publicAccountLabel: "公众号",
   publicAccountName: "猎头季哥人才重估实验室",
   wecomLabel: "企业微信",
-  wecomName: "猎头季哥",
-  wecomPlaceholder: "【上线前补充】",
+  wecomName: "关注公众号后，回复【重估】获取添加方式",
   ctaBoundary: "关注公众号或添加企业微信，不等于进入一对一服务，是否进一步沟通以后续实际问题为准。"
 };
 
@@ -327,7 +326,6 @@ function ResultPage({ testSessionId }: ResultPageProps) {
             <section className="cta-entry cta-entry-compact" aria-label={RESULT_TEXT.wecomLabel}>
               <p className="cta-entry-label">{RESULT_TEXT.wecomLabel}</p>
               <h3>{RESULT_TEXT.wecomName}</h3>
-              <p className="cta-pending-text">{RESULT_TEXT.wecomPlaceholder}</p>
             </section>
           </div>
 
