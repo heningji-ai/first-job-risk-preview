@@ -118,6 +118,145 @@ p {
   color: #3f4b55;
 }
 
+.home-copy {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 26px;
+  color: #3f4b55;
+}
+
+.home-panel {
+  width: min(100%, 980px);
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
+  gap: 26px;
+  align-items: center;
+}
+
+.home-content {
+  min-width: 0;
+}
+
+.home-action {
+  display: flex;
+  justify-content: center;
+}
+
+.home-button {
+  width: min(100%, 220px);
+}
+
+.home-visual {
+  position: relative;
+  min-height: 230px;
+  overflow: hidden;
+  border: 1px solid #d8dde3;
+  border-radius: 12px;
+  background:
+    linear-gradient(155deg, rgba(255, 249, 235, 0.96), rgba(229, 239, 236, 0.98) 54%, rgba(246, 248, 250, 0.98)),
+    #ffffff;
+}
+
+.home-glow {
+  position: absolute;
+  inset: 24px 34px auto auto;
+  width: 112px;
+  height: 112px;
+  border-radius: 999px;
+  background: rgba(243, 191, 102, 0.42);
+  filter: blur(3px);
+}
+
+.home-person {
+  position: absolute;
+  left: 50%;
+  bottom: 58px;
+  width: 52px;
+  height: 92px;
+  transform: translateX(-50%);
+}
+
+.home-person-head,
+.home-person-body {
+  position: absolute;
+  left: 50%;
+  display: block;
+  transform: translateX(-50%);
+}
+
+.home-person-head {
+  top: 0;
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: #244d41;
+}
+
+.home-person-body {
+  top: 31px;
+  width: 32px;
+  height: 52px;
+  border-radius: 18px 18px 10px 10px;
+  background: #3f7d69;
+}
+
+.home-path {
+  position: absolute;
+  bottom: -28px;
+  left: 50%;
+  width: 34%;
+  height: 132px;
+  border-radius: 999px 999px 0 0;
+  border: 14px solid rgba(63, 125, 105, 0.15);
+  border-bottom: 0;
+  transform-origin: bottom center;
+}
+
+.home-path-left {
+  transform: translateX(-92%) rotate(-28deg);
+}
+
+.home-path-center {
+  width: 24%;
+  transform: translateX(-50%);
+}
+
+.home-path-right {
+  transform: translateX(-8%) rotate(28deg);
+}
+
+.home-floating-card {
+  position: absolute;
+  min-width: 58px;
+  padding: 8px 10px;
+  border: 1px solid rgba(23, 32, 38, 0.12);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #244d41;
+  font-size: 13px;
+  font-weight: 700;
+  text-align: center;
+  box-shadow: 0 10px 28px rgba(23, 32, 38, 0.08);
+  animation: homeFloat 5.2s ease-in-out infinite;
+}
+
+.home-floating-card-company {
+  top: 38px;
+  left: 26px;
+}
+
+.home-floating-card-role {
+  top: 76px;
+  right: 28px;
+  animation-delay: 0.8s;
+}
+
+.home-floating-card-first {
+  left: 34px;
+  bottom: 36px;
+  animation-delay: 1.4s;
+}
+
 .primary-button,
 .secondary-button,
 .option-button {
@@ -206,12 +345,50 @@ p {
   background: #3f7d69;
 }
 
+.question-guide {
+  padding: 14px 16px;
+  border: 1px solid #cfe1da;
+  border-radius: 8px;
+  background: #f4faf7;
+  color: #244d41;
+}
+
 .inline-notice {
   margin-top: 16px;
   padding: 12px;
   border-left: 3px solid #3f7d69;
   background: #f1f6f4;
   color: #2d5549;
+}
+
+.completion-panel {
+  display: grid;
+  gap: 16px;
+  align-self: flex-start;
+  margin-top: 48px;
+}
+
+.completion-button {
+  justify-self: start;
+}
+
+.section-intro-panel {
+  display: grid;
+  gap: 18px;
+  align-self: flex-start;
+  margin-top: 34px;
+}
+
+.section-intro-copy {
+  display: grid;
+  gap: 12px;
+  color: #3f4b55;
+}
+
+.section-intro-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
 }
 
 .result-list {
@@ -913,11 +1090,22 @@ p {
   }
 }
 
+@keyframes homeFloat {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-7px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .band-a .scene-sun,
   .band-b .scene-road,
   .band-c .scene-wave,
-  .band-d .scene-building {
+  .band-d .scene-building,
+  .home-floating-card {
     animation: none;
   }
 }
@@ -934,6 +1122,48 @@ p {
   .result-panel,
   .question-panel {
     padding: 20px;
+  }
+
+  .home-panel {
+    grid-template-columns: 1fr;
+    gap: 18px;
+  }
+
+  .home-visual {
+    min-height: 190px;
+    order: 2;
+  }
+
+  .home-copy {
+    order: 3;
+    margin-bottom: 22px;
+  }
+
+  .home-action {
+    order: 4;
+  }
+
+  .home-content {
+    display: contents;
+  }
+
+  .home-floating-card-company {
+    top: 24px;
+    left: 18px;
+  }
+
+  .home-floating-card-role {
+    top: 52px;
+    right: 18px;
+  }
+
+  .home-floating-card-first {
+    left: 22px;
+    bottom: 24px;
+  }
+
+  .section-intro-actions {
+    grid-template-columns: 1fr;
   }
 
   .result-page {

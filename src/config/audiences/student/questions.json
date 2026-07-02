@@ -222,7 +222,7 @@
       "sourceCode": "A5",
       "group": "base_profile",
       "order": 5,
-      "text": "想测试的公司类型",
+      "text": "未来第一份工作，你更想进入哪类公司？",
       "type": "single_choice",
       "required": true,
       "options": [
@@ -273,7 +273,7 @@
       "sourceCode": "A6",
       "group": "base_profile",
       "order": 6,
-      "text": "\u4f60\u73b0\u5728\u6700\u60f3\u6d4b\u8bd5\u54ea\u4e00\u7c7b\u7b2c\u4e00\u4efd\u5de5\u4f5c\uff1f\n\u4e0d\u7528\u9009\u5f97\u7279\u522b\u51c6\uff0c\u9009\u6700\u63a5\u8fd1\u7684\u4e00\u7c7b\u5c31\u884c\u3002",
+      "text": "你现在对哪类岗位更有兴趣？",
       "type": "single_choice",
       "required": true,
       "options": [
@@ -407,7 +407,7 @@
       "sourceCode": "A8",
       "group": "base_profile",
       "order": 8,
-      "text": "当前最担心的问题",
+      "text": "真正开始找工作前，你心里最担心什么？",
       "type": "single_choice",
       "required": true,
       "options": [
@@ -445,7 +445,7 @@
         },
         {
           "id": "adaptation_worry",
-          "text": "入职后不适应",
+          "text": "入职后没人带，不知道怎么开始",
           "scores": {
             "dimensions": {},
             "directR": {
