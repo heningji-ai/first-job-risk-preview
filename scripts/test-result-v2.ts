@@ -13,6 +13,11 @@ const { derivePathSelectionV2, getVisibleQuestionsV2, scorePathFitV2 } = await i
   "../src/lib/pathFitScoringV2" + ".ts"
 );
 const { buildPathFitResultV2 } = await import("../src/lib/pathFitResultBuilderV2" + ".ts");
+const {
+  getPathFitSampleAnswerMapV2,
+  PATH_FIT_V2_SAMPLE_KEYS,
+  PATH_FIT_V2_SAMPLE_LABELS
+} = await import("../src/lib/pathFitSampleAnswersV2" + ".ts");
 
 type SampleContext = {
   companyType: CompanyTypeV2;
@@ -296,4 +301,40 @@ for (const sample of samples) {
   summarize(sample, result);
 }
 
+for (const sampleKey of PATH_FIT_V2_SAMPLE_KEYS) {
+  const answerMap = getPathFitSampleAnswerMapV2(sampleKey);
+  const scoringResult = scorePathFitV2(answerMap, { questions, strict: true });
+  const result = buildPathFitResultV2(answerMap);
+
+  assert(
+    scoringResult.visibleQuestionIds.length === 30,
+    `${sampleKey}: visibleQuestionIds must be 30`
+  );
+  assert(
+    scoringResult.answeredQuestionCount === 30,
+    `${sampleKey}: answeredQuestionCount must be 30`
+  );
+  assertResultShape(
+    {
+      name: sampleKey,
+      companyType: scoringResult.pathSelection.companyType,
+      roleType: scoringResult.pathSelection.roleType,
+      chooser: (question) => question.options[0].optionId
+    },
+    result
+  );
+  assertScoringConsistency(
+    {
+      name: sampleKey,
+      companyType: scoringResult.pathSelection.companyType,
+      roleType: scoringResult.pathSelection.roleType,
+      chooser: (question) => question.options[0].optionId
+    },
+    answerMap,
+    result
+  );
+  console.log(`[test-result-v2] PASS: ${sampleKey} ${PATH_FIT_V2_SAMPLE_LABELS[sampleKey]}`);
+}
+
 console.log(`[test-result-v2] PASS: ${samples.length} samples`);
+console.log(`[test-result-v2] PASS: ${PATH_FIT_V2_SAMPLE_KEYS.length} preview sample answer maps`);

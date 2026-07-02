@@ -3,12 +3,14 @@ import { useEffect, useMemo, useState } from "react";
 export type Route =
   | { name: "home"; path: "/" }
   | { name: "test"; path: "/test" }
+  | { name: "result_v2_preview"; path: "/result-v2-preview" }
   | { name: "result"; path: string; testSessionId: string }
   | { name: "not_found"; path: string };
 
 function parsePath(path: string): Route {
   if (path === "/") return { name: "home", path };
   if (path === "/test") return { name: "test", path };
+  if (path === "/result-v2-preview") return { name: "result_v2_preview", path };
 
   const resultMatch = path.match(/^\/result\/([^/]+)$/);
   if (resultMatch) {

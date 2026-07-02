@@ -1,6 +1,7 @@
 import { navigateTo, useRoute } from "./lib/router";
 import HomePage from "./pages/HomePage";
 import ResultPage from "./pages/ResultPage";
+import ResultPageV2Preview from "./pages/ResultPageV2Preview";
 import TestPage from "./pages/TestPage";
 
 function App() {
@@ -8,6 +9,7 @@ function App() {
 
   if (route.name === "home") return <HomePage />;
   if (route.name === "test") return <TestPage />;
+  if (route.name === "result_v2_preview") return <ResultPageV2Preview />;
   if (route.name === "result") return <ResultPage testSessionId={route.testSessionId} />;
 
   return (
