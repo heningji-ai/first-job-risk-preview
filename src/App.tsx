@@ -3,12 +3,14 @@ import HomePage from "./pages/HomePage";
 import ResultPage from "./pages/ResultPage";
 import ResultPageV2Preview from "./pages/ResultPageV2Preview";
 import TestPage from "./pages/TestPage";
+import TestPageV2Preview from "./pages/TestPageV2Preview";
 
 function App() {
   const route = useRoute();
 
   if (route.name === "home") return <HomePage />;
   if (route.name === "test") return <TestPage />;
+  if (route.name === "test_v2_preview") return <TestPageV2Preview />;
   if (route.name === "result_v2_preview") return <ResultPageV2Preview />;
   if (route.name === "result") return <ResultPage testSessionId={route.testSessionId} />;
 
