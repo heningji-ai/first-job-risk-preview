@@ -80,15 +80,15 @@
           "optionId": "A1_3",
           "label": "已毕业正在找第一份工作",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "admissionFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
+              "soe": -1,
+              "mnc": -1,
+              "big_platform": -1,
               "startup": 0,
               "sme_private": 0
             },
@@ -155,24 +155,24 @@
           "optionId": "A2_1",
           "label": "专科",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "admissionFitScore"
             ],
             "company": {
-              "soe": -1,
-              "mnc": -1,
+              "soe": -2,
+              "mnc": -2,
               "big_platform": -2,
-              "startup": 0,
-              "sme_private": 0
+              "startup": -1,
+              "sme_private": -1
             },
             "role": {
               "sales": 0,
               "operation_project": 0,
               "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "tech_data_product": -2,
+              "function_support": -1
             },
             "tags": [
               "admission_barrier"
@@ -374,24 +374,24 @@
           "optionId": "A3_4",
           "label": "学校和专业都需要更多材料来证明",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "admissionFitScore"
             ],
             "company": {
-              "soe": -1,
-              "mnc": -1,
-              "big_platform": -1,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -1,
+              "sme_private": -1
             },
             "role": {
               "sales": 0,
               "operation_project": 0,
               "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "tech_data_product": -2,
+              "function_support": -1
             },
             "tags": [
               "admission_barrier"
@@ -507,23 +507,23 @@
           "optionId": "A4_4",
           "label": "目前主要靠后续材料补充证明",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "admissionFitScore"
             ],
             "company": {
               "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
+              "mnc": -1,
+              "big_platform": -1,
               "startup": 0,
               "sme_private": 0
             },
             "role": {
               "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": -1,
+              "operation_project": -1,
+              "content_marketing": -1,
+              "tech_data_product": -2,
               "function_support": 0
             },
             "tags": [
@@ -639,15 +639,15 @@
           "optionId": "A5_4",
           "label": "暂时主要靠后续简历材料补充证明",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "admissionFitScore"
             ],
             "company": {
               "soe": 0,
-              "mnc": -1,
-              "big_platform": -1,
+              "mnc": -2,
+              "big_platform": -2,
               "startup": 0,
               "sme_private": 0
             },
@@ -655,7 +655,7 @@
               "sales": 0,
               "operation_project": 0,
               "content_marketing": 0,
-              "tech_data_product": 0,
+              "tech_data_product": -1,
               "function_support": 0
             },
             "tags": [
@@ -771,23 +771,23 @@
           "optionId": "A6_4",
           "label": "目前还需要补充可展示材料",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "admissionFitScore"
             ],
             "company": {
               "soe": 0,
-              "mnc": -1,
-              "big_platform": -1,
+              "mnc": -2,
+              "big_platform": -2,
               "startup": 0,
               "sme_private": 0
             },
             "role": {
               "sales": 0,
-              "operation_project": 0,
-              "content_marketing": -1,
-              "tech_data_product": -1,
+              "operation_project": -2,
+              "content_marketing": -2,
+              "tech_data_product": -2,
               "function_support": 0
             },
             "tags": [
@@ -1124,8 +1124,8 @@
           "optionId": "M1_1",
           "label": "想要一个相对稳定的开始",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "motivationFitScore"
             ],
@@ -1133,12 +1133,12 @@
               "soe": 2,
               "mnc": 1,
               "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "startup": -2,
+              "sme_private": -1
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
+              "sales": -2,
+              "operation_project": -1,
               "content_marketing": 0,
               "tech_data_product": 0,
               "function_support": 1
@@ -1212,24 +1212,24 @@
           "optionId": "M1_4",
           "label": "暂时不确定，想先选一个方向试试",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "motivationFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -1,
+              "mnc": -1,
+              "big_platform": -1,
+              "startup": -1,
+              "sme_private": -1
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "sales": -1,
+              "operation_project": -1,
+              "content_marketing": -1,
+              "tech_data_product": -1,
+              "function_support": -1
             },
             "tags": [
               "uncertainty_tolerance"
@@ -1286,8 +1286,8 @@
           "optionId": "M2_2",
           "label": "担心入职后没人系统带",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "motivationFitScore"
             ],
@@ -1295,12 +1295,12 @@
               "soe": 0,
               "mnc": 0,
               "big_platform": 0,
-              "startup": -1,
-              "sme_private": -1
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
+              "sales": -1,
+              "operation_project": -1,
               "content_marketing": 0,
               "tech_data_product": 0,
               "function_support": 0
@@ -1389,8 +1389,8 @@
           "optionId": "M3_1",
           "label": "有清晰培养",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "motivationFitScore"
             ],
@@ -1398,12 +1398,12 @@
               "soe": 1,
               "mnc": 1,
               "big_platform": 0,
-              "startup": -1,
-              "sme_private": -1
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
+              "sales": -1,
+              "operation_project": -1,
               "content_marketing": 0,
               "tech_data_product": 0,
               "function_support": 0
@@ -1447,21 +1447,21 @@
           "optionId": "M3_3",
           "label": "有稳定节奏",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "motivationFitScore"
             ],
             "company": {
               "soe": 2,
               "mnc": 1,
-              "big_platform": 0,
-              "startup": 0,
+              "big_platform": -1,
+              "startup": -2,
               "sme_private": 0
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
+              "sales": -2,
+              "operation_project": -1,
               "content_marketing": 0,
               "tech_data_product": 0,
               "function_support": 1
@@ -1551,21 +1551,21 @@
           "optionId": "M4_2",
           "label": "日常节奏持续很快",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "motivationFitScore"
             ],
             "company": {
               "soe": 0,
               "mnc": 0,
-              "big_platform": -1,
-              "startup": -1,
+              "big_platform": -2,
+              "startup": -2,
               "sme_private": 0
             },
             "role": {
-              "sales": -1,
-              "operation_project": -1,
+              "sales": -2,
+              "operation_project": -2,
               "content_marketing": 0,
               "tech_data_product": 0,
               "function_support": 0
@@ -1609,8 +1609,8 @@
           "optionId": "M4_4",
           "label": "职责边界会阶段性变化",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "motivationFitScore"
             ],
@@ -1618,12 +1618,12 @@
               "soe": 0,
               "mnc": 0,
               "big_platform": 0,
-              "startup": -1,
-              "sme_private": -1
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
-              "sales": 0,
-              "operation_project": -1,
+              "sales": -1,
+              "operation_project": -2,
               "content_marketing": 0,
               "tech_data_product": 0,
               "function_support": 0
@@ -1712,21 +1712,21 @@
           "optionId": "M5_3",
           "label": "节奏慢但稳定积累",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "motivationFitScore"
             ],
             "company": {
               "soe": 2,
               "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
+              "big_platform": -1,
+              "startup": -2,
               "sme_private": 0
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
+              "sales": -2,
+              "operation_project": -1,
               "content_marketing": 0,
               "tech_data_product": 0,
               "function_support": 1
@@ -1874,23 +1874,23 @@
           "optionId": "W1_4",
           "label": "把流程理顺后更安心",
           "optionSignal": {
-            "signalLevel": "positive",
-            "scoreDelta": 1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "baseWorkStyleFitScore"
             ],
             "company": {
               "soe": 1,
               "mnc": 1,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "big_platform": -1,
+              "startup": -2,
+              "sme_private": -1
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -1,
+              "tech_data_product": -1,
               "function_support": 2
             },
             "tags": [
@@ -2007,23 +2007,23 @@
           "optionId": "W2_4",
           "label": "先观察别人怎么做",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "baseWorkStyleFitScore"
             ],
             "company": {
               "soe": 1,
               "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 1
+              "big_platform": -1,
+              "startup": -2,
+              "sme_private": -1
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -1,
+              "tech_data_product": -1,
               "function_support": 1
             },
             "tags": [
@@ -2140,23 +2140,23 @@
           "optionId": "W3_4",
           "label": "先确认关键边界和判断标准，投入会更稳定",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "baseWorkStyleFitScore"
             ],
             "company": {
               "soe": 1,
               "mnc": 1,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "big_platform": -1,
+              "startup": -2,
+              "sme_private": -1
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -1,
+              "tech_data_product": -1,
               "function_support": 1
             },
             "tags": [
@@ -2216,23 +2216,23 @@
           "optionId": "W4_2",
           "label": "先消化一下，再判断哪些反馈值得吸收",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "baseWorkStyleFitScore"
             ],
             "company": {
               "soe": 0,
               "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "big_platform": -1,
+              "startup": -2,
+              "sme_private": -1
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -1,
+              "tech_data_product": -1,
               "function_support": 0
             },
             "tags": [
@@ -2378,23 +2378,23 @@
           "optionId": "W5_3",
           "label": "有人定期对齐进度时，会更稳定",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "baseWorkStyleFitScore"
             ],
             "company": {
               "soe": 1,
               "mnc": 1,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "big_platform": -1,
+              "startup": -2,
+              "sme_private": -1
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -1,
+              "tech_data_product": -1,
               "function_support": 1
             },
             "tags": [
@@ -2540,23 +2540,23 @@
           "optionId": "W6_4",
           "label": "看团队习惯再调整",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "baseWorkStyleFitScore"
             ],
             "company": {
               "soe": 0,
               "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "big_platform": -1,
+              "startup": -2,
+              "sme_private": -1
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -1,
+              "tech_data_product": -1,
               "function_support": 0
             },
             "tags": [
@@ -2673,8 +2673,8 @@
           "optionId": "W7_4",
           "label": "节奏会受到影响，需要外部校准",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "baseWorkStyleFitScore"
             ],
@@ -2682,14 +2682,14 @@
               "soe": 0,
               "mnc": 0,
               "big_platform": -1,
-              "startup": -1,
-              "sme_private": 0
+              "startup": -2,
+              "sme_private": -1
             },
             "role": {
-              "sales": -1,
-              "operation_project": -1,
-              "content_marketing": 0,
-              "tech_data_product": 0,
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -1,
+              "tech_data_product": -1,
               "function_support": 0
             },
             "tags": [
@@ -2718,23 +2718,23 @@
           "optionId": "W8_1",
           "label": "规则清楚、流程稳定",
           "optionSignal": {
-            "signalLevel": "positive",
-            "scoreDelta": 1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "baseWorkStyleFitScore"
             ],
             "company": {
               "soe": 2,
               "mnc": 1,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "big_platform": -1,
+              "startup": -2,
+              "sme_private": -1
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -1,
+              "tech_data_product": -1,
               "function_support": 1
             },
             "tags": [
@@ -2940,23 +2940,23 @@
           "optionId": "W9_4",
           "label": "等关键方向更清晰后，投入效率会更高",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "baseWorkStyleFitScore"
             ],
             "company": {
               "soe": 1,
               "mnc": 1,
-              "big_platform": 0,
-              "startup": -1,
-              "sme_private": 0
+              "big_platform": -1,
+              "startup": -2,
+              "sme_private": -1
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -1,
+              "tech_data_product": -1,
               "function_support": 1
             },
             "tags": [
@@ -3015,23 +3015,23 @@
           "optionId": "W10_2",
           "label": "有人示范后上手",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "baseWorkStyleFitScore"
             ],
             "company": {
               "soe": 1,
               "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 1
+              "big_platform": -1,
+              "startup": -2,
+              "sme_private": -1
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -1,
+              "tech_data_product": -1,
               "function_support": 1
             },
             "tags": [
@@ -3209,24 +3209,24 @@
           "optionId": "C_SOE_1_4",
           "label": "需要更明确的反馈节点才更稳定",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "companyScenarioFitScore"
             ],
             "company": {
-              "soe": -1,
+              "soe": -2,
               "mnc": 0,
               "big_platform": 0,
               "startup": 0,
               "sme_private": 0
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -2,
+              "tech_data_product": -2,
+              "function_support": -2
             },
             "tags": [
               "feedback_processing"
@@ -3346,24 +3346,24 @@
           "optionId": "C_SOE_2_4",
           "label": "如果边界长期不清，投入感会下降",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "companyScenarioFitScore"
             ],
             "company": {
-              "soe": -1,
+              "soe": -2,
               "mnc": 0,
               "big_platform": 0,
               "startup": 0,
               "sme_private": 0
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -2,
+              "tech_data_product": -2,
+              "function_support": -2
             },
             "tags": [
               "autonomy"
@@ -3484,24 +3484,24 @@
           "optionId": "C_SOE_3_4",
           "label": "如果长期看不到变化，节奏会受影响",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "companyScenarioFitScore"
             ],
             "company": {
-              "soe": -1,
+              "soe": -2,
               "mnc": 0,
               "big_platform": 0,
               "startup": 0,
               "sme_private": 0
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -2,
+              "tech_data_product": -2,
+              "function_support": -2
             },
             "tags": [
               "growth_expectation"
@@ -3622,24 +3622,24 @@
           "optionId": "C_MNC_1_4",
           "label": "有示范样例时投入会更稳定",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "companyScenarioFitScore"
             ],
             "company": {
               "soe": 0,
-              "mnc": 0,
+              "mnc": -2,
               "big_platform": 0,
               "startup": 0,
               "sme_private": 0
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -2,
+              "tech_data_product": -2,
+              "function_support": -2
             },
             "tags": [
               "need_guidance"
@@ -3759,24 +3759,24 @@
           "optionId": "C_MNC_2_4",
           "label": "需要模板或规范来提高表达稳定性",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "companyScenarioFitScore"
             ],
             "company": {
               "soe": 0,
-              "mnc": 0,
+              "mnc": -2,
               "big_platform": 0,
               "startup": 0,
               "sme_private": 0
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -2,
+              "tech_data_product": -2,
+              "function_support": -2
             },
             "tags": [
               "need_guidance"
@@ -3896,24 +3896,24 @@
           "optionId": "C_MNC_3_4",
           "label": "如果边界过细，协作节奏会受影响",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "companyScenarioFitScore"
             ],
             "company": {
               "soe": 0,
-              "mnc": -1,
+              "mnc": -2,
               "big_platform": 0,
               "startup": 0,
               "sme_private": 0
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -2,
+              "tech_data_product": -2,
+              "function_support": -2
             },
             "tags": [
               "environment_preference"
@@ -4034,24 +4034,24 @@
           "optionId": "C_BIG_PLATFORM_1_4",
           "label": "频繁变化会影响节奏稳定性",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "companyScenarioFitScore"
             ],
             "company": {
               "soe": 0,
               "mnc": 0,
-              "big_platform": -1,
+              "big_platform": -2,
               "startup": 0,
               "sme_private": 0
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -2,
+              "tech_data_product": -2,
+              "function_support": -2
             },
             "tags": [
               "pressure_sensitive"
@@ -4169,24 +4169,24 @@
           "optionId": "C_BIG_PLATFORM_2_4",
           "label": "需要一点时间把反馈和自我判断分开",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "companyScenarioFitScore"
             ],
             "company": {
               "soe": 0,
               "mnc": 0,
-              "big_platform": -1,
+              "big_platform": -2,
               "startup": 0,
               "sme_private": 0
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -2,
+              "tech_data_product": -2,
+              "function_support": -2
             },
             "tags": [
               "feedback_processing"
@@ -4304,24 +4304,24 @@
           "optionId": "C_BIG_PLATFORM_3_4",
           "label": "比较感会阶段性影响投入节奏",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "companyScenarioFitScore"
             ],
             "company": {
               "soe": 0,
               "mnc": 0,
-              "big_platform": -1,
+              "big_platform": -2,
               "startup": 0,
               "sme_private": 0
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -2,
+              "tech_data_product": -2,
+              "function_support": -2
             },
             "tags": [
               "pressure_sensitive"
@@ -4440,8 +4440,8 @@
           "optionId": "C_STARTUP_1_4",
           "label": "需要关键边界清楚后投入更稳定",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "companyScenarioFitScore"
             ],
@@ -4449,15 +4449,15 @@
               "soe": 0,
               "mnc": 0,
               "big_platform": 0,
-              "startup": -1,
+              "startup": -2,
               "sme_private": 0
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -2,
+              "tech_data_product": -2,
+              "function_support": -2
             },
             "tags": [
               "need_guidance"
@@ -4577,8 +4577,8 @@
           "optionId": "C_STARTUP_2_4",
           "label": "频繁变化会影响投入感和节奏",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "companyScenarioFitScore"
             ],
@@ -4586,15 +4586,15 @@
               "soe": 0,
               "mnc": 0,
               "big_platform": 0,
-              "startup": -1,
+              "startup": -2,
               "sme_private": 0
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -2,
+              "tech_data_product": -2,
+              "function_support": -2
             },
             "tags": [
               "pressure_sensitive"
@@ -4714,8 +4714,8 @@
           "optionId": "C_STARTUP_3_4",
           "label": "长期职责扩张会影响节奏",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "companyScenarioFitScore"
             ],
@@ -4723,15 +4723,15 @@
               "soe": 0,
               "mnc": 0,
               "big_platform": 0,
-              "startup": -1,
+              "startup": -2,
               "sme_private": 0
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -2,
+              "tech_data_product": -2,
+              "function_support": -2
             },
             "tags": [
               "pressure_sensitive"
@@ -4851,8 +4851,8 @@
           "optionId": "C_SME_PRIVATE_1_4",
           "label": "流程不清会影响投入感",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "companyScenarioFitScore"
             ],
@@ -4861,14 +4861,14 @@
               "mnc": 0,
               "big_platform": 0,
               "startup": 0,
-              "sme_private": -1
+              "sme_private": -2
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -2,
+              "tech_data_product": -2,
+              "function_support": -2
             },
             "tags": [
               "environment_preference"
@@ -4986,8 +4986,8 @@
           "optionId": "C_SME_PRIVATE_2_4",
           "label": "长期边界变化会影响节奏",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "companyScenarioFitScore"
             ],
@@ -4996,14 +4996,14 @@
               "mnc": 0,
               "big_platform": 0,
               "startup": 0,
-              "sme_private": -1
+              "sme_private": -2
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -2,
+              "tech_data_product": -2,
+              "function_support": -2
             },
             "tags": [
               "pressure_sensitive"
@@ -5121,8 +5121,8 @@
           "optionId": "C_SME_PRIVATE_3_4",
           "label": "培训少会影响前期投入稳定性",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "companyScenarioFitScore"
             ],
@@ -5131,14 +5131,14 @@
               "mnc": 0,
               "big_platform": 0,
               "startup": 0,
-              "sme_private": -1
+              "sme_private": -2
             },
             "role": {
-              "sales": 0,
-              "operation_project": 0,
-              "content_marketing": 0,
-              "tech_data_product": 0,
-              "function_support": 0
+              "sales": -2,
+              "operation_project": -2,
+              "content_marketing": -2,
+              "tech_data_product": -2,
+              "function_support": -2
             },
             "tags": [
               "need_guidance"
@@ -5257,20 +5257,20 @@
           "optionId": "R_SALES_1_4",
           "label": "需要更多反馈样本后再提高投入",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
-              "sales": -1,
+              "sales": -2,
               "operation_project": 0,
               "content_marketing": 0,
               "tech_data_product": 0,
@@ -5396,20 +5396,20 @@
           "optionId": "R_SALES_2_4",
           "label": "先稳住节奏，避免因为着急让动作变形",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
-              "sales": -1,
+              "sales": -2,
               "operation_project": 0,
               "content_marketing": 0,
               "tech_data_product": 0,
@@ -5533,20 +5533,20 @@
           "optionId": "R_SALES_3_4",
           "label": "如果长期没反馈，投入感会下降",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
-              "sales": -1,
+              "sales": -2,
               "operation_project": 0,
               "content_marketing": 0,
               "tech_data_product": 0,
@@ -5670,20 +5670,20 @@
           "optionId": "R_SALES_4_4",
           "label": "对方节奏太强时需要外部校准",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
-              "sales": -1,
+              "sales": -2,
               "operation_project": 0,
               "content_marketing": 0,
               "tech_data_product": 0,
@@ -5807,21 +5807,21 @@
           "optionId": "R_OPERATION_PROJECT_1_4",
           "label": "多方反馈不齐时节奏会受影响",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
               "sales": 0,
-              "operation_project": -1,
+              "operation_project": -2,
               "content_marketing": 0,
               "tech_data_product": 0,
               "function_support": 0
@@ -5944,21 +5944,21 @@
           "optionId": "R_OPERATION_PROJECT_2_4",
           "label": "变化频繁时需要重新找节奏",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
               "sales": 0,
-              "operation_project": -1,
+              "operation_project": -2,
               "content_marketing": 0,
               "tech_data_product": 0,
               "function_support": 0
@@ -6081,21 +6081,21 @@
           "optionId": "R_OPERATION_PROJECT_3_4",
           "label": "细节密集时需要外部提醒机制",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
               "sales": 0,
-              "operation_project": -1,
+              "operation_project": -2,
               "content_marketing": 0,
               "tech_data_product": 0,
               "function_support": 0
@@ -6218,21 +6218,21 @@
           "optionId": "R_OPERATION_PROJECT_4_4",
           "label": "需要一点时间把结果压力和复盘动作分开",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
               "sales": 0,
-              "operation_project": -1,
+              "operation_project": -2,
               "content_marketing": 0,
               "tech_data_product": 0,
               "function_support": 0
@@ -6355,22 +6355,22 @@
           "optionId": "R_CONTENT_MARKETING_1_4",
           "label": "需要一点恢复时间再进入下一轮修改",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
               "sales": 0,
               "operation_project": 0,
-              "content_marketing": -1,
+              "content_marketing": -2,
               "tech_data_product": 0,
               "function_support": 0
             },
@@ -6492,22 +6492,22 @@
           "optionId": "R_CONTENT_MARKETING_2_4",
           "label": "持续产出需要阶段性输入和恢复",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
               "sales": 0,
               "operation_project": 0,
-              "content_marketing": -1,
+              "content_marketing": -2,
               "tech_data_product": 0,
               "function_support": 0
             },
@@ -6629,22 +6629,22 @@
           "optionId": "R_CONTENT_MARKETING_3_4",
           "label": "需要一段恢复和输入时间，再进入下一轮产出",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
               "sales": 0,
               "operation_project": 0,
-              "content_marketing": -1,
+              "content_marketing": -2,
               "tech_data_product": 0,
               "function_support": 0
             },
@@ -6766,22 +6766,22 @@
           "optionId": "R_CONTENT_MARKETING_4_4",
           "label": "限制较多时创作节奏会受影响",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
               "sales": 0,
               "operation_project": 0,
-              "content_marketing": -1,
+              "content_marketing": -2,
               "tech_data_product": 0,
               "function_support": 0
             },
@@ -6903,23 +6903,23 @@
           "optionId": "R_TECH_DATA_PRODUCT_1_4",
           "label": "需要关键标准清楚后投入更稳定",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
               "sales": 0,
               "operation_project": 0,
               "content_marketing": 0,
-              "tech_data_product": -1,
+              "tech_data_product": -2,
               "function_support": 0
             },
             "tags": [
@@ -7040,23 +7040,23 @@
           "optionId": "R_TECH_DATA_PRODUCT_2_4",
           "label": "学习压力大时需要明确优先级",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
               "sales": 0,
               "operation_project": 0,
               "content_marketing": 0,
-              "tech_data_product": -1,
+              "tech_data_product": -2,
               "function_support": 0
             },
             "tags": [
@@ -7177,23 +7177,23 @@
           "optionId": "R_TECH_DATA_PRODUCT_3_4",
           "label": "需要一点时间消化专业差距",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
               "sales": 0,
               "operation_project": 0,
               "content_marketing": 0,
-              "tech_data_product": -1,
+              "tech_data_product": -2,
               "function_support": 0
             },
             "tags": [
@@ -7314,23 +7314,23 @@
           "optionId": "R_TECH_DATA_PRODUCT_4_4",
           "label": "多方要求都重要时需要外部校准",
           "optionSignal": {
-            "signalLevel": "neutral",
-            "scoreDelta": 0,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
               "sales": 0,
               "operation_project": 0,
               "content_marketing": 0,
-              "tech_data_product": -1,
+              "tech_data_product": -2,
               "function_support": 0
             },
             "tags": [
@@ -7452,24 +7452,24 @@
           "optionId": "R_FUNCTION_SUPPORT_1_4",
           "label": "人情和规则冲突时节奏会受影响",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
               "sales": 0,
               "operation_project": 0,
               "content_marketing": 0,
               "tech_data_product": 0,
-              "function_support": -1
+              "function_support": -2
             },
             "tags": [
               "pressure_sensitive"
@@ -7589,24 +7589,24 @@
           "optionId": "R_FUNCTION_SUPPORT_2_4",
           "label": "重复周期长时需要反馈节点保持投入",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
               "sales": 0,
               "operation_project": 0,
               "content_marketing": 0,
               "tech_data_product": 0,
-              "function_support": -1
+              "function_support": -2
             },
             "tags": [
               "feedback_processing"
@@ -7726,24 +7726,24 @@
           "optionId": "R_FUNCTION_SUPPORT_3_4",
           "label": "如果长期缺少反馈，投入感会受到影响",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
               "sales": 0,
               "operation_project": 0,
               "content_marketing": 0,
               "tech_data_product": 0,
-              "function_support": -1
+              "function_support": -2
             },
             "tags": [
               "feedback_processing"
@@ -7863,24 +7863,24 @@
           "optionId": "R_FUNCTION_SUPPORT_4_4",
           "label": "需求密集时需要外部优先级校准",
           "optionSignal": {
-            "signalLevel": "risk",
-            "scoreDelta": -1,
+            "signalLevel": "severeRisk",
+            "scoreDelta": -2,
             "dim": [
               "roleScenarioFitScore"
             ],
             "company": {
-              "soe": 0,
-              "mnc": 0,
-              "big_platform": 0,
-              "startup": 0,
-              "sme_private": 0
+              "soe": -2,
+              "mnc": -2,
+              "big_platform": -2,
+              "startup": -2,
+              "sme_private": -2
             },
             "role": {
               "sales": 0,
               "operation_project": 0,
               "content_marketing": 0,
               "tech_data_product": 0,
-              "function_support": -1
+              "function_support": -2
             },
             "tags": [
               "need_guidance"

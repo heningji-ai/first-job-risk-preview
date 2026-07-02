@@ -87,3 +87,66 @@ export type QuestionsV2Config = {
   };
   questions: QuestionV2[];
 };
+
+export type PathFitAnswerMapV2 = Record<string, string>;
+
+export type DerivedPathSelectionV2 = {
+  companyType: CompanyTypeV2;
+  roleType: RoleTypeV2;
+  companyQuestionId: "A7";
+  roleQuestionId: "A8";
+};
+
+export type DimensionScoresV2 = Record<DimensionKeyV2, number>;
+
+export type CapRuleResultV2 = {
+  triggered: boolean;
+  dimension: DimensionKeyV2;
+  capValue: number;
+  reason: string;
+};
+
+export type ObstacleTypeV2 =
+  | "admission_barrier"
+  | "motivation_expectation"
+  | "work_style"
+  | "company_environment"
+  | "role_scenario";
+
+export type ObstacleResultV2 = {
+  primaryObstacleType: ObstacleTypeV2;
+  primaryObstacleDimension: DimensionKeyV2;
+  primaryObstacleReason: string;
+  secondaryObstacleType?: ObstacleTypeV2;
+  secondaryObstacleDimension?: DimensionKeyV2;
+  capTriggered: boolean;
+  capReason?: string;
+};
+
+export type DebugSignalV2 = {
+  questionId: string;
+  optionId: string;
+  dim: DimensionKeyV2[];
+  scoreDelta: number;
+  companyAffinity: number;
+  roleAffinity: number;
+  rawSignal: number;
+  optionFitScore: number;
+  ignored?: boolean;
+  reason?: string;
+};
+
+export type PathFitScoringResultV2 = {
+  finalPathFitScore: number;
+  finalPathFitLabel: string;
+  rawWeightedScore: number;
+  dimensionScores: DimensionScoresV2;
+  caps: CapRuleResultV2[];
+  obstacle: ObstacleResultV2;
+  pathSelection: DerivedPathSelectionV2;
+  answeredQuestionCount: number;
+  expectedVisibleQuestionCount: number;
+  visibleQuestionIds: string[];
+  missingQuestionIds: string[];
+  debugSignals: DebugSignalV2[];
+};
