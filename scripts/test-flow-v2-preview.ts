@@ -24,6 +24,20 @@ const {
 const questions = questionsV2Config.questions;
 const V2_SESSION_STORAGE_KEY = "first_job_risk_preview_v2_preview_sessions";
 const OLD_SESSION_STORAGE_KEY = "first_job_risk_preview_sessions";
+const SESSION_RESULT_VISIBLE_COPY = [
+  "第一份工作路径预演报告",
+  "路径预演值",
+  "你选择的路径",
+  "四个维度拆解",
+  "这条路径会在哪些地方考验你",
+  "最大障碍",
+  "这类公司通常期待什么",
+  "这个岗位的高频场景是什么",
+  "这份结果怎么看",
+  "重新做一次路径预演",
+  "没有找到这次路径预演记录，请重新完成一次路径预演。",
+  "重新答题"
+];
 
 class MemoryStorage {
   private items = new Map<string, string>();
@@ -120,6 +134,47 @@ function assertNoForbiddenPublicWording(
   assert(!matched, `${label}: public result contains forbidden wording: ${matched}`);
 }
 
+function assertNoForbiddenSessionVisibleCopy(): void {
+  const forbidden = [
+    "A 档",
+    "B 档",
+    "C 档",
+    "D 档",
+    "档位",
+    "评级",
+    "等级",
+    "cardId",
+    "pathFitBand",
+    "诊断分数",
+    "能力分数",
+    "职业匹配分",
+    "性格匹配度",
+    "你不适合",
+    "你就是",
+    "必须放弃",
+    "免费咨询",
+    "立即咨询",
+    "购买服务",
+    "保证入职",
+    "企业微信",
+    "回复【重估】",
+    "V1.2",
+    "V2",
+    "Preview",
+    "预览",
+    "开发",
+    "sample",
+    "样本",
+    "debug",
+    "test",
+    "session"
+  ];
+  const publicText = SESSION_RESULT_VISIBLE_COPY.join("\n");
+  const matched = forbidden.find((item) => publicText.includes(item));
+
+  assert(!matched, `session mode visible copy contains forbidden wording: ${matched}`);
+}
+
 function assertAnswerMapIsVisibleOnly(
   label: string,
   answerMap: PathFitAnswerMapV2
@@ -176,6 +231,7 @@ const oldSessionSentinel = JSON.stringify([{ legacy: true }]);
 memoryStorage.setItem(OLD_SESSION_STORAGE_KEY, oldSessionSentinel);
 
 clearPathFitPreviewSessionsV2();
+assertNoForbiddenSessionVisibleCopy();
 
 for (const sampleKey of PATH_FIT_V2_SAMPLE_KEYS) {
   const label = PATH_FIT_V2_SAMPLE_LABELS[sampleKey];

@@ -64,7 +64,9 @@ function renderMissingSession() {
       <section className="result-v2-hero">
         <p className="result-v2-eyebrow">路径预演记录</p>
         <h1>没有找到这次路径预演记录</h1>
-        <p className="result-v2-summary">请重新完成一次 V2 预览答题。</p>
+        <p className="result-v2-summary">
+          没有找到这次路径预演记录，请重新完成一次路径预演。
+        </p>
         <button
           className="preview-v2-chip active"
           type="button"
@@ -89,26 +91,16 @@ function ResultPageV2Preview() {
   const sampleKey = getCurrentSampleKey(params);
   const answerMap = session?.answerMap ?? getPathFitSampleAnswerMapV2(sampleKey);
   const result = buildPathFitResultV2(answerMap);
-  const pageLabel = session ? "V2 预览答题结果" : PATH_FIT_V2_SAMPLE_LABELS[sampleKey];
+  const isSessionMode = Boolean(session);
 
   return (
     <main className="result-v2-shell">
       <section className="result-v2-hero">
-        {session ? (
-          <div className="preview-v2-switcher" aria-label="重新答题">
-            <button
-              className="preview-v2-chip"
-              type="button"
-              onClick={() => navigateTo("/test-v2-preview")}
-            >
-              重新答题
-            </button>
-          </div>
-        ) : (
-          renderSampleSwitcher(sampleKey)
-        )}
+        {isSessionMode ? null : renderSampleSwitcher(sampleKey)}
 
-        <p className="result-v2-eyebrow">{pageLabel}</p>
+        <p className="result-v2-eyebrow">
+          {isSessionMode ? "第一份工作路径预演报告" : `样本结果：${PATH_FIT_V2_SAMPLE_LABELS[sampleKey]}`}
+        </p>
         <h1>{result.resultTitle}</h1>
         <p className="result-v2-summary">{result.resultSummary}</p>
         <div className="result-v2-score">
@@ -185,6 +177,18 @@ function ResultPageV2Preview() {
         <p>{result.boundaryCopy}</p>
         <div className="result-v2-cta">{result.officialAccountCta}</div>
       </section>
+
+      {isSessionMode ? (
+        <section className="result-v2-section result-v2-actions">
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() => navigateTo("/test-v2-preview")}
+          >
+            重新做一次路径预演
+          </button>
+        </section>
+      ) : null}
     </main>
   );
 }

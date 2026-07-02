@@ -32,6 +32,31 @@ type SampleDefinition = {
 
 const questions = questionsV2Config.questions;
 
+const SESSION_RESULT_VISIBLE_COPY = [
+  "第一份工作路径预演报告",
+  "路径预演值",
+  "你选择的路径",
+  "四个维度拆解",
+  "这条路径会在哪些地方考验你",
+  "最大障碍",
+  "这类公司通常期待什么",
+  "这个岗位的高频场景是什么",
+  "这份结果怎么看",
+  "重新做一次路径预演",
+  "没有找到这次路径预演记录，请重新完成一次路径预演。",
+  "重新答题"
+];
+
+const TEST_PAGE_VISIBLE_COPY = [
+  "应届生第一份工作",
+  "第一份工作路径预演",
+  "用 30 个选择，提前看清你想去的公司类型、岗位方向和当前准备之间可能出现的摩擦。",
+  "已完成 0 / 30",
+  "上一题",
+  "下一题",
+  "查看路径预演结果"
+];
+
 function fail(message: string): never {
   throw new Error(`[test-result-v2] ${message}`);
 }
@@ -170,6 +195,52 @@ function assertNoForbiddenPublicWording(sampleName: string, result: PathFitResul
   assert(!matched, `${sampleName}: public presentation contains forbidden wording: ${matched}`);
 }
 
+function assertNoForbiddenVisibleCopy(label: string, visibleCopy: string[], mode: "session" | "general"): void {
+  const generalForbidden = [
+    "A 档",
+    "B 档",
+    "C 档",
+    "D 档",
+    "档位",
+    "评级",
+    "等级",
+    "cardId",
+    "pathFitBand",
+    "诊断分数",
+    "能力分数",
+    "职业匹配分",
+    "性格匹配度",
+    "你不适合",
+    "你就是",
+    "必须放弃",
+    "免费咨询",
+    "立即咨询",
+    "购买服务",
+    "保证入职",
+    "企业微信",
+    "回复【重估】"
+  ];
+  const sessionOnlyForbidden = [
+    "V1.2",
+    "V2",
+    "Preview",
+    "预览",
+    "开发",
+    "sample",
+    "样本",
+    "debug",
+    "test",
+    "session"
+  ];
+  const forbidden = mode === "session"
+    ? [...generalForbidden, ...sessionOnlyForbidden]
+    : generalForbidden;
+  const publicText = visibleCopy.join("\n");
+  const matched = forbidden.find((item) => publicText.includes(item));
+
+  assert(!matched, `${label}: visible copy contains forbidden wording: ${matched}`);
+}
+
 function assertResultShape(sample: SampleDefinition, result: PathFitResultPresentationV2): void {
   assert(result.version === "v1.2", `${sample.name}: version must be v1.2`);
   assert(result.pathContext.companyType === sample.companyType, `${sample.name}: companyType mismatch`);
@@ -298,6 +369,9 @@ for (const sample of samples) {
   assertScoringConsistency(sample, answerMap, result);
   summarize(sample, result);
 }
+
+assertNoForbiddenVisibleCopy("TestPageV2Preview", TEST_PAGE_VISIBLE_COPY, "general");
+assertNoForbiddenVisibleCopy("ResultPageV2Preview session mode", SESSION_RESULT_VISIBLE_COPY, "session");
 
 for (const sampleKey of PATH_FIT_V2_SAMPLE_KEYS) {
   const answerMap = getPathFitSampleAnswerMapV2(sampleKey);

@@ -119,16 +119,16 @@ function TestPageV2Preview() {
     <main className="test-v2-shell">
       <section className="test-v2-card">
         <div className="test-v2-header">
-          <p className="test-v2-eyebrow">V1.2 路径适配预览</p>
-          <h1>先按真实想法走完这一版题目</h1>
+          <p className="test-v2-eyebrow">应届生第一份工作</p>
+          <h1>第一份工作路径预演</h1>
           <p>
-            这里使用新的路径适配题库，结果只进入 V2 预览页，不会影响当前线上答题流程。
+            用 30 个选择，提前看清你想去的公司类型、岗位方向和当前准备之间可能出现的摩擦。
           </p>
         </div>
 
         <div className="test-v2-progress" aria-label="答题进度">
           <span>
-            已回答 {answeredVisibleCount} / {TARGET_ANSWER_COUNT}
+            已完成 {answeredVisibleCount} / {TARGET_ANSWER_COUNT}
           </span>
           <div>
             <i style={{ width: `${Math.min(100, (answeredVisibleCount / TARGET_ANSWER_COUNT) * 100)}%` }} />

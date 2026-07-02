@@ -1367,6 +1367,14 @@ p {
   line-height: 1.5;
 }
 
+.result-v2-actions {
+  justify-items: stretch;
+}
+
+.result-v2-actions .primary-button {
+  width: 100%;
+}
+
 @keyframes sceneGlow {
   0%,
   100% {
