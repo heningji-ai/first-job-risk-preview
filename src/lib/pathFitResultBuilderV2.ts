@@ -1,4 +1,3 @@
-import questionsV2ConfigJson from "../config/questions_v2.json" with { type: "json" };
 import type {
   CompanyTypeV2,
   DimensionKeyV2,
@@ -12,12 +11,12 @@ import type {
   PathFitResultPresentationV2,
   PathFitScoringResultV2,
   QuestionV2,
-  QuestionsV2Config,
   RoleTypeV2,
   SignalLevelV2
 } from "../types/pathFitV2";
 
 const { scorePathFitV2 } = await import("./pathFitScoringV2" + ".ts");
+const { questionsV2Config } = (await import("./questionsV2Data" + ".ts")) as typeof import("./questionsV2Data");
 
 type TagScore = {
   tag: string;
@@ -25,8 +24,6 @@ type TagScore = {
   sourceQuestionIds: Set<string>;
   weight: number;
 };
-
-const questionsV2Config = questionsV2ConfigJson as QuestionsV2Config;
 
 const COMPANY_TYPE_LABELS: Record<CompanyTypeV2, string> = {
   soe: "国企 / 事业单位 / 央国企平台",

@@ -1,18 +1,17 @@
 import { useEffect, useMemo, useState } from "react";
-import questionsV2ConfigJson from "../config/questions_v2.json" with { type: "json" };
 import {
   derivePathSelectionV2,
   getVisibleQuestionsV2,
   validateAnswerMapV2
 } from "../lib/pathFitScoringV2";
+import { questionsV2Config } from "../lib/questionsV2Data";
 import {
   createPathFitPreviewSessionV2,
   prunePathFitAnswerMapToVisibleV2
 } from "../lib/pathFitSessionStoreV2";
 import { navigateTo } from "../lib/router";
-import type { PathFitAnswerMapV2, QuestionV2, QuestionsV2Config } from "../types/pathFitV2";
+import type { PathFitAnswerMapV2, QuestionV2 } from "../types/pathFitV2";
 
-const questionsV2Config = questionsV2ConfigJson as QuestionsV2Config;
 const questions = questionsV2Config.questions;
 const TARGET_ANSWER_COUNT = questionsV2Config.actualAnswerCountPerUser;
 

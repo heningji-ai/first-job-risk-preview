@@ -1,9 +1,7 @@
-import questionsV2ConfigJson from "../config/questions_v2.json" with { type: "json" };
 import type {
   CompanyTypeV2,
   PathFitAnswerMapV2,
   QuestionV2,
-  QuestionsV2Config,
   RoleTypeV2
 } from "../types/pathFitV2";
 
@@ -12,6 +10,7 @@ type PathFitScoringV2Module = typeof import("./pathFitScoringV2");
 const { derivePathSelectionV2, getVisibleQuestionsV2, validateAnswerMapV2 } = (await import(
   "./pathFitScoringV2" + ".ts"
 )) as PathFitScoringV2Module;
+const { questionsV2Config } = (await import("./questionsV2Data" + ".ts")) as typeof import("./questionsV2Data");
 
 const SESSION_STORAGE_KEY = "first_job_risk_preview_v2_preview_sessions";
 
@@ -26,8 +25,6 @@ export type PathFitPreviewSessionV2 = {
   answeredQuestionCount: number;
   visibleQuestionIds: string[];
 };
-
-const questionsV2Config = questionsV2ConfigJson as QuestionsV2Config;
 
 function getStorage(): Storage | undefined {
   if (typeof window !== "undefined" && window.localStorage) return window.localStorage;

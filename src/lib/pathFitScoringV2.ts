@@ -1,4 +1,3 @@
-import questionsV2ConfigJson from "../config/questions_v2.json" with { type: "json" };
 import type {
   CapRuleResultV2,
   CompanyTypeV2,
@@ -11,9 +10,12 @@ import type {
   PathFitAnswerMapV2,
   PathFitScoringResultV2,
   QuestionV2,
-  QuestionsV2Config,
   RoleTypeV2
 } from "../types/pathFitV2";
+
+type QuestionsV2DataModule = typeof import("./questionsV2Data");
+
+const { questionsV2Config } = (await import("./questionsV2Data" + ".ts")) as QuestionsV2DataModule;
 
 type VisibleQuestionsV2Result = {
   visibleQuestions: QuestionV2[];
@@ -32,8 +34,6 @@ type ScorePathFitV2Options = {
   strict?: boolean;
   questions?: QuestionV2[];
 };
-
-const questionsV2Config = questionsV2ConfigJson as QuestionsV2Config;
 
 const COMPANY_TYPES: CompanyTypeV2[] = [
   "soe",

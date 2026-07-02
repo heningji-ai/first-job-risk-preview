@@ -1,14 +1,13 @@
-import questionsV2ConfigJson from "../src/config/questions_v2.json" with { type: "json" };
 import type {
   CompanyTypeV2,
   DimensionKeyV2,
   PathFitAnswerMapV2,
   PathFitScoringResultV2,
   QuestionV2,
-  QuestionsV2Config,
   RoleTypeV2
 } from "../src/types/pathFitV2";
 
+const { questionsV2Config } = (await import("../src/lib/questionsV2Data" + ".ts")) as typeof import("../src/lib/questionsV2Data");
 const { derivePathSelectionV2, getVisibleQuestionsV2, scorePathFitV2 } = await import(
   "../src/lib/pathFitScoringV2" + ".ts"
 );
@@ -36,7 +35,6 @@ type ScanRow = {
   capTriggered: boolean;
 };
 
-const questionsV2Config = questionsV2ConfigJson as QuestionsV2Config;
 const questions = questionsV2Config.questions;
 const companyTypes: CompanyTypeV2[] = [
   "soe",

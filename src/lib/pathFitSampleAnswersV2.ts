@@ -1,14 +1,13 @@
-import questionsV2ConfigJson from "../config/questions_v2.json" with { type: "json" };
 import type {
   CompanyTypeV2,
   DimensionKeyV2,
   PathFitAnswerMapV2,
   QuestionV2,
-  QuestionsV2Config,
   RoleTypeV2
 } from "../types/pathFitV2";
 
 const { derivePathSelectionV2, getVisibleQuestionsV2 } = await import("./pathFitScoringV2" + ".ts");
+const { questionsV2Config } = (await import("./questionsV2Data" + ".ts")) as typeof import("./questionsV2Data");
 
 export const PATH_FIT_V2_SAMPLE_KEYS = [
   "high_fit",
@@ -41,7 +40,6 @@ type SampleContext = {
   roleType: RoleTypeV2;
 };
 
-const questionsV2Config = questionsV2ConfigJson as QuestionsV2Config;
 const questions = questionsV2Config.questions;
 
 function clamp(value: number, min: number, max: number): number {

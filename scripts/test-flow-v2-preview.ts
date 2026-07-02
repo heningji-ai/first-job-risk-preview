@@ -1,10 +1,9 @@
-import questionsV2ConfigJson from "../src/config/questions_v2.json" with { type: "json" };
 import type {
   PathFitAnswerMapV2,
-  PathFitResultPresentationV2,
-  QuestionsV2Config
+  PathFitResultPresentationV2
 } from "../src/types/pathFitV2";
 
+const { questionsV2Config } = (await import("../src/lib/questionsV2Data" + ".ts")) as typeof import("../src/lib/questionsV2Data");
 const { buildPathFitResultV2 } = await import("../src/lib/pathFitResultBuilderV2" + ".ts");
 const {
   getPathFitSampleAnswerMapV2,
@@ -22,7 +21,6 @@ const {
   prunePathFitAnswerMapToVisibleV2
 } = await import("../src/lib/pathFitSessionStoreV2" + ".ts");
 
-const questionsV2Config = questionsV2ConfigJson as QuestionsV2Config;
 const questions = questionsV2Config.questions;
 const V2_SESSION_STORAGE_KEY = "first_job_risk_preview_v2_preview_sessions";
 const OLD_SESSION_STORAGE_KEY = "first_job_risk_preview_sessions";
