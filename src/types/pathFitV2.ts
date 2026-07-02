@@ -150,3 +150,65 @@ export type PathFitScoringResultV2 = {
   missingQuestionIds: string[];
   debugSignals: DebugSignalV2[];
 };
+
+export type DisplayDimensionKeyV2 =
+  | "admission"
+  | "motivation"
+  | "work_style"
+  | "scenario_reaction";
+
+export type DisplayRiskLevelV2 = "low" | "medium" | "high" | "severe";
+
+export type PathFitDisplayDimensionV2 = {
+  key: DisplayDimensionKeyV2;
+  label: string;
+  score: number;
+  summary: string;
+  riskLevel: DisplayRiskLevelV2;
+};
+
+export type PathFitObstacleDisplayV2 = {
+  type: ObstacleTypeV2;
+  title: string;
+  reason: string;
+  dimensionLabel: string;
+};
+
+export type PathFitPathContextV2 = {
+  companyType: CompanyTypeV2;
+  roleType: RoleTypeV2;
+  companyTypeLabel: string;
+  roleTypeLabel: string;
+  companyRequirementSummary: string;
+  roleRequirementSummary: string;
+};
+
+export type PathFitExplanationSignalV2 = {
+  tag: string;
+  label: string;
+  summary: string;
+  sourceQuestionIds: string[];
+  severity: "risk" | "severeRisk";
+};
+
+export type PathFitResultPresentationV2 = {
+  version: "v1.2";
+  finalPathFitScore: number;
+  finalPathFitLabel: string;
+  resultTitle: string;
+  resultSummary: string;
+  pathContext: PathFitPathContextV2;
+  displayDimensions: PathFitDisplayDimensionV2[];
+  primaryObstacle: PathFitObstacleDisplayV2;
+  secondaryObstacle?: PathFitObstacleDisplayV2;
+  capTriggered: boolean;
+  capReason?: string;
+  explanationSignals: PathFitExplanationSignalV2[];
+  boundaryCopy: string;
+  officialAccountCta: string;
+  debug: {
+    scoringResult: PathFitScoringResultV2;
+    rawDimensionScores: DimensionScoresV2;
+    unmappedTags: string[];
+  };
+};
