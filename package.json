@@ -8,6 +8,7 @@
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
     "validate-config": "node --experimental-strip-types scripts/validate-config.ts",
+    "validate-questions-v2": "node --experimental-strip-types scripts/validate-questions-v2.ts",
     "test-risk-logic": "node --experimental-strip-types scripts/test-risk-logic.ts"
   },
   "dependencies": {
