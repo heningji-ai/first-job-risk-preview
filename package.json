@@ -9,6 +9,7 @@
     "preview": "vite preview",
     "validate-config": "node --experimental-strip-types scripts/validate-config.ts",
     "validate-goal-fit-config": "node --experimental-strip-types scripts/validate-goal-fit-config.ts",
+    "test-goal-fit-scoring": "node --experimental-strip-types scripts/test-goal-fit-scoring.ts",
     "validate-questions-v2": "node --experimental-strip-types scripts/validate-questions-v2.ts",
     "test-scoring-v2": "node --experimental-strip-types scripts/test-scoring-v2.ts",
     "test-result-v2": "node --experimental-strip-types scripts/test-result-v2.ts",

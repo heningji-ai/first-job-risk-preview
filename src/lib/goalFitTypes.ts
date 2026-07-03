@@ -92,3 +92,37 @@ export type GoalFitQuestionBank = {
   drawRules: GoalFitDrawRules;
   questions: GoalFitQuestion[];
 };
+
+export type GoalFitAnswerMap = Record<string, string>;
+
+export type MotivationTagCount = {
+  tag: MotivationTag;
+  count: number;
+};
+
+export type RiskTagCount = {
+  tag: RiskTag;
+  count: number;
+};
+
+export type GoalFitScoreResult = {
+  targetCompany: CompanyType;
+  targetRole: RoleType;
+  companyEntryScore: number;
+  roleEntryScore: number;
+  companyPersonalityScore: number;
+  companyBehaviorScore: number;
+  companyFitScore: number;
+  rolePersonalityScore: number;
+  roleBehaviorScore: number;
+  roleFitScore: number;
+  motivationFitScore: number;
+  pairScore: number;
+  overallScore: number;
+  motivationTags: MotivationTag[];
+  motivationTagCounts: MotivationTagCount[];
+  riskTagCounts: RiskTagCount[];
+  answeredQuestionCount: number;
+  selectedQuestionIds: string[];
+  scoreVersion: string;
+};
