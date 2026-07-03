@@ -191,3 +191,14 @@ export type GoalFitResult = {
   cards: GoalFitResultCard[];
   resultVersion: string;
 };
+
+export type GoalFitSession = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  targetCompany: CompanyType;
+  targetRole: RoleType;
+  answers: GoalFitAnswerMap;
+  selectedQuestionIds: string[];
+  result: GoalFitResult;
+};

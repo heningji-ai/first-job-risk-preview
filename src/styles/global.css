@@ -1375,6 +1375,181 @@ p {
   width: 100%;
 }
 
+.goal-fit-shell {
+  width: min(100%, 760px);
+  margin: 0 auto;
+  padding: 22px 16px 40px;
+}
+
+.goal-fit-panel {
+  display: grid;
+  gap: 18px;
+  padding: 22px;
+  border: 1px solid #d9e0e7;
+  border-radius: 8px;
+  background: #ffffff;
+  box-shadow: 0 14px 36px rgba(22, 31, 41, 0.08);
+}
+
+.goal-fit-header,
+.goal-fit-question-top,
+.goal-fit-question,
+.goal-fit-target-block,
+.goal-fit-confirm-panel,
+.goal-fit-complete-panel {
+  display: grid;
+  gap: 12px;
+}
+
+.goal-fit-eyebrow {
+  margin: 0;
+  color: #64717e;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+.goal-fit-header h1,
+.goal-fit-panel h1,
+.goal-fit-target-block h2 {
+  margin: 0;
+  color: #172026;
+  letter-spacing: 0;
+}
+
+.goal-fit-header h1,
+.goal-fit-panel h1 {
+  font-size: 26px;
+  line-height: 1.2;
+}
+
+.goal-fit-target-block h2 {
+  font-size: 17px;
+  line-height: 1.4;
+}
+
+.goal-fit-header p,
+.goal-fit-panel p,
+.goal-fit-muted,
+.goal-fit-note {
+  color: #43515f;
+  line-height: 1.7;
+}
+
+.goal-fit-target-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.goal-fit-option-list {
+  display: grid;
+  gap: 10px;
+}
+
+.goal-fit-option-button {
+  width: 100%;
+  min-height: 46px;
+  padding: 13px 14px;
+  border: 1px solid #d4dce5;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #172026;
+  text-align: left;
+  line-height: 1.55;
+  letter-spacing: 0;
+}
+
+.goal-fit-option-button.active {
+  border-color: #172026;
+  background: #172026;
+  color: #ffffff;
+}
+
+.goal-fit-primary-action {
+  justify-self: start;
+}
+
+.goal-fit-path-card {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid #d9e0e7;
+  border-radius: 8px;
+  background: #f8fafb;
+}
+
+.goal-fit-path-card strong {
+  color: #172026;
+}
+
+.goal-fit-path-card span {
+  color: #64717e;
+}
+
+.goal-fit-progress {
+  display: grid;
+  gap: 8px;
+}
+
+.goal-fit-progress-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  color: #516272;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.goal-fit-progress-track {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #edf1f5;
+}
+
+.goal-fit-progress-track i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #172026;
+  transition: width 0.2s ease;
+}
+
+.goal-fit-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.goal-fit-error {
+  color: #9b3d30;
+  font-weight: 700;
+}
+
+.goal-fit-note {
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: #f4faf7;
+  color: #244d41;
+}
+
+.goal-fit-muted {
+  color: #64717e;
+  font-size: 14px;
+}
+
+.goal-fit-complete-mark {
+  width: 44px;
+  height: 44px;
+  border-radius: 999px;
+  background:
+    linear-gradient(135deg, transparent 45%, #ffffff 46% 55%, transparent 56%),
+    #3f7d69;
+}
+
 @keyframes sceneGlow {
   0%,
   100% {
@@ -1587,5 +1762,32 @@ p {
 
   .result-v2-path-card h2 {
     font-size: 18px;
+  }
+
+  .goal-fit-shell {
+    padding: 14px 12px 28px;
+  }
+
+  .goal-fit-panel {
+    padding: 16px;
+  }
+
+  .goal-fit-header h1,
+  .goal-fit-panel h1 {
+    font-size: 23px;
+  }
+
+  .goal-fit-target-grid,
+  .goal-fit-actions {
+    grid-template-columns: 1fr;
+  }
+
+  .goal-fit-primary-action {
+    justify-self: stretch;
+  }
+
+  .goal-fit-progress-meta {
+    display: grid;
+    gap: 4px;
   }
 }
