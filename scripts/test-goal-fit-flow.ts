@@ -114,6 +114,20 @@ for (const roleType of roleTypes) {
 }
 
 const pageSource = fs.readFileSync(pagePath, "utf8");
+
+[
+  "你现在最想去什么类型的公司？",
+  "你最想判断哪个岗位方向？",
+  "目标已经选好了",
+  "开始答题"
+].forEach((text) => {
+  assert(pageSource.includes(text), `GoalFitTestPage must contain copy: ${text}`);
+});
+assert(
+  pageSource.includes('step === "target"') && pageSource.includes('step === "targetRole"'),
+  "GoalFitTestPage must split target selection into company and role steps"
+);
+
 const forbiddenVisibleTexts = [
   "V1.3",
   "V2",
@@ -132,7 +146,8 @@ const forbiddenVisibleTexts = [
   "免费咨询",
   "企业微信"
 ];
-const matchedForbidden = forbiddenVisibleTexts.find((text) => pageSource.includes(text));
+const normalizedPageSource = pageSource.replace(/\/test-goal-fit-preview/g, "");
+const matchedForbidden = forbiddenVisibleTexts.find((text) => normalizedPageSource.includes(text));
 
 assert(!matchedForbidden, `GoalFitTestPage contains forbidden visible wording: ${matchedForbidden}`);
 

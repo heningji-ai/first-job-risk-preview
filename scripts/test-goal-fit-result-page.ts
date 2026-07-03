@@ -90,10 +90,21 @@ assert(result.cards.length >= 6, "cards must contain at least 6");
   "你和目标岗位的匹配度",
   "你需要提前看清的风险",
   "猎头季哥怎么看",
-  "接下来更适合怎么做"
-].forEach((title) => {
-  assert(resultPageSource.includes(title), `GoalFitResultPage must contain title: ${title}`);
+  "接下来更适合怎么做",
+  "先看总判断",
+  "拆开看：公司和岗位",
+  "最后看风险和行动",
+  "看公司和岗位适配",
+  "看风险和下一步",
+  "猎头季哥人才重估实验室"
+].forEach((text) => {
+  assert(resultPageSource.includes(text), `GoalFitResultPage must contain copy: ${text}`);
 });
+assert(
+  resultPageSource.includes("currentResultScreen") &&
+    resultPageSource.includes("setCurrentResultScreen"),
+  "GoalFitResultPage must use screen state for three-screen reading"
+);
 
 const userVisibleSources = [
   testPageSource.replace(/\/test-goal-fit-preview/g, ""),
