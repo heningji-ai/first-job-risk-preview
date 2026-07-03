@@ -126,3 +126,68 @@ export type GoalFitScoreResult = {
   selectedQuestionIds: string[];
   scoreVersion: string;
 };
+
+export type GoalFitConclusionLevel =
+  | "high_match"
+  | "good_match"
+  | "conditional_match"
+  | "high_risk"
+  | "not_priority";
+
+export type GoalFitOverallConclusion = {
+  level: GoalFitConclusionLevel;
+  title: string;
+  summary: string;
+};
+
+export type GoalFitQuadrantType =
+  | "high_match"
+  | "personality_fit_behavior_weak"
+  | "behavior_fit_personality_drain"
+  | "low_match"
+  | "conditional";
+
+export type GoalFitQuadrantConclusion = {
+  type: GoalFitQuadrantType;
+  title: string;
+  summary: string;
+  advice: string;
+};
+
+export type GoalFitRiskInsightSeverity = "low" | "medium" | "high";
+
+export type GoalFitRiskInsight = {
+  id: string;
+  title: string;
+  description: string;
+  severity: GoalFitRiskInsightSeverity;
+  source: string;
+};
+
+export type GoalFitRecommendation = {
+  title: string;
+  description: string;
+};
+
+export type GoalFitResultCard = {
+  id: string;
+  title: string;
+  summary: string;
+  items?: string[];
+};
+
+export type GoalFitResult = {
+  targetCompany: CompanyType;
+  targetRole: RoleType;
+  targetCompanyLabel: string;
+  targetRoleLabel: string;
+  scores: GoalFitScoreResult;
+  overallConclusion: GoalFitOverallConclusion;
+  companyQuadrant: GoalFitQuadrantConclusion;
+  roleQuadrant: GoalFitQuadrantConclusion;
+  riskInsights: GoalFitRiskInsight[];
+  headhunterSummary: string;
+  recommendations: GoalFitRecommendation[];
+  cards: GoalFitResultCard[];
+  resultVersion: string;
+};
