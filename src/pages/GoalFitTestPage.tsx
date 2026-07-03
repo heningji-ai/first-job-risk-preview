@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { buildGoalFitResult } from "../lib/goalFitResultBuilder";
 import { goalFitQuestionBank } from "../lib/goalFitQuestionBank";
 import { selectGoalFitQuestions } from "../lib/goalFitQuestionSelector";
+import { navigateTo } from "../lib/router";
 import {
   clearGoalFitDraft,
   createGoalFitSession,
@@ -162,7 +163,7 @@ function GoalFitTestPage() {
       saveGoalFitSession(session);
       clearGoalFitDraft();
       setErrorMessage("");
-      setStep("complete");
+      navigateTo(`/result-goal-fit-preview?session=${encodeURIComponent(session.id)}`);
     } catch {
       setErrorMessage("还有题目没有完成，请补完后再生成报告。");
     }

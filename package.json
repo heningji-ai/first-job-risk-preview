@@ -12,6 +12,7 @@
     "test-goal-fit-scoring": "node --experimental-strip-types scripts/test-goal-fit-scoring.ts",
     "test-goal-fit-result": "node --experimental-strip-types scripts/test-goal-fit-result.ts",
     "test-goal-fit-flow": "node --experimental-strip-types scripts/test-goal-fit-flow.ts",
+    "test-goal-fit-result-page": "node --experimental-strip-types scripts/test-goal-fit-result-page.ts",
     "validate-questions-v2": "node --experimental-strip-types scripts/validate-questions-v2.ts",
     "test-scoring-v2": "node --experimental-strip-types scripts/test-scoring-v2.ts",
     "test-result-v2": "node --experimental-strip-types scripts/test-result-v2.ts",
