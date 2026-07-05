@@ -259,7 +259,7 @@ function GoalFitTestPage() {
       saveGoalFitSession(session);
       clearGoalFitDraft();
       setErrorMessage("");
-      navigateTo(`/result-goal-fit-preview?session=${encodeURIComponent(session.id)}`);
+      navigateTo(`/result-goal-fit-free-preview?session=${encodeURIComponent(session.id)}`);
     } catch {
       setErrorMessage("还有题目没有完成，请补完后再生成报告。");
     }
@@ -451,13 +451,16 @@ function GoalFitTestPage() {
             <p>我们会判断：这个方向是你的机会，还是容易消耗你的选择。</p>
           </div>
           <div className="goal-fit-preview-card">
-            <h2>测完你会看到</h2>
+            <h2>测完后，你会先看到</h2>
             <ol>
-              <li>这个方向是否适合优先投递</li>
-              <li>最大风险点是什么</li>
-              <li>哪些能力需要提前补</li>
-              <li>简历和面试应该怎么解释</li>
+              <li>这个目标当前值不值得优先尝试</li>
+              <li>你的综合匹配度意味着什么</li>
+              <li>最容易影响你求职反馈的问题</li>
+              <li>完整报告里会继续拆解哪些差距</li>
             </ol>
+            <p className="goal-fit-preview-note">
+              免费判断先帮你看方向，完整报告再继续拆解：这类公司怎么用人、这类岗位真实要求什么，以及你接下来该怎么调整。
+            </p>
           </div>
           <div className="goal-fit-actions">
             <button className="secondary-button" type="button" onClick={() => setStep("target")}>

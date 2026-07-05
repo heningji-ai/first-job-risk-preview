@@ -19,6 +19,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "..");
 const questionsPath = path.join(projectRoot, "src", "config", "goalFit", "questions.json");
 const pagePath = path.join(projectRoot, "src", "pages", "GoalFitTestPage.tsx");
+const freeResultPagePath = path.join(projectRoot, "src", "pages", "GoalFitFreeResultPage.tsx");
 const headerPath = path.join(projectRoot, "src", "components", "GoalFitHeader.tsx");
 const stylesPath = path.join(projectRoot, "src", "styles", "global.css");
 const questionBank = JSON.parse(fs.readFileSync(questionsPath, "utf8")) as GoalFitQuestionBank;
@@ -116,6 +117,7 @@ for (const roleType of roleTypes) {
 }
 
 const pageSource = fs.readFileSync(pagePath, "utf8");
+const freeResultPageSource = fs.readFileSync(freeResultPagePath, "utf8");
 const headerSource = fs.readFileSync(headerPath, "utf8");
 const stylesSource = fs.readFileSync(stylesPath, "utf8");
 
@@ -183,15 +185,44 @@ assert(
   "准备开始：正式进入风险预演",
   "你的求职风险预演即将开始",
   "本次预演目标",
-  "测完你会看到",
+  "测完后，你会先看到",
+  "这个目标当前值不值得优先尝试",
+  "你的综合匹配度意味着什么",
+  "最容易影响你求职反馈的问题",
+  "完整报告里会继续拆解哪些差距",
+  "免费判断先帮你看方向",
+  "完整报告再继续拆解",
+  "这类公司怎么用人",
+  "这类岗位真实要求什么",
+  "你接下来该怎么调整",
   "继续，开始风险预演",
   "开始 34 题判断"
 ].forEach((text) => {
   assert(pageSource.includes(text), `GoalFitTestPage must contain copy: ${text}`);
 });
+
+[
+  "测完你会看到",
+  "这个方向是否适合优先投递",
+  "最大风险点是什么",
+  "哪些能力需要提前补",
+  "简历和面试应该怎么解释"
+].forEach((text) => {
+  assert(!pageSource.includes(text), `GoalFitTestPage must not contain outdated copy: ${text}`);
+});
 assert(
   pageSource.includes("GoalFitHeader") && pageSource.includes("../components/GoalFitHeader"),
   "GoalFitTestPage must reuse GoalFitHeader"
+);
+assert(
+  pageSource.includes("/result-goal-fit-free-preview?session="),
+  "GoalFitTestPage must navigate to free result page after completion"
+);
+assert(
+  freeResultPageSource.includes("getGoalFitSession") &&
+    freeResultPageSource.includes("综合匹配度") &&
+    freeResultPageSource.includes("解锁完整目标适配报告 ¥19.9"),
+  "GoalFitFreeResultPage must build a free result from session and expose unlock CTA"
 );
 assert(
   pageSource.includes("/goal-fit-roadmap.png") &&
@@ -260,6 +291,7 @@ const forbiddenVisibleTexts = [
 ];
 const normalizedPageSource = pageSource
   .replace(/\/test-goal-fit-preview/g, "")
+  .replace(/\/result-goal-fit-free-preview\?session=/g, "")
   .replace(/\/result-goal-fit-preview\?session=/g, "")
   .replace(/encodeURIComponent\(session\.id\)/g, "")
   .replace(/session/g, "");

@@ -20,8 +20,10 @@ const projectRoot = path.resolve(__dirname, "..");
 const questionsPath = path.join(projectRoot, "src", "config", "goalFit", "questions.json");
 const appPath = path.join(projectRoot, "src", "App.tsx");
 const testPagePath = path.join(projectRoot, "src", "pages", "GoalFitTestPage.tsx");
+const freeResultPagePath = path.join(projectRoot, "src", "pages", "GoalFitFreeResultPage.tsx");
 const resultPagePath = path.join(projectRoot, "src", "pages", "GoalFitResultPage.tsx");
 const headerPath = path.join(projectRoot, "src", "components", "GoalFitHeader.tsx");
+const unlockStorePath = path.join(projectRoot, "src", "lib", "goalFitUnlockStore.ts");
 const stylesPath = path.join(projectRoot, "src", "styles", "global.css");
 const questionBank = JSON.parse(fs.readFileSync(questionsPath, "utf8")) as GoalFitQuestionBank;
 
@@ -41,8 +43,10 @@ function createCompleteAnswers(selectedQuestions: GoalFitQuestion[]): GoalFitAns
 
 const appSource = fs.readFileSync(appPath, "utf8");
 const testPageSource = fs.readFileSync(testPagePath, "utf8");
+const freeResultPageSource = fs.readFileSync(freeResultPagePath, "utf8");
 const resultPageSource = fs.readFileSync(resultPagePath, "utf8");
 const headerSource = fs.readFileSync(headerPath, "utf8");
+const unlockStoreSource = fs.readFileSync(unlockStorePath, "utf8");
 const stylesSource = fs.readFileSync(stylesPath, "utf8");
 
 assert(
@@ -50,8 +54,19 @@ assert(
   "App.tsx must route /result-goal-fit-preview to GoalFitResultPage"
 );
 assert(
-  testPageSource.includes("/result-goal-fit-preview?session="),
-  "GoalFitTestPage must navigate to result page after completion"
+  appSource.includes("/result-goal-fit-free-preview") &&
+    appSource.includes("GoalFitFreeResultPage"),
+  "App.tsx must route /result-goal-fit-free-preview to GoalFitFreeResultPage"
+);
+assert(
+  testPageSource.includes("/result-goal-fit-free-preview?session="),
+  "GoalFitTestPage must navigate to free result page after completion"
+);
+assert(
+  unlockStoreSource.includes("goalFitReportUnlocked:") &&
+    unlockStoreSource.includes("markGoalFitReportUnlocked") &&
+    unlockStoreSource.includes("isGoalFitReportUnlocked"),
+  "goalFitUnlockStore must keep local unlock state"
 );
 
 const selectedQuestions = selectGoalFitQuestions(questionBank, "SLS");
@@ -134,37 +149,112 @@ assert(
   testPageSource.includes("GoalFitHeader") && resultPageSource.includes("GoalFitHeader"),
   "GoalFit pages must reuse GoalFitHeader"
 );
+assert(
+  freeResultPageSource.includes("GoalFitHeader"),
+  "GoalFitFreeResultPage must reuse GoalFitHeader"
+);
+
+[
+  "你的第一份工作目标判断已生成",
+  "我们先给你一个总判断",
+  "总判断",
+  "适配拆解",
+  "建议行动",
+  "先看总体判断",
+  "综合匹配度",
+  "中等偏上",
+  "这个方向可以尝试",
+  "你当前最需要优先确认的是",
+  "针对你的情况，我们建议：",
+  "完整报告已生成",
+  "公司类型适配拆解",
+  "岗位类型适配拆解",
+  "建议行动",
+  "材料调整方向",
+  "面试表达提醒",
+  "待解锁",
+  "解锁完整目标适配报告 ¥19.9",
+  "免费页先给你总判断",
+  "markGoalFitReportUnlocked",
+  "/result-goal-fit-preview?session=",
+  "/result-goal-fit-preview?sample=high_fit"
+].forEach((text) => {
+  assert(freeResultPageSource.includes(text), `GoalFitFreeResultPage must contain copy: ${text}`);
+});
 
 [
   "目标适配报告",
   "根据你的测试结果，你选择的公司类型、岗位类型与你当前状态的适配程度如下。",
   "总判断",
   "适配拆解",
-  "风险行动",
+  "建议行动",
   "先看总判断",
   "当前匹配度是",
   "这里不是评价你优秀不优秀",
   "针对你的情况，我们建议：",
   "接下来，我们看具体公司类型和岗位类型与你之间的差距",
-  "你和目标公司类型的匹配度",
-  "你的性格和该类型公司的匹配度",
-  "你现在进入该类型公司的准备情况",
-  "你入职后的适应度",
-  "你的做事风格和该类型公司的匹配度",
-  "你和目标岗位类型的匹配度",
-  "你的性格和该类型岗位的匹配度",
-  "你现在对该岗位的胜任准备度",
-  "你面对该岗位典型场景的适应度",
-  "你的做事风格和岗位要求的匹配度",
+  "你和目标公司类型之间的差距",
+  "这类公司的用人风格",
+  "你目前更像哪种状态",
+  "如果你进入这类公司，可能会是什么体感",
+  "这类公司的入门门槛，和你现在的准备",
+  "你和目标岗位类型之间的差距",
+  "这类岗位更希望的做事风格",
+  "这个岗位真正考验什么能力",
+  "你目前和岗位要求之间的差距",
+  "如果你真的做这个岗位，可能会有什么感受",
   "看具体差距",
-  "最后看风险行动",
+  "最后看建议行动",
   "先看总判断",
   "猎头季哥人才重估实验室",
-  "第一份工作怎么选",
-  "哪些岗位不能盲投"
+  "你最需要优先处理的问题",
+  "你接下来要补什么",
+  "性格和做事风格差距，不等于你不适合工作",
+  "先找真实岗位描述",
+  "学长学姐经历",
+  "面试问题",
+  "不要只根据岗位名称判断自己适不适合",
+  "不要因为追求完美",
+  "内心真正想走的路",
+  "材料和证据还不够集中",
+  "岗位证据还不够清晰",
+  "风格适应",
+  "求职材料",
+  "面试表达",
+  "如果差距来自性格或做事风格",
+  "继续获得求职方向帮助",
+  "这里会继续分享更真实的招聘判断"
 ].forEach((text) => {
   assert(resultPageSource.includes(text), `GoalFitResultPage must contain copy: ${text}`);
 });
+["相关匹配度", "匹配度：", "准备度：", "适应度：", "你现在最该补的不是兴趣，而是证据", "最后看风险行动", "风险行动建议", "免费咨询", "企业微信", "保证入职", "立即购买", "猎头季哥建议："].forEach((text) => {
+  assert(!resultPageSource.includes(text), `GoalFitResultPage must not contain deprecated score or role evidence copy: ${text}`);
+});
+assert(!resultPageSource.includes("<h3>简历怎么改</h3>"), "GoalFitResultPage must not render resume advice as an independent title");
+assert(!resultPageSource.includes("<h3>面试怎么解释</h3>"), "GoalFitResultPage must not render interview advice as an independent title");
+assert(
+  resultPageSource.includes("isGoalFitReportUnlocked") &&
+    resultPageSource.includes("请先解锁完整目标适配报告") &&
+    resultPageSource.includes("返回查看免费判断"),
+  "GoalFitResultPage must block locked session reports and return to free result"
+);
+assert(
+  resultPageSource.includes('sample === "high_fit"') &&
+    resultPageSource.includes("createSampleResult"),
+  "GoalFitResultPage must allow sample report for validation"
+);
+assert(
+  stylesSource.includes(".goal-fit-result-advice-report") &&
+    stylesSource.includes("max-width: 920px") &&
+    !stylesSource.includes(".goal-fit-result-advice-report {\n  display: grid;\n  grid-template-columns: repeat(2"),
+  "GoalFit result advice report must use a single-column full-width card flow"
+);
+assert(
+  resultPageSource.includes("goal-fit-result-narrative-card") &&
+    stylesSource.includes(".goal-fit-result-narrative-card") &&
+    stylesSource.includes(".goal-fit-free-unlock-card"),
+  "GoalFit result styles must include free page and narrative report classes"
+);
 assert(
   !resultPageSource.includes("猎头季哥建议："),
   "GoalFitResultPage must not use old advice title"
@@ -178,14 +268,30 @@ assert(
 const userVisibleSources = [
   testPageSource
     .replace(/\/test-goal-fit-preview/g, "")
+    .replace(/\/result-goal-fit-free-preview\?session=/g, "")
     .replace(/\/result-goal-fit-preview\?session=/g, "")
     .replace(/session/g, ""),
+  freeResultPageSource
+    .replace(/\/result-goal-fit-preview\?session=/g, "")
+    .replace(/\/result-goal-fit-preview\?sample=high_fit/g, "")
+    .replace(/\/result-goal-fit-free-preview/g, "")
+    .replace(/URLSearchParams\(window\.location\.search\)/g, "")
+    .replace(/params\.get\("session"\)/g, "")
+    .replace(/params\.get\("sample"\)/g, "")
+    .replace(/sample === "high_fit"/g, "")
+    .replace(/sessionId/g, "")
+    .replace(/session/g, "")
+    .replace(/sample/g, ""),
   resultPageSource
     .replace(/\/result-goal-fit-preview/g, "")
+    .replace(/\/result-goal-fit-free-preview\?session=/g, "")
     .replace(/\/test-goal-fit-preview/g, "")
     .replace(/URLSearchParams\(window\.location\.search\)/g, "")
     .replace(/params\.get\("session"\)/g, "")
+    .replace(/params\.get\("sample"\)/g, "")
+    .replace(/sample === "high_fit"/g, "")
     .replace(/session/g, "")
+    .replace(/sample/g, "")
     .replace(/reportId/g, "")
 ];
 const forbiddenVisibleTexts = [
@@ -197,6 +303,8 @@ const forbiddenVisibleTexts = [
   "debug",
   "sample",
   "session",
+  "模拟支付",
+  "测试支付",
   "测试版",
   "A 档",
   "B 档",
