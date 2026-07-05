@@ -21,6 +21,8 @@ const questionsPath = path.join(projectRoot, "src", "config", "goalFit", "questi
 const appPath = path.join(projectRoot, "src", "App.tsx");
 const testPagePath = path.join(projectRoot, "src", "pages", "GoalFitTestPage.tsx");
 const resultPagePath = path.join(projectRoot, "src", "pages", "GoalFitResultPage.tsx");
+const headerPath = path.join(projectRoot, "src", "components", "GoalFitHeader.tsx");
+const stylesPath = path.join(projectRoot, "src", "styles", "global.css");
 const questionBank = JSON.parse(fs.readFileSync(questionsPath, "utf8")) as GoalFitQuestionBank;
 
 function fail(message: string): never {
@@ -40,6 +42,8 @@ function createCompleteAnswers(selectedQuestions: GoalFitQuestion[]): GoalFitAns
 const appSource = fs.readFileSync(appPath, "utf8");
 const testPageSource = fs.readFileSync(testPagePath, "utf8");
 const resultPageSource = fs.readFileSync(resultPagePath, "utf8");
+const headerSource = fs.readFileSync(headerPath, "utf8");
+const stylesSource = fs.readFileSync(stylesPath, "utf8");
 
 assert(
   appSource.includes("/result-goal-fit-preview") && appSource.includes("GoalFitResultPage"),
@@ -85,21 +89,86 @@ assert(result.recommendations.length <= 3, "recommendations must contain at most
 assert(result.cards.length >= 6, "cards must contain at least 6");
 
 [
-  "你的目标适配结果",
-  "你和目标公司的匹配度",
-  "你和目标岗位的匹配度",
-  "你需要提前看清的风险",
-  "猎头季哥怎么看",
-  "接下来更适合怎么做",
+  "猎头季哥",
+  "21年招聘经验",
+  "给你最真实的招聘逻辑",
+  "帮助你做最适合的工作选择",
+  "招聘端判断",
+].forEach((text) => {
+  assert(headerSource.includes(text), `GoalFitHeader must contain copy: ${text}`);
+});
+assert(
+  headerSource.includes("goal-fit-header-inner"),
+  "GoalFitHeader must contain goal-fit-header-inner"
+);
+assert(
+  headerSource.includes("goal-fit-header-brand-line") &&
+    headerSource.includes("goal-fit-header-brand-name") &&
+    headerSource.includes("goal-fit-header-brand-meta"),
+  "GoalFitHeader must render a single-line brand copy group"
+);
+assert(
+  !headerSource.includes("goal-fit-header-logo") && !headerSource.includes("<i"),
+  "GoalFitHeader must not keep a logo or icon placeholder"
+);
+assert(
+  stylesSource.includes(".goal-fit-header-inner") &&
+    stylesSource.includes("display: flex;") &&
+    stylesSource.includes("justify-content: space-between;"),
+  "global.css must define merged left-brand Goal Fit header layout"
+);
+assert(
+  stylesSource.includes("padding-left: 1em;") &&
+    stylesSource.includes(".goal-fit-header-brand-line") &&
+    stylesSource.includes("flex-wrap: nowrap;"),
+  "global.css must keep desktop header brand copy on one line with a subtle right offset"
+);
+assert(
+  stylesSource.includes(".goal-fit-target-layout > .goal-fit-intro-panel") &&
+    stylesSource.includes(".goal-fit-target-layout > .goal-fit-choice-panel") &&
+    stylesSource.includes("height: 100%;") &&
+    stylesSource.includes("flex-direction: column;"),
+  "global.css must keep target selection panels equal height on desktop"
+);
+assert(
+  testPageSource.includes("GoalFitHeader") && resultPageSource.includes("GoalFitHeader"),
+  "GoalFit pages must reuse GoalFitHeader"
+);
+
+[
+  "目标适配报告",
+  "根据你的测试结果，你选择的公司类型、岗位类型与你当前状态的适配程度如下。",
+  "总判断",
+  "适配拆解",
+  "风险行动",
   "先看总判断",
-  "拆开看：公司和岗位",
-  "最后看风险和行动",
-  "看公司和岗位适配",
-  "看风险和下一步",
-  "猎头季哥人才重估实验室"
+  "当前匹配度是",
+  "这里不是评价你优秀不优秀",
+  "针对你的情况，我们建议：",
+  "接下来，我们看具体公司类型和岗位类型与你之间的差距",
+  "你和目标公司类型的匹配度",
+  "你的性格和该类型公司的匹配度",
+  "你现在进入该类型公司的准备情况",
+  "你入职后的适应度",
+  "你的做事风格和该类型公司的匹配度",
+  "你和目标岗位类型的匹配度",
+  "你的性格和该类型岗位的匹配度",
+  "你现在对该岗位的胜任准备度",
+  "你面对该岗位典型场景的适应度",
+  "你的做事风格和岗位要求的匹配度",
+  "看具体差距",
+  "最后看风险行动",
+  "先看总判断",
+  "猎头季哥人才重估实验室",
+  "第一份工作怎么选",
+  "哪些岗位不能盲投"
 ].forEach((text) => {
   assert(resultPageSource.includes(text), `GoalFitResultPage must contain copy: ${text}`);
 });
+assert(
+  !resultPageSource.includes("猎头季哥建议："),
+  "GoalFitResultPage must not use old advice title"
+);
 assert(
   resultPageSource.includes("currentResultScreen") &&
     resultPageSource.includes("setCurrentResultScreen"),
@@ -107,8 +176,17 @@ assert(
 );
 
 const userVisibleSources = [
-  testPageSource.replace(/\/test-goal-fit-preview/g, ""),
-  resultPageSource.replace(/\/result-goal-fit-preview/g, "").replace(/session/g, "")
+  testPageSource
+    .replace(/\/test-goal-fit-preview/g, "")
+    .replace(/\/result-goal-fit-preview\?session=/g, "")
+    .replace(/session/g, ""),
+  resultPageSource
+    .replace(/\/result-goal-fit-preview/g, "")
+    .replace(/\/test-goal-fit-preview/g, "")
+    .replace(/URLSearchParams\(window\.location\.search\)/g, "")
+    .replace(/params\.get\("session"\)/g, "")
+    .replace(/session/g, "")
+    .replace(/reportId/g, "")
 ];
 const forbiddenVisibleTexts = [
   "V1.3",
@@ -118,6 +196,19 @@ const forbiddenVisibleTexts = [
   "开发",
   "debug",
   "sample",
+  "session",
+  "测试版",
+  "A 档",
+  "B 档",
+  "C 档",
+  "D 档",
+  "档位",
+  "评级",
+  "等级",
+  "诊断分数",
+  "能力分数",
+  "职业匹配分",
+  "性格匹配度",
   "你不适合这个职业",
   "你性格不行",
   "你未来一定痛苦",

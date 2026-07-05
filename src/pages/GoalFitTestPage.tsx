@@ -1,4 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
+import type { ReactNode } from "react";
+import GoalFitHeader from "../components/GoalFitHeader";
 import { buildGoalFitResult } from "../lib/goalFitResultBuilder";
 import { goalFitQuestionBank } from "../lib/goalFitQuestionBank";
 import { selectGoalFitQuestions } from "../lib/goalFitQuestionSelector";
@@ -22,11 +24,71 @@ import type {
 type PageStep = "target" | "targetRole" | "confirm" | "questions" | "complete";
 
 const moduleLabels: Record<QuestionModule, string> = {
-  A_BACKGROUND: "认识你现在的基础",
-  B_PERSONALITY: "看看你的职场底色",
-  C_MOTIVATION: "理解你的求职动机",
-  D_WORKPLACE_SCENARIO: "进入真实职场场景",
-  E_ROLE_SCENARIO: "进入目标岗位预演"
+  A_BACKGROUND: "第一部分：基础背景",
+  B_PERSONALITY: "第二部分：职场底色",
+  C_MOTIVATION: "第三部分：求职动机",
+  D_WORKPLACE_SCENARIO: "第四部分：职场场景",
+  E_ROLE_SCENARIO: "第五部分：岗位预演"
+};
+
+const moduleDescriptions: Record<QuestionModule, string> = {
+  A_BACKGROUND: "这一部分只看真实招聘里的基础门槛，不评价你优秀不优秀。",
+  B_PERSONALITY: "这一部分看你在不同工作环境里，是更舒服，还是更容易消耗。",
+  C_MOTIVATION: "这一部分看你为什么想选这个方向，避免只被公司名或岗位名带着走。",
+  D_WORKPLACE_SCENARIO: "这一部分看你面对真实工作情况时，会怎么反应。",
+  E_ROLE_SCENARIO: "这一部分会把你放进目标岗位的具体场景里。"
+};
+
+const moduleShortLabels: Record<QuestionModule, string> = {
+  A_BACKGROUND: "基础背景",
+  B_PERSONALITY: "职场底色",
+  C_MOTIVATION: "求职动机",
+  D_WORKPLACE_SCENARIO: "职场场景",
+  E_ROLE_SCENARIO: "岗位预演"
+};
+
+const companyOptionDescriptions: Record<CompanyType, string> = {
+  G: "稳定感强，但节奏慢、流程多。",
+  F: "规则清楚，但沟通和协作标准更高。",
+  D: "成长快，但节奏硬、竞争强。",
+  V: "机会多，但变化快、不确定性高。",
+  M: "上手机会多，但老板和团队很关键。"
+};
+
+const companySelectionFeedback: Record<CompanyType, string> = {
+  G: "你选了更稳定的环境，后面会重点看你能不能适应流程、边界和长期节奏。",
+  F: "你选了更职业化的环境，后面会重点看你的表达、协作和边界感。",
+  D: "你选了高成长、高竞争的环境，后面会重点看你的抗压、协作和成长节奏。",
+  V: "你选了变化更快的环境，后面会重点看你能不能适应模糊目标和不确定性。",
+  M: "你选了更看团队和老板的环境，后面会重点看你的执行落地和现实适应。"
+};
+
+const roleOptionDescriptions: Record<RoleType, string> = {
+  SLS: "愿意主动开口，也扛得住被拒绝。",
+  PM: "喜欢拆问题，也愿意推进事情落地。",
+  OPS: "愿意反复跟数据和细节打交道。",
+  TECH: "能沉下心解决问题，也愿意持续学习。",
+  DATA: "喜欢从信息里找规律，也能讲清结论。",
+  FUNC: "做事细，能跟流程，愿意稳定成长。",
+  MKT: "喜欢表达和观察用户，也接受反复修改。",
+  SUP: "愿意盯流程和交付，也能处理扯皮。"
+};
+
+const roleSelectionFeedback: Record<RoleType, string> = {
+  SLS: "你选择了一个更看目标感和沟通恢复力的方向。后面会重点判断你是否适合高频反馈和外部压力。",
+  PM: "你选择了一个更看推进能力的方向。后面会重点判断你能不能理解需求、协调资源并交付结果。",
+  OPS: "你选择了一个更看执行节奏的方向。后面会重点判断你是否能持续优化，而不是只靠一时兴趣。",
+  TECH: "你选择了一个更看专业耐心的方向。后面会重点判断你是否能持续学习和拆解问题。",
+  DATA: "你选择了一个更看逻辑和业务理解的方向。后面会重点判断你能不能把数据变成判断。",
+  FUNC: "你选择了一个更看细致和协作的方向。后面会重点判断你是否适合规则、流程和组织支持。",
+  MKT: "你选择了一个更看表达和用户洞察的方向。后面会重点判断你能不能接受反复修改和结果检验。",
+  SUP: "你选择了一个更看落地和抗压的方向。后面会重点判断你是否能处理流程、协同和突发问题。"
+};
+
+const questionNotes: Partial<Record<string, string>> = {
+  A01: "这会影响初筛门槛，不代表你的真实能力。",
+  A03: "这会影响你进入目标岗位时，需要补多少解释成本。",
+  A04: "这会影响你讲案例时，能不能让招聘方快速相信你做过类似事情。"
 };
 
 function getTargetQuestion(type: "targetCompany" | "targetRole"): TargetQuestion {
@@ -52,6 +114,23 @@ function getSelectedQuestions(targetRole?: RoleType): GoalFitQuestion[] {
   return selectGoalFitQuestions(goalFitQuestionBank, targetRole);
 }
 
+function GoalFitPageFrame({ children }: { children: ReactNode }) {
+  return (
+    <main className="goal-fit-shell">
+      <GoalFitHeader />
+      {children}
+    </main>
+  );
+}
+
+function GoalFitCoordinateVisual() {
+  return (
+    <figure className="goal-fit-roadmap-figure" aria-label="第一份工作路径预演示意图">
+      <img src="/goal-fit-roadmap.png" alt="" aria-hidden="true" />
+    </figure>
+  );
+}
+
 function GoalFitTestPage() {
   const [step, setStep] = useState<PageStep>("target");
   const [targetCompany, setTargetCompany] = useState<CompanyType | undefined>();
@@ -71,6 +150,13 @@ function GoalFitTestPage() {
     selectedQuestions.length > 0 ? Math.round((answeredCount / selectedQuestions.length) * 100) : 0;
   const targetCompanyLabel = targetCompany ? goalFitQuestionBank.companyTypes[targetCompany] : "";
   const targetRoleLabel = targetRole ? goalFitQuestionBank.roleTypes[targetRole] : "";
+  const currentModuleQuestions = currentQuestion
+    ? selectedQuestions.filter((question) => question.module === currentQuestion.module)
+    : [];
+  const currentModuleIndex = currentQuestion
+    ? currentModuleQuestions.findIndex((question) => question.id === currentQuestion.id) + 1
+    : 0;
+  const currentQuestionNote = currentQuestion ? questionNotes[currentQuestion.id] : undefined;
 
   useEffect(() => {
     const draft = getGoalFitDraft();
@@ -181,226 +267,335 @@ function GoalFitTestPage() {
 
   if (step === "target") {
     return (
-      <main className="goal-fit-shell">
-        <section className="goal-fit-panel goal-fit-target-panel goal-fit-choice-panel">
-          <div className="goal-fit-header">
-            <p className="goal-fit-eyebrow">第一份工作目标适配</p>
-            <h1>你现在最想去什么类型的公司？</h1>
-            <p>先不用想得太完美，选一个你最近最想投、最想判断的方向。</p>
-            <p className="goal-fit-note">
-              这一步不是让你做最终决定，而是先选一个目标来预演。
-            </p>
-          </div>
-
-          <article className="goal-fit-target-block">
-            <h2>{companyQuestion.text}</h2>
-            <div className="goal-fit-option-list goal-fit-choice-list">
-              {companyQuestion.options.map((option) => (
-                <button
-                  className={
-                    option.id === targetCompany
-                      ? "goal-fit-option-button active"
-                      : "goal-fit-option-button"
-                  }
-                  key={option.id}
-                  type="button"
-                  onClick={() => {
-                    if (isCompanyType(option.id)) {
-                      setTargetCompany(option.id);
-                      setErrorMessage("");
-                    }
-                  }}
-                >
-                  {option.text}
-                </button>
-              ))}
+      <GoalFitPageFrame>
+        <section className="goal-fit-layout-split goal-fit-target-layout">
+          <aside className="goal-fit-intro-panel goal-fit-layout-side">
+            <p className="goal-fit-step-pill">第 1 步 / 2 步：先定环境</p>
+            <div className="goal-fit-page-heading">
+              <p className="goal-fit-eyebrow">先建立你的风险预演坐标</p>
+              <h1>你第一份工作，想先进入哪种环境？</h1>
+              <p>先选一个你最想尝试的环境，后面再看它会放大你，还是消耗你。</p>
             </div>
-          </article>
 
-          {errorMessage ? <p className="goal-fit-error">{errorMessage}</p> : null}
+            <GoalFitCoordinateVisual />
 
-          <button
-            className="primary-button goal-fit-primary-action"
-            type="button"
-            onClick={handleConfirmCompany}
-            disabled={!targetCompany}
-          >
-            下一步：选择岗位方向
-          </button>
+            <div className="goal-fit-lite-hint">
+              <span>第一份工作更怕环境错配。</span>
+              <details>
+                <summary>为什么先看环境？</summary>
+                <p>因为同一个人，放在不同公司环境里，优势和消耗会完全不同。</p>
+              </details>
+            </div>
+          </aside>
+
+          <section className="goal-fit-panel goal-fit-target-panel goal-fit-choice-panel goal-fit-layout-main">
+            <article className="goal-fit-target-block">
+              <h2>你会优先投哪类公司？</h2>
+              <div className="goal-fit-option-list goal-fit-choice-list">
+                {companyQuestion.options.map((option) => {
+                  const isSelected = option.id === targetCompany;
+                  const description = isCompanyType(option.id)
+                    ? companyOptionDescriptions[option.id]
+                    : "";
+
+                  return (
+                    <button
+                      className={
+                        isSelected
+                          ? "goal-fit-option-button goal-fit-option-card active"
+                          : "goal-fit-option-button goal-fit-option-card"
+                      }
+                      key={option.id}
+                      type="button"
+                      onClick={() => {
+                        if (isCompanyType(option.id)) {
+                          setTargetCompany(option.id);
+                          setErrorMessage("");
+                        }
+                      }}
+                    >
+                      <span className="goal-fit-option-main">{option.text}</span>
+                      <span className="goal-fit-option-desc">{description}</span>
+                      {isSelected ? <span className="goal-fit-option-check">✓</span> : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </article>
+
+            {targetCompany ? (
+              <p className="goal-fit-selection-feedback">
+                <span>已记录</span>
+                {companySelectionFeedback[targetCompany]}
+              </p>
+            ) : null}
+
+            {errorMessage ? <p className="goal-fit-error">{errorMessage}</p> : null}
+
+            <button
+              className="primary-button goal-fit-primary-action"
+              type="button"
+              onClick={handleConfirmCompany}
+              disabled={!targetCompany}
+            >
+              继续，看看你更适合什么岗位
+            </button>
+          </section>
         </section>
-      </main>
+      </GoalFitPageFrame>
     );
   }
 
   if (step === "targetRole") {
     return (
-      <main className="goal-fit-shell">
-        <section className="goal-fit-panel goal-fit-target-panel goal-fit-choice-panel">
-          <div className="goal-fit-header">
-            <p className="goal-fit-eyebrow">已选择：{targetCompanyLabel}</p>
-            <h1>你最想判断哪个岗位方向？</h1>
-            <p>选择一个你现在最想尝试、或者最纠结的岗位方向。</p>
-          </div>
-
-          <article className="goal-fit-target-block">
-            <h2>{roleQuestion.text}</h2>
-            <div className="goal-fit-option-list goal-fit-choice-list">
-              {roleQuestion.options.map((option) => (
-                <button
-                  className={
-                    option.id === targetRole
-                      ? "goal-fit-option-button active"
-                      : "goal-fit-option-button"
-                  }
-                  key={option.id}
-                  type="button"
-                  onClick={() => {
-                    if (isRoleType(option.id)) {
-                      setTargetRole(option.id);
-                      setErrorMessage("");
-                    }
-                  }}
-                >
-                  {option.text}
-                </button>
-              ))}
+      <GoalFitPageFrame>
+        <section className="goal-fit-layout-split goal-fit-target-layout">
+          <aside className="goal-fit-intro-panel goal-fit-layout-side">
+            <p className="goal-fit-step-pill">第 2 步 / 2 步：再定岗位</p>
+            <div className="goal-fit-page-heading">
+              <p className="goal-fit-eyebrow">再确定你最想试的工作方向</p>
+              <h1>你第一份工作，更想先判断哪个岗位方向？</h1>
+              <p>先选一个你最想试、最常投，或者最纠结的岗位方向。</p>
             </div>
-          </article>
 
-          {errorMessage ? <p className="goal-fit-error">{errorMessage}</p> : null}
+            <div className="goal-fit-coordinate-strip">
+              <span>当前预演</span>
+              <strong>{targetCompanyLabel}</strong>
+              <strong>{targetRoleLabel || "待选择岗位方向"}</strong>
+            </div>
+            <p className="goal-fit-side-copy">
+              这一步是在把你的求职目标从“想去哪里”，变成“去那里做什么”。
+            </p>
+          </aside>
 
-          <div className="goal-fit-actions">
-            <button className="secondary-button" type="button" onClick={() => setStep("target")}>
-              返回上一步
-            </button>
-            <button
-              className="primary-button"
-              type="button"
-              onClick={handleConfirmTarget}
-              disabled={!targetRole}
-            >
-              确认目标，开始预演
-            </button>
-          </div>
+          <section className="goal-fit-panel goal-fit-target-panel goal-fit-choice-panel goal-fit-layout-main">
+            <article className="goal-fit-target-block">
+              <h2>在这个环境里，你更想做哪类工作？</h2>
+              <div className="goal-fit-option-list goal-fit-choice-list">
+                {roleQuestion.options.map((option) => {
+                  const isSelected = option.id === targetRole;
+                  const description = isRoleType(option.id)
+                    ? roleOptionDescriptions[option.id]
+                    : "";
+
+                  return (
+                    <button
+                      className={
+                        isSelected
+                          ? "goal-fit-option-button goal-fit-option-card active"
+                          : "goal-fit-option-button goal-fit-option-card"
+                      }
+                      key={option.id}
+                      type="button"
+                      onClick={() => {
+                        if (isRoleType(option.id)) {
+                          setTargetRole(option.id);
+                          setErrorMessage("");
+                        }
+                      }}
+                    >
+                      <span className="goal-fit-option-main">{option.text}</span>
+                      <span className="goal-fit-option-desc">{description}</span>
+                      {isSelected ? <span className="goal-fit-option-check">✓</span> : null}
+                    </button>
+                  );
+                })}
+              </div>
+            </article>
+
+            {targetRole ? (
+              <p className="goal-fit-selection-feedback">
+                {roleSelectionFeedback[targetRole]}
+              </p>
+            ) : null}
+
+            {errorMessage ? <p className="goal-fit-error">{errorMessage}</p> : null}
+
+            <div className="goal-fit-actions">
+              <button className="goal-fit-text-button" type="button" onClick={() => setStep("target")}>
+                返回上一步
+              </button>
+              <button
+                className="primary-button"
+                type="button"
+                onClick={handleConfirmTarget}
+                disabled={!targetRole}
+              >
+                继续，开始风险预演
+              </button>
+            </div>
+          </section>
         </section>
-      </main>
+      </GoalFitPageFrame>
     );
   }
 
   if (step === "confirm") {
     return (
-      <main className="goal-fit-shell">
+      <GoalFitPageFrame>
         <section className="goal-fit-panel goal-fit-confirm-panel">
-          <p className="goal-fit-eyebrow">目标确认</p>
-          <h1>目标已经选好了</h1>
-          <div className="goal-fit-path-card">
-            <strong>{targetCompanyLabel}</strong>
-            <span>×</span>
-            <strong>{targetRoleLabel}</strong>
+          <p className="goal-fit-step-pill">准备开始：正式进入风险预演</p>
+          <h1>你的求职风险预演即将开始</h1>
+          <p>我们已经拿到第一个判断坐标：你想进入什么环境，做什么岗位。</p>
+          <div className="goal-fit-path-card goal-fit-target-object-card">
+            <small>本次预演目标</small>
+            <div>
+              <span>公司环境</span>
+              <strong>{targetCompanyLabel}</strong>
+            </div>
+            <i aria-hidden="true">×</i>
+            <div>
+              <span>岗位方向</span>
+              <strong>{targetRoleLabel}</strong>
+            </div>
+            <p>我们会判断：这个方向是你的机会，还是容易消耗你的选择。</p>
           </div>
-          <p>
-            接下来，我们会围绕这个目标，看你的基础背景、性格底色、求职动机、职场场景和岗位场景是否支持它。
-          </p>
-          <p className="goal-fit-note">
-            这不是给你下结论，而是帮你提前看清：这个方向值不值得作为第一优先选择。
-          </p>
+          <div className="goal-fit-preview-card">
+            <h2>测完你会看到</h2>
+            <ol>
+              <li>这个方向是否适合优先投递</li>
+              <li>最大风险点是什么</li>
+              <li>哪些能力需要提前补</li>
+              <li>简历和面试应该怎么解释</li>
+            </ol>
+          </div>
           <div className="goal-fit-actions">
-            <button className="secondary-button" type="button" onClick={() => setStep("targetRole")}>
-              返回上一步
+            <button className="secondary-button" type="button" onClick={() => setStep("target")}>
+              重新选择目标
             </button>
             <button className="primary-button" type="button" onClick={handleStartQuestions}>
-              开始答题
+              开始 34 题判断
             </button>
           </div>
+          <p className="goal-fit-action-caption">约 3–5 分钟，完成后生成方向判断</p>
+          <p className="goal-fit-method-line">
+            基于真实招聘逻辑，看公司环境、岗位要求、个人基础、动机和职场场景是否匹配。
+          </p>
         </section>
-      </main>
+      </GoalFitPageFrame>
     );
   }
 
   if (step === "complete") {
     return (
-      <main className="goal-fit-shell">
+      <GoalFitPageFrame>
         <section className="goal-fit-panel goal-fit-complete-panel">
           <p className="goal-fit-eyebrow">报告已生成</p>
           <h1>你的目标适配报告已经生成</h1>
           <p>我们已经根据你的目标公司、目标岗位和 34 道选择，生成了本次适配结果。</p>
           <span className="goal-fit-complete-mark" aria-hidden="true" />
         </section>
-      </main>
+      </GoalFitPageFrame>
     );
   }
 
   if (!currentQuestion) {
     return (
-      <main className="goal-fit-shell">
+      <GoalFitPageFrame>
         <section className="goal-fit-panel">
           <h1>暂时没有可回答的问题</h1>
           <button className="primary-button" type="button" onClick={() => setStep("target")}>
             重新选择目标
           </button>
         </section>
-      </main>
+      </GoalFitPageFrame>
     );
   }
 
   return (
-    <main className="goal-fit-shell">
-      <section className="goal-fit-panel goal-fit-question-panel">
-        <div className="goal-fit-question-top">
-          <div>
-            <p className="goal-fit-eyebrow">{moduleLabels[currentQuestion.module]}</p>
-            <p className="goal-fit-question-hint">这不是评判你，而是帮你减少盲投。</p>
+    <GoalFitPageFrame>
+      <section className="goal-fit-layout-split goal-fit-question-layout">
+        <section className="goal-fit-panel goal-fit-question-panel goal-fit-layout-main">
+          <div className="goal-fit-question-top">
+            <p className="goal-fit-module-title">{moduleLabels[currentQuestion.module]}</p>
+            <h1>{currentQuestion.text}</h1>
+            {currentQuestionNote ? (
+              <p className="goal-fit-question-note">{currentQuestionNote}</p>
+            ) : null}
           </div>
+
+          <article className="goal-fit-question">
+            <div className="goal-fit-option-list">
+              {currentQuestion.options.map((option) => (
+                <button
+                  className={
+                    option.id === currentAnswer
+                      ? "goal-fit-option-button active"
+                      : "goal-fit-option-button"
+                  }
+                  key={option.id}
+                  type="button"
+                  onClick={() => handleSelectOption(option.id)}
+                >
+                  {option.text}
+                </button>
+              ))}
+            </div>
+          </article>
+
+          {errorMessage ? <p className="goal-fit-error">{errorMessage}</p> : null}
+
+          <div className="goal-fit-actions goal-fit-question-actions">
+            <button
+              className="goal-fit-text-button"
+              type="button"
+              onClick={handlePreviousQuestion}
+              disabled={currentIndex === 0}
+            >
+              上一题
+            </button>
+            <button
+              className="primary-button"
+              type="button"
+              onClick={handleNextQuestion}
+              disabled={!currentAnswer}
+            >
+              {isLastQuestion ? "生成报告" : "下一题"}
+            </button>
+          </div>
+        </section>
+
+        <aside className="goal-fit-side-card goal-fit-layout-side">
+          <section>
+            <p className="goal-fit-eyebrow">当前预演目标</p>
+            <div className="goal-fit-coordinate-strip">
+              <strong>{targetCompanyLabel}</strong>
+              <strong>{targetRoleLabel}</strong>
+            </div>
+          </section>
+          <section>
+            <p className="goal-fit-eyebrow">当前阶段</p>
+            <h2>{moduleShortLabels[currentQuestion.module]}</h2>
+            <p className="goal-fit-stage-progress">
+              {moduleShortLabels[currentQuestion.module]} {currentModuleIndex} /{" "}
+              {currentModuleQuestions.length}
+            </p>
+          </section>
+          <section>
+            <p className="goal-fit-eyebrow">为什么问这个？</p>
+            <p className="goal-fit-question-hint">
+              {currentQuestionNote ?? moduleDescriptions[currentQuestion.module]}
+            </p>
+            {currentQuestion.module === "A_BACKGROUND" ? (
+              <p className="goal-fit-question-note">
+                用于判断不同岗位方向中的门槛风险，不代表能力高低。
+              </p>
+            ) : null}
+          </section>
           <div className="goal-fit-progress" aria-label="答题进度">
             <div className="goal-fit-progress-meta">
               <span>
                 第 {currentIndex + 1} 题 / 共 {selectedQuestions.length} 题
               </span>
-              <span>{answeredCount} 已完成</span>
+              <span>已完成 {progressPercent}%</span>
             </div>
             <div className="goal-fit-progress-track">
               <i style={{ width: `${progressPercent}%` }} />
             </div>
           </div>
-        </div>
-
-        <article className="goal-fit-question">
-          <h1>{currentQuestion.text}</h1>
-          <div className="goal-fit-option-list">
-            {currentQuestion.options.map((option) => (
-              <button
-                className={
-                  option.id === currentAnswer
-                    ? "goal-fit-option-button active"
-                    : "goal-fit-option-button"
-                }
-                key={option.id}
-                type="button"
-                onClick={() => handleSelectOption(option.id)}
-              >
-                {option.text}
-              </button>
-            ))}
-          </div>
-        </article>
-
-        {errorMessage ? <p className="goal-fit-error">{errorMessage}</p> : null}
-
-        <div className="goal-fit-actions goal-fit-question-actions">
-          <button
-            className="secondary-button"
-            type="button"
-            onClick={handlePreviousQuestion}
-            disabled={currentIndex === 0}
-          >
-            上一题
-          </button>
-          <button className="primary-button" type="button" onClick={handleNextQuestion}>
-            {isLastQuestion ? "生成报告" : "下一题"}
-          </button>
-        </div>
+        </aside>
       </section>
-    </main>
+    </GoalFitPageFrame>
   );
 }
 
