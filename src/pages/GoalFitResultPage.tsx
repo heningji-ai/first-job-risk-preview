@@ -692,15 +692,24 @@ function LockedReportPage({ sessionId }: { sessionId: string }) {
         <p className="goal-fit-eyebrow">完整报告已生成</p>
         <h1>请先解锁完整目标适配报告</h1>
         <p>你的总判断、最大风险点和完整报告预览已经生成。解锁后可以继续查看公司差距、岗位差距和具体行动建议。</p>
-        <button
-          className="primary-button"
-          type="button"
-          onClick={() =>
-            navigateTo(`/result-goal-fit-free-preview?session=${encodeURIComponent(sessionId)}`)
-          }
-        >
-          返回查看免费判断
-        </button>
+        <div className="goal-fit-result-actions goal-fit-locked-actions">
+          <button
+            className="primary-button"
+            type="button"
+            onClick={() => navigateTo(`/goal-fit-unlock-preview?session=${encodeURIComponent(sessionId)}`)}
+          >
+            解锁完整目标适配报告
+          </button>
+          <button
+            className="secondary-button"
+            type="button"
+            onClick={() =>
+              navigateTo(`/result-goal-fit-free-preview?session=${encodeURIComponent(sessionId)}`)
+            }
+          >
+            返回查看免费判断
+          </button>
+        </div>
       </section>
     </GoalFitPageFrame>
   );

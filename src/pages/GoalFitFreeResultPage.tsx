@@ -4,7 +4,6 @@ import { buildGoalFitResult } from "../lib/goalFitResultBuilder";
 import { goalFitQuestionBank } from "../lib/goalFitQuestionBank";
 import { selectGoalFitQuestions } from "../lib/goalFitQuestionSelector";
 import { getGoalFitSession } from "../lib/goalFitSessionStore";
-import { markGoalFitReportUnlocked } from "../lib/goalFitUnlockStore";
 import { navigateTo } from "../lib/router";
 import type { CompanyType, GoalFitAnswerMap, GoalFitResult, RoleType } from "../lib/goalFitTypes";
 
@@ -196,14 +195,13 @@ function GoalFitFreeResultPage() {
 
   function handleUnlock(): void {
     if (isSample) {
-      navigateTo("/result-goal-fit-preview?sample=high_fit");
+      navigateTo("/goal-fit-unlock-preview?sample=high_fit");
       return;
     }
 
     if (!sessionId) return;
 
-    markGoalFitReportUnlocked(sessionId);
-    navigateTo(`/result-goal-fit-preview?session=${encodeURIComponent(sessionId)}`);
+    navigateTo(`/goal-fit-unlock-preview?session=${encodeURIComponent(sessionId)}`);
   }
 
   return (

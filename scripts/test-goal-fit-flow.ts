@@ -271,8 +271,9 @@ assert(
 assert(
   freeResultPageSource.includes("getGoalFitSession") &&
     freeResultPageSource.includes("综合匹配度") &&
-    freeResultPageSource.includes("解锁完整目标适配报告 ¥19.9"),
-  "GoalFitFreeResultPage must build a free result from session and expose unlock CTA"
+    freeResultPageSource.includes("解锁完整目标适配报告 ¥19.9") &&
+    freeResultPageSource.includes("/goal-fit-unlock-preview?session="),
+  "GoalFitFreeResultPage must build a free result and send unlock CTA to confirmation page"
 );
 assert(
   pageSource.includes("/goal-fit-roadmap.png") &&

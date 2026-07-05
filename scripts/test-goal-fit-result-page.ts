@@ -22,7 +22,9 @@ const appPath = path.join(projectRoot, "src", "App.tsx");
 const testPagePath = path.join(projectRoot, "src", "pages", "GoalFitTestPage.tsx");
 const freeResultPagePath = path.join(projectRoot, "src", "pages", "GoalFitFreeResultPage.tsx");
 const resultPagePath = path.join(projectRoot, "src", "pages", "GoalFitResultPage.tsx");
+const unlockPagePath = path.join(projectRoot, "src", "pages", "GoalFitUnlockPage.tsx");
 const headerPath = path.join(projectRoot, "src", "components", "GoalFitHeader.tsx");
+const orderStorePath = path.join(projectRoot, "src", "lib", "goalFitOrderStore.ts");
 const unlockStorePath = path.join(projectRoot, "src", "lib", "goalFitUnlockStore.ts");
 const stylesPath = path.join(projectRoot, "src", "styles", "global.css");
 const questionBank = JSON.parse(fs.readFileSync(questionsPath, "utf8")) as GoalFitQuestionBank;
@@ -45,7 +47,9 @@ const appSource = fs.readFileSync(appPath, "utf8");
 const testPageSource = fs.readFileSync(testPagePath, "utf8");
 const freeResultPageSource = fs.readFileSync(freeResultPagePath, "utf8");
 const resultPageSource = fs.readFileSync(resultPagePath, "utf8");
+const unlockPageSource = fs.readFileSync(unlockPagePath, "utf8");
 const headerSource = fs.readFileSync(headerPath, "utf8");
+const orderStoreSource = fs.readFileSync(orderStorePath, "utf8");
 const unlockStoreSource = fs.readFileSync(unlockStorePath, "utf8");
 const stylesSource = fs.readFileSync(stylesPath, "utf8");
 
@@ -57,6 +61,10 @@ assert(
   appSource.includes("/result-goal-fit-free-preview") &&
     appSource.includes("GoalFitFreeResultPage"),
   "App.tsx must route /result-goal-fit-free-preview to GoalFitFreeResultPage"
+);
+assert(
+  appSource.includes("/goal-fit-unlock-preview") && appSource.includes("GoalFitUnlockPage"),
+  "App.tsx must route /goal-fit-unlock-preview to GoalFitUnlockPage"
 );
 assert(
   testPageSource.includes("/result-goal-fit-free-preview?session="),
@@ -155,6 +163,53 @@ assert(
 );
 
 [
+  "goalFitOrder:",
+  "createGoalFitOrder",
+  "getGoalFitOrder",
+  "markGoalFitOrderPaid",
+  "markGoalFitOrderFailed",
+  "clearGoalFitOrder",
+  "goal_fit_full_report",
+  "完整目标适配报告",
+  "amount: 1990",
+  'status: "pending"'
+].forEach((text) => {
+  assert(orderStoreSource.includes(text), `goalFitOrderStore must contain: ${text}`);
+});
+
+[
+  "解锁完整目标适配报告",
+  "免费判断已经帮你看到了总方向",
+  "完整报告会继续拆解",
+  "公司差距",
+  "岗位差距",
+  "建议行动",
+  "¥19.9",
+  "确认解锁完整报告",
+  "返回免费判断",
+  "没有找到你的测试结果",
+  "请先完成测试，再解锁完整报告。",
+  "完整报告已解锁",
+  "查看完整报告",
+  "你已经解锁过这份报告，可以直接继续查看。"
+].forEach((text) => {
+  assert(unlockPageSource.includes(text), `GoalFitUnlockPage must contain copy: ${text}`);
+});
+assert(
+  unlockPageSource.includes("markGoalFitOrderPaid") &&
+    unlockPageSource.includes("markGoalFitReportUnlocked") &&
+    unlockPageSource.includes("isGoalFitReportUnlocked") &&
+    unlockPageSource.includes("/result-goal-fit-preview?session=") &&
+    unlockPageSource.includes("/result-goal-fit-preview?sample=high_fit") &&
+    unlockPageSource.includes("/result-goal-fit-free-preview?session=") &&
+    unlockPageSource.includes("/result-goal-fit-free-preview?sample=high_fit"),
+  "GoalFitUnlockPage must bridge order, unlock store, free page and full report routes"
+);
+["模拟支付", "测试支付", "微信支付", "立即购买", "免费咨询", "企业微信", "猎头季哥建议："].forEach((text) => {
+  assert(!unlockPageSource.includes(text), `GoalFitUnlockPage must not contain forbidden copy: ${text}`);
+});
+
+[
   "你的第一份工作目标判断已生成",
   "我们先给你一个总判断",
   "总判断",
@@ -175,12 +230,16 @@ assert(
   "待解锁",
   "解锁完整目标适配报告 ¥19.9",
   "免费页先给你总判断",
-  "markGoalFitReportUnlocked",
-  "/result-goal-fit-preview?session=",
-  "/result-goal-fit-preview?sample=high_fit"
+  "/goal-fit-unlock-preview?session=",
+  "/goal-fit-unlock-preview?sample=high_fit"
 ].forEach((text) => {
   assert(freeResultPageSource.includes(text), `GoalFitFreeResultPage must contain copy: ${text}`);
 });
+assert(
+  !freeResultPageSource.includes("markGoalFitReportUnlocked") &&
+    !freeResultPageSource.includes("/result-goal-fit-preview?session="),
+  "GoalFitFreeResultPage must not directly unlock or jump to full report"
+);
 
 [
   "目标适配报告",
@@ -235,8 +294,10 @@ assert(!resultPageSource.includes("<h3>面试怎么解释</h3>"), "GoalFitResult
 assert(
   resultPageSource.includes("isGoalFitReportUnlocked") &&
     resultPageSource.includes("请先解锁完整目标适配报告") &&
+    resultPageSource.includes("/goal-fit-unlock-preview?session=") &&
+    resultPageSource.includes("解锁完整目标适配报告") &&
     resultPageSource.includes("返回查看免费判断"),
-  "GoalFitResultPage must block locked session reports and return to free result"
+  "GoalFitResultPage must block locked session reports and offer unlock or free result actions"
 );
 assert(
   resultPageSource.includes('sample === "high_fit"') &&
@@ -272,8 +333,8 @@ const userVisibleSources = [
     .replace(/\/result-goal-fit-preview\?session=/g, "")
     .replace(/session/g, ""),
   freeResultPageSource
-    .replace(/\/result-goal-fit-preview\?session=/g, "")
-    .replace(/\/result-goal-fit-preview\?sample=high_fit/g, "")
+    .replace(/\/goal-fit-unlock-preview\?session=/g, "")
+    .replace(/\/goal-fit-unlock-preview\?sample=high_fit/g, "")
     .replace(/\/result-goal-fit-free-preview/g, "")
     .replace(/URLSearchParams\(window\.location\.search\)/g, "")
     .replace(/params\.get\("session"\)/g, "")
@@ -285,6 +346,7 @@ const userVisibleSources = [
   resultPageSource
     .replace(/\/result-goal-fit-preview/g, "")
     .replace(/\/result-goal-fit-free-preview\?session=/g, "")
+    .replace(/\/goal-fit-unlock-preview\?session=/g, "")
     .replace(/\/test-goal-fit-preview/g, "")
     .replace(/URLSearchParams\(window\.location\.search\)/g, "")
     .replace(/params\.get\("session"\)/g, "")
@@ -292,7 +354,20 @@ const userVisibleSources = [
     .replace(/sample === "high_fit"/g, "")
     .replace(/session/g, "")
     .replace(/sample/g, "")
-    .replace(/reportId/g, "")
+    .replace(/reportId/g, ""),
+  unlockPageSource
+    .replace(/\/goal-fit-unlock-preview/g, "")
+    .replace(/\/result-goal-fit-preview\?session=/g, "")
+    .replace(/\/result-goal-fit-preview\?sample=high_fit/g, "")
+    .replace(/\/result-goal-fit-free-preview\?session=/g, "")
+    .replace(/\/result-goal-fit-free-preview\?sample=high_fit/g, "")
+    .replace(/\/test-goal-fit-preview/g, "")
+    .replace(/URLSearchParams\(window\.location\.search\)/g, "")
+    .replace(/params\.get\("session"\)/g, "")
+    .replace(/params\.get\("sample"\)/g, "")
+    .replace(/sample === "high_fit"/g, "")
+    .replace(/session/g, "")
+    .replace(/sample/g, "")
 ];
 const forbiddenVisibleTexts = [
   "V1.3",
@@ -305,6 +380,7 @@ const forbiddenVisibleTexts = [
   "session",
   "模拟支付",
   "测试支付",
+  "微信支付",
   "测试版",
   "A 档",
   "B 档",
@@ -326,7 +402,8 @@ const forbiddenVisibleTexts = [
   "保证入职",
   "立即购买",
   "免费咨询",
-  "企业微信"
+  "企业微信",
+  "猎头季哥建议："
 ];
 
 for (const source of userVisibleSources) {
