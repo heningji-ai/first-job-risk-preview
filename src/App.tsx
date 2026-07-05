@@ -1,5 +1,6 @@
 import { navigateTo, useRoute } from "./lib/router";
 import GoalFitFreeResultPage from "./pages/GoalFitFreeResultPage";
+import GoalFitLandingPage from "./pages/GoalFitLandingPage";
 import GoalFitResultPage from "./pages/GoalFitResultPage";
 import GoalFitTestPage from "./pages/GoalFitTestPage";
 import HomePage from "./pages/HomePage";
@@ -12,6 +13,7 @@ function App() {
   const route = useRoute();
 
   if (route.path === "/test-goal-fit-preview") return <GoalFitTestPage />;
+  if (route.path === "/goal-fit-preview") return <GoalFitLandingPage />;
   if (route.path === "/result-goal-fit-free-preview") return <GoalFitFreeResultPage />;
   if (route.path === "/result-goal-fit-preview") return <GoalFitResultPage />;
   if (route.name === "home") return <HomePage />;

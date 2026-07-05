@@ -19,6 +19,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "..");
 const questionsPath = path.join(projectRoot, "src", "config", "goalFit", "questions.json");
 const pagePath = path.join(projectRoot, "src", "pages", "GoalFitTestPage.tsx");
+const landingPagePath = path.join(projectRoot, "src", "pages", "GoalFitLandingPage.tsx");
 const freeResultPagePath = path.join(projectRoot, "src", "pages", "GoalFitFreeResultPage.tsx");
 const headerPath = path.join(projectRoot, "src", "components", "GoalFitHeader.tsx");
 const stylesPath = path.join(projectRoot, "src", "styles", "global.css");
@@ -117,6 +118,7 @@ for (const roleType of roleTypes) {
 }
 
 const pageSource = fs.readFileSync(pagePath, "utf8");
+const landingPageSource = fs.readFileSync(landingPagePath, "utf8");
 const freeResultPageSource = fs.readFileSync(freeResultPagePath, "utf8");
 const headerSource = fs.readFileSync(headerPath, "utf8");
 const stylesSource = fs.readFileSync(stylesPath, "utf8");
@@ -162,6 +164,54 @@ assert(
     stylesSource.includes("height: 100%;") &&
     stylesSource.includes("flex-direction: column;"),
   "global.css must keep target selection panels equal height on desktop"
+);
+
+[
+  "专为应届生量身定做的职场适应度测试",
+  "我到底适合什么样的公司？",
+  "我现在能做哪些岗位？",
+  "找工作要听父母的，还是自己拿主意？",
+  "什么公司会让我成长，什么公司会让我煎熬？",
+  "开始 3–5 分钟风险预演",
+  "先看看我会得到什么",
+  "你是不是也在想这些问题？",
+  "测完后，你会先看到",
+  "这个目标当前值不值得优先尝试",
+  "你的综合匹配度意味着什么",
+  "最容易影响你求职反馈的问题",
+  "完整报告里会继续拆解哪些差距",
+  "免费判断先帮你看方向",
+  "先预演一次，再决定要不要投。",
+  "开始第一次工作风险预演"
+].forEach((text) => {
+  assert(landingPageSource.includes(text), `GoalFitLandingPage must contain copy: ${text}`);
+});
+
+[
+  "¥19.9",
+  "测试免费，完成后可先看免费判断；完整报告 ¥19.9 解锁",
+  "大学生第一次求职目标适配测试",
+  "这不是性格测试，也不是职业算命。",
+  "完整报告会继续拆解",
+  "立即购买",
+  "免费咨询",
+  "企业微信"
+].forEach((text) => {
+  assert(!landingPageSource.includes(text), `GoalFitLandingPage must not contain removed copy: ${text}`);
+});
+
+const landingWorryCardsBlock = landingPageSource.match(/const worryCards = \[([\s\S]*?)\];/);
+assert(landingWorryCardsBlock !== null, "GoalFitLandingPage must define worryCards");
+if (!landingWorryCardsBlock) fail("GoalFitLandingPage must define worryCards");
+assert(
+  (landingWorryCardsBlock[1].match(/title:/g) ?? []).length === 4,
+  "GoalFitLandingPage must keep exactly 4 empathy question cards"
+);
+assert(
+  landingPageSource.includes('id="goal-fit-what-you-see"') &&
+    landingPageSource.includes('navigateTo("/test-goal-fit-preview")') &&
+    landingPageSource.includes("scrollToPreview"),
+  "GoalFitLandingPage must keep CTA navigation and preview scroll target"
 );
 
 [
