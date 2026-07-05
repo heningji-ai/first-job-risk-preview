@@ -2886,6 +2886,38 @@ p {
   background: #f4faf7;
 }
 
+.goal-fit-result-breakdown-summary {
+  display: grid;
+  gap: 5px;
+  border: 1px solid rgba(207, 218, 197, 0.88);
+  border-radius: 16px;
+  padding: 12px 14px;
+  background: rgba(255, 252, 244, 0.86);
+}
+
+.goal-fit-result-breakdown-summary span {
+  color: #536837;
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.goal-fit-result-breakdown-summary strong {
+  color: #1f2e2a;
+  font-size: 15px;
+  line-height: 1.45;
+}
+
+.goal-fit-result-breakdown-summary p,
+.goal-fit-result-breakdown-summary small {
+  margin: 0;
+  color: #5d6b62;
+  line-height: 1.6;
+}
+
+.goal-fit-result-breakdown-summary small {
+  font-size: 13px;
+}
+
 .goal-fit-result-empty {
   display: grid;
   gap: 14px;

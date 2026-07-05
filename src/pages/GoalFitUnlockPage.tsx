@@ -89,8 +89,8 @@ function buildFreeResultPath(context: UnlockContext): string {
 }
 
 function buildFullResultPath(context: UnlockContext): string {
-  if (context.isSample) return "/result-goal-fit-preview?sample=high_fit";
-  return `/result-goal-fit-preview?session=${encodeURIComponent(context.sessionId ?? "")}`;
+  if (context.isSample) return "/result-goal-fit-preview?sample=high_fit&section=breakdown";
+  return `/result-goal-fit-preview?session=${encodeURIComponent(context.sessionId ?? "")}&section=breakdown`;
 }
 
 function MissingUnlockPage() {

@@ -250,6 +250,11 @@ function getReportContextFromUrl(): ReportContext {
   };
 }
 
+function getInitialResultScreen(): number {
+  const params = new URLSearchParams(window.location.search);
+  return params.get("section") === "breakdown" ? 1 : 0;
+}
+
 function GoalFitPageFrame({ children }: { children: ReactNode }) {
   return (
     <main className="goal-fit-shell goal-fit-result-shell">
@@ -716,9 +721,10 @@ function LockedReportPage({ sessionId }: { sessionId: string }) {
 }
 
 function GoalFitResultPage() {
-  const [currentResultScreen, setCurrentResultScreen] = useState(0);
+  const [currentResultScreen, setCurrentResultScreen] = useState(() => getInitialResultScreen());
   const reportContext = getReportContextFromUrl();
   const result = reportContext.result;
+  const openedAtBreakdown = new URLSearchParams(window.location.search).get("section") === "breakdown";
 
   if (!result) return <MissingReportPage />;
   if (!reportContext.isSample && reportContext.sessionId && !reportContext.isUnlocked) {
@@ -756,9 +762,6 @@ function GoalFitResultPage() {
                       你选择的「{result.targetCompanyLabel}」类型公司 ×「{result.targetRoleLabel}」
                       岗位，当前匹配度是 {scores.overallScore}%
                     </h2>
-                    <p>
-                      这里不是评价你优秀不优秀，而是判断这个目标能不能作为你当前求职的第一优先方向。
-                    </p>
                     <p>{getOverallScoreText(scores.overallScore)}</p>
                   </div>
                 </div>
@@ -773,15 +776,9 @@ function GoalFitResultPage() {
                   <span>公司类型：{result.targetCompanyLabel}</span>
                   <span>岗位类型：{result.targetRoleLabel}</span>
                 </div>
-                <p className="goal-fit-result-score-explain">
-                  当前报告只看你选择的目标组合和当前准备状态之间的匹配度，不是能力评价。
-                </p>
               </aside>
             </div>
             <div className="goal-fit-result-actions">
-              <p className="goal-fit-result-action-copy">
-                接下来，我们看具体公司类型和岗位类型与你之间的差距。
-              </p>
               <button
                 className="primary-button"
                 type="button"
@@ -796,6 +793,14 @@ function GoalFitResultPage() {
         {currentResultScreen === 1 ? (
           <section className="goal-fit-result-screen">
             <p className="goal-fit-eyebrow">适配拆解</p>
+            {openedAtBreakdown ? (
+              <div className="goal-fit-result-breakdown-summary">
+                <span>完整报告已解锁</span>
+                <strong>目标组合：{result.targetCompanyLabel} × {result.targetRoleLabel}</strong>
+                <p>综合匹配度：{scores.overallScore}%｜{getOverallScoreText(scores.overallScore)}</p>
+                <small>你已经看过总判断，下面直接看公司类型和岗位类型与你之间的具体差距。</small>
+              </div>
+            ) : null}
             <div className="goal-fit-result-narrative-groups">
               <section className="goal-fit-result-narrative-section">
                 <div className="goal-fit-result-group-heading">

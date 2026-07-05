@@ -200,7 +200,8 @@ assert(
     unlockPageSource.includes("markGoalFitReportUnlocked") &&
     unlockPageSource.includes("isGoalFitReportUnlocked") &&
     unlockPageSource.includes("/result-goal-fit-preview?session=") &&
-    unlockPageSource.includes("/result-goal-fit-preview?sample=high_fit") &&
+    unlockPageSource.includes("&section=breakdown") &&
+    unlockPageSource.includes("/result-goal-fit-preview?sample=high_fit&section=breakdown") &&
     unlockPageSource.includes("/result-goal-fit-free-preview?session=") &&
     unlockPageSource.includes("/result-goal-fit-free-preview?sample=high_fit"),
   "GoalFitUnlockPage must bridge order, unlock store, free page and full report routes"
@@ -249,9 +250,11 @@ assert(
   "建议行动",
   "先看总判断",
   "当前匹配度是",
-  "这里不是评价你优秀不优秀",
   "针对你的情况，我们建议：",
-  "接下来，我们看具体公司类型和岗位类型与你之间的差距",
+  "完整报告已解锁",
+  "目标组合",
+  "综合匹配度",
+  "你已经看过总判断，下面直接看公司类型和岗位类型与你之间的具体差距。",
   "你和目标公司类型之间的差距",
   "这类公司的用人风格",
   "你目前更像哪种状态",
@@ -286,7 +289,7 @@ assert(
 ].forEach((text) => {
   assert(resultPageSource.includes(text), `GoalFitResultPage must contain copy: ${text}`);
 });
-["相关匹配度", "匹配度：", "准备度：", "适应度：", "你现在最该补的不是兴趣，而是证据", "最后看风险行动", "风险行动建议", "免费咨询", "企业微信", "保证入职", "立即购买", "猎头季哥建议："].forEach((text) => {
+["相关匹配度", "准备度：", "适应度：", "你现在最该补的不是兴趣，而是证据", "最后看风险行动", "风险行动建议", "这里不是评价你优秀不优秀", "当前报告只看你选择的目标组合和当前准备状态之间的匹配度，不是能力评价。", "接下来，我们看具体公司类型和岗位类型与你之间的差距。", "免费咨询", "企业微信", "保证入职", "立即购买", "猎头季哥建议："].forEach((text) => {
   assert(!resultPageSource.includes(text), `GoalFitResultPage must not contain deprecated score or role evidence copy: ${text}`);
 });
 assert(!resultPageSource.includes("<h3>简历怎么改</h3>"), "GoalFitResultPage must not render resume advice as an independent title");
@@ -322,8 +325,11 @@ assert(
 );
 assert(
   resultPageSource.includes("currentResultScreen") &&
-    resultPageSource.includes("setCurrentResultScreen"),
-  "GoalFitResultPage must use screen state for three-screen reading"
+    resultPageSource.includes("setCurrentResultScreen") &&
+    resultPageSource.includes("getInitialResultScreen") &&
+    resultPageSource.includes('params.get("section") === "breakdown"') &&
+    resultPageSource.includes("goal-fit-result-breakdown-summary"),
+  "GoalFitResultPage must use screen state and default section=breakdown to the breakdown screen"
 );
 
 const userVisibleSources = [
