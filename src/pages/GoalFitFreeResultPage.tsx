@@ -204,6 +204,17 @@ function GoalFitFreeResultPage() {
     navigateTo(`/goal-fit-unlock-preview?session=${encodeURIComponent(sessionId)}`);
   }
 
+  function handleShareCoupon(): void {
+    if (isSample) {
+      navigateTo("/goal-fit-share-preview?sample=high_fit&mode=coupon");
+      return;
+    }
+
+    if (!sessionId) return;
+
+    navigateTo(`/goal-fit-share-preview?session=${encodeURIComponent(sessionId)}&mode=coupon`);
+  }
+
   return (
     <GoalFitPageFrame>
       <section className="goal-fit-panel goal-fit-free-result-frame">
@@ -301,6 +312,14 @@ function GoalFitFreeResultPage() {
           <button className="primary-button" type="button" onClick={handleUnlock}>
             解锁完整目标适配报告 ¥19.9
           </button>
+          <div className="goal-fit-free-coupon-card">
+            <p>
+              保存 / 分享求职方向卡，可领取 ¥10 优惠券，优惠后 ¥9.9 解锁完整报告。
+            </p>
+            <button className="secondary-button" type="button" onClick={handleShareCoupon}>
+              生成求职方向卡，领取优惠
+            </button>
+          </div>
           <p>查看公司差距、岗位差距和具体行动建议。</p>
           <small>免费页先给你总判断，完整报告会继续给你拆解和行动。</small>
         </section>

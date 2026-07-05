@@ -22,6 +22,7 @@ const appPath = path.join(projectRoot, "src", "App.tsx");
 const testPagePath = path.join(projectRoot, "src", "pages", "GoalFitTestPage.tsx");
 const freeResultPagePath = path.join(projectRoot, "src", "pages", "GoalFitFreeResultPage.tsx");
 const resultPagePath = path.join(projectRoot, "src", "pages", "GoalFitResultPage.tsx");
+const sharePagePath = path.join(projectRoot, "src", "pages", "GoalFitSharePage.tsx");
 const unlockPagePath = path.join(projectRoot, "src", "pages", "GoalFitUnlockPage.tsx");
 const headerPath = path.join(projectRoot, "src", "components", "GoalFitHeader.tsx");
 const orderStorePath = path.join(projectRoot, "src", "lib", "goalFitOrderStore.ts");
@@ -47,6 +48,7 @@ const appSource = fs.readFileSync(appPath, "utf8");
 const testPageSource = fs.readFileSync(testPagePath, "utf8");
 const freeResultPageSource = fs.readFileSync(freeResultPagePath, "utf8");
 const resultPageSource = fs.readFileSync(resultPagePath, "utf8");
+const sharePageSource = fs.readFileSync(sharePagePath, "utf8");
 const unlockPageSource = fs.readFileSync(unlockPagePath, "utf8");
 const headerSource = fs.readFileSync(headerPath, "utf8");
 const orderStoreSource = fs.readFileSync(orderStorePath, "utf8");
@@ -65,6 +67,10 @@ assert(
 assert(
   appSource.includes("/goal-fit-unlock-preview") && appSource.includes("GoalFitUnlockPage"),
   "App.tsx must route /goal-fit-unlock-preview to GoalFitUnlockPage"
+);
+assert(
+  appSource.includes("/goal-fit-share-preview") && appSource.includes("GoalFitSharePage"),
+  "App.tsx must route /goal-fit-share-preview to GoalFitSharePage"
 );
 assert(
   testPageSource.includes("/result-goal-fit-free-preview?session="),
@@ -172,6 +178,12 @@ assert(
   "goal_fit_full_report",
   "完整目标适配报告",
   "amount: 1990",
+  "originalAmountCents",
+  "discountAmountCents",
+  "payAmountCents",
+  "couponCode",
+  "couponCode === \"share_card\"",
+  "payAmountCents = originalAmountCents - discountAmountCents",
   'status: "pending"'
 ].forEach((text) => {
   assert(orderStoreSource.includes(text), `goalFitOrderStore must contain: ${text}`);
@@ -185,6 +197,10 @@ assert(
   "岗位差距",
   "建议行动",
   "¥19.9",
+  "标准价：¥19.9",
+  "求职方向卡优惠：-¥10",
+  "应付：¥9.9",
+  "¥9.9 解锁完整报告",
   "确认解锁完整报告",
   "返回免费判断",
   "没有找到你的测试结果",
@@ -197,8 +213,10 @@ assert(
 });
 assert(
   unlockPageSource.includes("markGoalFitOrderPaid") &&
+    unlockPageSource.includes("markGoalFitOrderPaidWithCoupon") &&
     unlockPageSource.includes("markGoalFitReportUnlocked") &&
     unlockPageSource.includes("isGoalFitReportUnlocked") &&
+    unlockPageSource.includes('params.get("coupon") === "share_card"') &&
     unlockPageSource.includes("/result-goal-fit-preview?session=") &&
     unlockPageSource.includes("&section=breakdown") &&
     unlockPageSource.includes("/result-goal-fit-preview?sample=high_fit&section=breakdown") &&
@@ -230,9 +248,13 @@ assert(
   "面试表达提醒",
   "待解锁",
   "解锁完整目标适配报告 ¥19.9",
+  "保存 / 分享求职方向卡，可领取 ¥10 优惠券，优惠后 ¥9.9 解锁完整报告。",
+  "生成求职方向卡，领取优惠",
   "免费页先给你总判断",
   "/goal-fit-unlock-preview?session=",
-  "/goal-fit-unlock-preview?sample=high_fit"
+  "/goal-fit-unlock-preview?sample=high_fit",
+  "/goal-fit-share-preview?session=",
+  "/goal-fit-share-preview?sample=high_fit&mode=coupon"
 ].forEach((text) => {
   assert(freeResultPageSource.includes(text), `GoalFitFreeResultPage must contain copy: ${text}`);
 });
@@ -285,7 +307,11 @@ assert(
   "面试表达",
   "如果差距来自性格或做事风格",
   "继续获得求职方向帮助",
-  "这里会继续分享更真实的招聘判断"
+  "这里会继续分享更真实的招聘判断",
+  "保存一张求职方向卡",
+  "生成我的求职方向卡",
+  "/goal-fit-share-preview?session=",
+  "/goal-fit-share-preview?sample=high_fit"
 ].forEach((text) => {
   assert(resultPageSource.includes(text), `GoalFitResultPage must contain copy: ${text}`);
 });
@@ -331,6 +357,79 @@ assert(
     resultPageSource.includes("goal-fit-result-breakdown-summary"),
   "GoalFitResultPage must use screen state and default section=breakdown to the breakdown screen"
 );
+assert(
+  resultPageSource.includes("buildSharePagePath") &&
+    resultPageSource.includes('params.get("section") === "action"') &&
+    resultPageSource.includes("goal-fit-result-share-entry"),
+  "GoalFitResultPage must use section=action and expose the share-card entry on the action screen"
+);
+["优惠券", "领取优惠", "¥9.9 解锁"].forEach((text) => {
+  assert(!resultPageSource.includes(text), `GoalFitResultPage action share entry must not contain coupon copy: ${text}`);
+});
+
+[
+  "生成我的求职方向卡",
+  "生成求职方向卡，领取优惠",
+  "这张卡不会展示你的具体分数、公司类型、岗位方向和风险点",
+  "保存或分享后，可领取 ¥10 优惠券，¥9.9 解锁完整报告。",
+  "我开始对未来的职场有一点信心了。",
+  "不是因为我已经知道自己一定适合什么",
+  "公司、岗位和我之间，到底要怎么判断",
+  "第一份工作不用一次决定一生",
+  "但至少可以少一点盲选",
+  "专为应届生量身定做的职场适应度测试",
+  "猎头季哥｜21年招聘经验",
+  "也可以做一次测试，领取 ¥10 优惠券。",
+  "这张求职方向卡更适合在手机上截图或保存。",
+  "你也可以先复制分享文案，或领取优惠后继续解锁完整报告。",
+  "保存 / 分享后领取",
+  "¥10 优惠券",
+  "完整报告标准价 ¥19.9。",
+  "优惠后 ¥9.9 解锁完整报告。",
+  "你可以先保存截图，也可以复制文案后再决定是否发布。",
+  "我已保存或分享，领取 ¥10 优惠券",
+  "复制分享文案",
+  "返回完整报告",
+  "返回免费判断",
+  "让同学也测一次",
+  "/result-goal-fit-preview?session=",
+  "/result-goal-fit-preview?sample=high_fit&section=action",
+  "/goal-fit-unlock-preview?session=",
+  "/goal-fit-unlock-preview?sample=high_fit&coupon=share_card",
+  "/result-goal-fit-free-preview?session=",
+  "/result-goal-fit-free-preview?sample=high_fit",
+  "/goal-fit-preview"
+].forEach((text) => {
+  assert(sharePageSource.includes(text), `GoalFitSharePage must contain: ${text}`);
+});
+[
+  "匹配度",
+  "当前匹配度",
+  "公司类型：",
+  "岗位类型：",
+  "最大风险",
+  "我的测试结果",
+  "我的匹配度",
+  "必须分享到朋友圈",
+  "邀请好友解锁",
+  "免费解锁完整报告",
+  "返现",
+  "裂变",
+  "仅限移动端",
+  "PC 端不可用"
+].forEach(
+  (text) => {
+    assert(!sharePageSource.includes(text), `GoalFitSharePage must not expose private result copy: ${text}`);
+  }
+);
+assert(
+  stylesSource.includes(".goal-fit-share-card") &&
+    stylesSource.includes(".goal-fit-share-actions") &&
+    stylesSource.includes(".goal-fit-share-coupon-panel") &&
+    stylesSource.includes(".goal-fit-share-device-hint") &&
+    stylesSource.includes(".goal-fit-result-share-entry"),
+  "global.css must include share page and action-screen share entry styles"
+);
 
 const userVisibleSources = [
   testPageSource
@@ -341,6 +440,8 @@ const userVisibleSources = [
   freeResultPageSource
     .replace(/\/goal-fit-unlock-preview\?session=/g, "")
     .replace(/\/goal-fit-unlock-preview\?sample=high_fit/g, "")
+    .replace(/\/goal-fit-share-preview\?session=/g, "")
+    .replace(/\/goal-fit-share-preview\?sample=high_fit/g, "")
     .replace(/\/result-goal-fit-free-preview/g, "")
     .replace(/URLSearchParams\(window\.location\.search\)/g, "")
     .replace(/params\.get\("session"\)/g, "")
@@ -348,7 +449,9 @@ const userVisibleSources = [
     .replace(/sample === "high_fit"/g, "")
     .replace(/sessionId/g, "")
     .replace(/session/g, "")
-    .replace(/sample/g, ""),
+    .replace(/sample/g, "")
+    .replace(/mode/g, "")
+    .replace(/coupon/g, ""),
   resultPageSource
     .replace(/\/result-goal-fit-preview/g, "")
     .replace(/\/result-goal-fit-free-preview\?session=/g, "")
@@ -371,9 +474,35 @@ const userVisibleSources = [
     .replace(/URLSearchParams\(window\.location\.search\)/g, "")
     .replace(/params\.get\("session"\)/g, "")
     .replace(/params\.get\("sample"\)/g, "")
+    .replace(/params\.get\("coupon"\)/g, "")
     .replace(/sample === "high_fit"/g, "")
+    .replace(/coupon === "share_card"/g, "")
+    .replace(/hasShareCardCoupon/g, "")
     .replace(/session/g, "")
     .replace(/sample/g, "")
+    .replace(/coupon/g, ""),
+  sharePageSource
+    .replace(/\/goal-fit-share-preview/g, "")
+    .replace(/\/result-goal-fit-preview\?session=/g, "")
+    .replace(/\/result-goal-fit-preview\?sample=high_fit/g, "")
+    .replace(/\/goal-fit-unlock-preview\?session=/g, "")
+    .replace(/\/goal-fit-unlock-preview\?sample=high_fit/g, "")
+    .replace(/\/result-goal-fit-free-preview\?session=/g, "")
+    .replace(/\/result-goal-fit-free-preview\?sample=high_fit/g, "")
+    .replace(/\/goal-fit-preview/g, "")
+    .replace(/URLSearchParams\(window\.location\.search\)/g, "")
+    .replace(/params\.get\("session"\)/g, "")
+    .replace(/params\.get\("sample"\)/g, "")
+    .replace(/params\.get\("mode"\)/g, "")
+    .replace(/sample === "high_fit"/g, "")
+    .replace(/mode === "coupon"/g, "")
+    .replace(/isCouponMode/g, "")
+    .replace(/couponUnlockPath/g, "")
+    .replace(/sessionId/g, "")
+    .replace(/session/g, "")
+    .replace(/sample/g, "")
+    .replace(/mode/g, "")
+    .replace(/coupon/g, "")
 ];
 const forbiddenVisibleTexts = [
   "V1.3",
@@ -384,6 +513,8 @@ const forbiddenVisibleTexts = [
   "debug",
   "sample",
   "session",
+  "mode",
+  "coupon",
   "模拟支付",
   "测试支付",
   "微信支付",

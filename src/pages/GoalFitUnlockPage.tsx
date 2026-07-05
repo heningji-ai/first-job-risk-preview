@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import GoalFitHeader from "../components/GoalFitHeader";
 import { buildGoalFitResult } from "../lib/goalFitResultBuilder";
 import { goalFitQuestionBank } from "../lib/goalFitQuestionBank";
-import { markGoalFitOrderPaid } from "../lib/goalFitOrderStore";
+import { markGoalFitOrderPaid, markGoalFitOrderPaidWithCoupon } from "../lib/goalFitOrderStore";
 import { selectGoalFitQuestions } from "../lib/goalFitQuestionSelector";
 import { getGoalFitSession } from "../lib/goalFitSessionStore";
 import { isGoalFitReportUnlocked, markGoalFitReportUnlocked } from "../lib/goalFitUnlockStore";
@@ -15,6 +15,7 @@ type UnlockContext = {
   sessionId: string | null;
   isSample: boolean;
   isUnlocked: boolean;
+  hasShareCardCoupon: boolean;
 };
 
 const unlockItems = [
@@ -61,25 +62,28 @@ function getUnlockContextFromUrl(): UnlockContext {
   const params = new URLSearchParams(window.location.search);
   const sample = params.get("sample");
   const sessionId = params.get("session");
+  const hasShareCardCoupon = params.get("coupon") === "share_card";
 
   if (sample === "high_fit") {
     return {
       result: createSampleResult(),
       sessionId: "sample_high_fit",
       isSample: true,
-      isUnlocked: false
+      isUnlocked: false,
+      hasShareCardCoupon
     };
   }
 
   if (!sessionId) {
-    return { result: null, sessionId: null, isSample: false, isUnlocked: false };
+    return { result: null, sessionId: null, isSample: false, isUnlocked: false, hasShareCardCoupon };
   }
 
   return {
     result: getGoalFitSession(sessionId)?.result ?? null,
     sessionId,
     isSample: false,
-    isUnlocked: isGoalFitReportUnlocked(sessionId)
+    isUnlocked: isGoalFitReportUnlocked(sessionId),
+    hasShareCardCoupon
   };
 }
 
@@ -120,7 +124,11 @@ function GoalFitUnlockPage() {
   function handleConfirmUnlock(): void {
     if (!context.sessionId) return;
 
-    markGoalFitOrderPaid(context.sessionId);
+    if (context.hasShareCardCoupon) {
+      markGoalFitOrderPaidWithCoupon(context.sessionId, "share_card");
+    } else {
+      markGoalFitOrderPaid(context.sessionId);
+    }
     if (!context.isSample) {
       markGoalFitReportUnlocked(context.sessionId);
     }
@@ -167,9 +175,16 @@ function GoalFitUnlockPage() {
               <strong>完整目标适配报告</strong>
             </div>
             <div className="goal-fit-unlock-price">
-              <span>价格</span>
-              <strong>¥19.9</strong>
+              <span>{context.hasShareCardCoupon ? "应付" : "价格"}</span>
+              <strong>{context.hasShareCardCoupon ? "¥9.9" : "¥19.9"}</strong>
             </div>
+            {context.hasShareCardCoupon ? (
+              <div className="goal-fit-unlock-price-detail">
+                <span>标准价：¥19.9</span>
+                <span>求职方向卡优惠：-¥10</span>
+                <strong>应付：¥9.9</strong>
+              </div>
+            ) : null}
             <div className="goal-fit-unlock-item-list">
               {unlockItems.map((item) => (
                 <article className="goal-fit-unlock-item" key={item.title}>
@@ -187,7 +202,7 @@ function GoalFitUnlockPage() {
               <span>岗位方向：{context.result.targetRoleLabel}</span>
             </div>
             <button className="primary-button" type="button" onClick={handleConfirmUnlock}>
-              确认解锁完整报告
+              {context.hasShareCardCoupon ? "¥9.9 解锁完整报告" : "确认解锁完整报告"}
             </button>
             <p className="goal-fit-unlock-note">解锁后可查看完整报告，并可在当前设备上再次打开。</p>
             <button className="secondary-button" type="button" onClick={() => navigateTo(freeResultPath)}>

@@ -18,9 +18,11 @@ const { buildGoalFitResult } = (await import(
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const projectRoot = path.resolve(__dirname, "..");
 const questionsPath = path.join(projectRoot, "src", "config", "goalFit", "questions.json");
+const appPath = path.join(projectRoot, "src", "App.tsx");
 const pagePath = path.join(projectRoot, "src", "pages", "GoalFitTestPage.tsx");
 const landingPagePath = path.join(projectRoot, "src", "pages", "GoalFitLandingPage.tsx");
 const freeResultPagePath = path.join(projectRoot, "src", "pages", "GoalFitFreeResultPage.tsx");
+const sharePagePath = path.join(projectRoot, "src", "pages", "GoalFitSharePage.tsx");
 const headerPath = path.join(projectRoot, "src", "components", "GoalFitHeader.tsx");
 const stylesPath = path.join(projectRoot, "src", "styles", "global.css");
 const questionBank = JSON.parse(fs.readFileSync(questionsPath, "utf8")) as GoalFitQuestionBank;
@@ -118,8 +120,10 @@ for (const roleType of roleTypes) {
 }
 
 const pageSource = fs.readFileSync(pagePath, "utf8");
+const appSource = fs.readFileSync(appPath, "utf8");
 const landingPageSource = fs.readFileSync(landingPagePath, "utf8");
 const freeResultPageSource = fs.readFileSync(freeResultPagePath, "utf8");
+const sharePageSource = fs.readFileSync(sharePagePath, "utf8");
 const headerSource = fs.readFileSync(headerPath, "utf8");
 const stylesSource = fs.readFileSync(stylesPath, "utf8");
 
@@ -212,6 +216,24 @@ assert(
     landingPageSource.includes('navigateTo("/test-goal-fit-preview")') &&
     landingPageSource.includes("scrollToPreview"),
   "GoalFitLandingPage must keep CTA navigation and preview scroll target"
+);
+assert(
+  appSource.includes("/goal-fit-share-preview") && appSource.includes("GoalFitSharePage"),
+  "App.tsx must route /goal-fit-share-preview to GoalFitSharePage"
+);
+[
+  "生成我的求职方向卡",
+  "我开始对未来的职场有一点信心了。",
+  "复制分享文案",
+  "返回完整报告",
+  "让同学也测一次"
+].forEach((text) => {
+  assert(sharePageSource.includes(text), `GoalFitSharePage must contain copy: ${text}`);
+});
+["匹配度", "公司类型：", "岗位类型：", "最大风险", "我的测试结果", "我的匹配度"].forEach(
+  (text) => {
+    assert(!sharePageSource.includes(text), `GoalFitSharePage must not expose private result copy: ${text}`);
+  }
 );
 
 [

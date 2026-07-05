@@ -8,6 +8,10 @@ export type GoalFitOrder = {
   productCode: "goal_fit_full_report";
   productName: "完整目标适配报告";
   amount: 1990;
+  originalAmountCents: number;
+  discountAmountCents: number;
+  payAmountCents: number;
+  couponCode?: "share_card";
   currency: "CNY";
   status: GoalFitOrderStatus;
   createdAt: string;
@@ -28,12 +32,27 @@ function createOrderId(sessionId: string): string {
   return `goal_fit_order_${sessionId}_${Date.now().toString(36)}`;
 }
 
-export function createGoalFitOrder(sessionId: string): GoalFitOrder | null {
+function getOrderAmount(couponCode?: "share_card") {
+  const originalAmountCents = 1990;
+  const discountAmountCents = couponCode === "share_card" ? 1000 : 0;
+  const payAmountCents = originalAmountCents - discountAmountCents;
+
+  return {
+    originalAmountCents,
+    discountAmountCents,
+    payAmountCents,
+    couponCode
+  };
+}
+
+export function createGoalFitOrder(sessionId: string, couponCode?: "share_card"): GoalFitOrder | null {
   const storage = getStorage();
   if (!storage || !sessionId) return null;
 
   const existingOrder = getGoalFitOrder(sessionId);
-  if (existingOrder) return existingOrder;
+  if (existingOrder && existingOrder.couponCode === couponCode) return existingOrder;
+
+  const amount = getOrderAmount(couponCode);
 
   const order: GoalFitOrder = {
     orderId: createOrderId(sessionId),
@@ -41,6 +60,7 @@ export function createGoalFitOrder(sessionId: string): GoalFitOrder | null {
     productCode: "goal_fit_full_report",
     productName: "完整目标适配报告",
     amount: 1990,
+    ...amount,
     currency: "CNY",
     status: "pending",
     createdAt: new Date().toISOString()
@@ -64,11 +84,15 @@ export function getGoalFitOrder(sessionId: string): GoalFitOrder | null {
   }
 }
 
-function updateGoalFitOrderStatus(sessionId: string, status: GoalFitOrderStatus): GoalFitOrder | null {
+function updateGoalFitOrderStatus(
+  sessionId: string,
+  status: GoalFitOrderStatus,
+  couponCode?: "share_card"
+): GoalFitOrder | null {
   const storage = getStorage();
   if (!storage || !sessionId) return null;
 
-  const order = getGoalFitOrder(sessionId) ?? createGoalFitOrder(sessionId);
+  const order = createGoalFitOrder(sessionId, couponCode);
   if (!order) return null;
 
   const updatedOrder: GoalFitOrder = {
@@ -83,6 +107,13 @@ function updateGoalFitOrderStatus(sessionId: string, status: GoalFitOrderStatus)
 
 export function markGoalFitOrderPaid(sessionId: string): GoalFitOrder | null {
   return updateGoalFitOrderStatus(sessionId, "paid");
+}
+
+export function markGoalFitOrderPaidWithCoupon(
+  sessionId: string,
+  couponCode: "share_card"
+): GoalFitOrder | null {
+  return updateGoalFitOrderStatus(sessionId, "paid", couponCode);
 }
 
 export function markGoalFitOrderFailed(sessionId: string): GoalFitOrder | null {

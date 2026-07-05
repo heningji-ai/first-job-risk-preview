@@ -252,7 +252,17 @@ function getReportContextFromUrl(): ReportContext {
 
 function getInitialResultScreen(): number {
   const params = new URLSearchParams(window.location.search);
+  if (params.get("section") === "action") return 2;
   return params.get("section") === "breakdown" ? 1 : 0;
+}
+
+function buildSharePagePath(context: ReportContext): string {
+  if (context.isSample) return "/goal-fit-share-preview?sample=high_fit";
+  if (context.sessionId) {
+    return `/goal-fit-share-preview?session=${encodeURIComponent(context.sessionId)}`;
+  }
+
+  return "/goal-fit-share-preview";
 }
 
 function GoalFitPageFrame({ children }: { children: ReactNode }) {
@@ -886,6 +896,22 @@ function GoalFitResultPage() {
                 <p>
                   这里会继续分享更真实的招聘判断、岗位选择方法、简历表达方式和面试准备思路。
                 </p>
+              </article>
+
+              <article className="goal-fit-result-share-entry">
+                <div>
+                  <h2>保存一张求职方向卡</h2>
+                  <p>
+                    不展示你的具体分数、公司类型、岗位方向和风险点，只保留一张适合朋友圈表达的求职状态卡。
+                  </p>
+                </div>
+                <button
+                  className="secondary-button"
+                  type="button"
+                  onClick={() => navigateTo(buildSharePagePath(reportContext))}
+                >
+                  生成我的求职方向卡
+                </button>
               </article>
             </div>
 

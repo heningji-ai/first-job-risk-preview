@@ -2512,6 +2512,26 @@ p {
   font-size: 17px;
 }
 
+.goal-fit-free-coupon-card {
+  display: grid;
+  width: min(100%, 560px);
+  gap: 10px;
+  padding: 14px;
+  border: 1px solid rgba(145, 131, 83, 0.24);
+  border-radius: 16px;
+  background: rgba(255, 250, 238, 0.82);
+}
+
+.goal-fit-free-coupon-card p {
+  margin: 0;
+  color: #53645d;
+  line-height: 1.7;
+}
+
+.goal-fit-free-coupon-card .secondary-button {
+  justify-self: center;
+}
+
 .goal-fit-result-main-score span {
   color: #d7e8e1;
   font-size: 13px;
@@ -2858,6 +2878,34 @@ p {
   font-size: 18px;
 }
 
+.goal-fit-result-share-entry {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid rgba(139, 130, 101, 0.22);
+  border-radius: 18px;
+  background: rgba(255, 252, 244, 0.76);
+  box-shadow: 0 12px 24px rgba(75, 66, 42, 0.06);
+}
+
+.goal-fit-result-share-entry h2 {
+  margin: 0 0 6px;
+  color: #2f3f37;
+  font-size: 19px;
+}
+
+.goal-fit-result-share-entry p {
+  margin: 0;
+  color: #617069;
+  line-height: 1.7;
+}
+
+.goal-fit-result-share-entry .secondary-button {
+  flex: 0 0 auto;
+}
+
 .goal-fit-result-cta-note {
   margin-top: 8px;
 }
@@ -2873,6 +2921,182 @@ p {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 10px;
+}
+
+.goal-fit-share-shell {
+  min-height: 100vh;
+}
+
+.goal-fit-share-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 0.78fr) minmax(300px, 420px) minmax(260px, 0.72fr);
+  gap: 22px;
+  align-items: center;
+  padding: 26px 0 42px;
+}
+
+.goal-fit-share-intro {
+  display: grid;
+  gap: 12px;
+}
+
+.goal-fit-share-intro h1 {
+  margin: 0;
+  color: #253a33;
+  font-size: clamp(30px, 4vw, 48px);
+  line-height: 1.12;
+}
+
+.goal-fit-share-intro p {
+  margin: 0;
+  color: #56655f;
+  font-size: 16px;
+  line-height: 1.8;
+}
+
+.goal-fit-share-device-hint {
+  padding: 11px 12px;
+  border: 1px solid rgba(139, 130, 101, 0.18);
+  border-radius: 14px;
+  background: rgba(255, 252, 244, 0.72);
+  font-size: 14px;
+}
+
+.goal-fit-share-card {
+  position: relative;
+  display: flex;
+  min-height: 560px;
+  aspect-ratio: 3 / 4;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 22px;
+  overflow: hidden;
+  padding: 30px;
+  border: 1px solid rgba(134, 124, 91, 0.24);
+  border-radius: 30px;
+  background:
+    radial-gradient(circle at 82% 8%, rgba(177, 159, 92, 0.22), transparent 28%),
+    radial-gradient(circle at 8% 90%, rgba(117, 138, 102, 0.18), transparent 30%),
+    linear-gradient(155deg, #fffaf0 0%, #f4ead7 54%, #eef2de 100%);
+  box-shadow: 0 26px 58px rgba(70, 60, 38, 0.18);
+}
+
+.goal-fit-share-card::before {
+  position: absolute;
+  inset: 18px;
+  pointer-events: none;
+  border: 1px solid rgba(118, 108, 78, 0.18);
+  border-radius: 24px;
+  content: "";
+}
+
+.goal-fit-share-card-tag {
+  position: relative;
+  width: fit-content;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(96, 117, 82, 0.14);
+  color: #53664a;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.goal-fit-share-card h2 {
+  position: relative;
+  margin: 16px 0 0;
+  color: #24372f;
+  font-size: clamp(30px, 4vw, 42px);
+  line-height: 1.18;
+  letter-spacing: 0;
+}
+
+.goal-fit-share-card-body {
+  position: relative;
+  display: grid;
+  gap: 9px;
+  color: #42534c;
+  font-size: 18px;
+  line-height: 1.72;
+}
+
+.goal-fit-share-card-body p,
+.goal-fit-share-card-footer strong,
+.goal-fit-share-card-footer span,
+.goal-fit-share-card-footer small {
+  margin: 0;
+}
+
+.goal-fit-share-card-footer {
+  position: relative;
+  display: grid;
+  gap: 8px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(112, 100, 72, 0.18);
+}
+
+.goal-fit-share-card-footer strong {
+  color: #293f36;
+  font-size: 17px;
+}
+
+.goal-fit-share-card-footer span {
+  color: #65715c;
+  font-weight: 700;
+}
+
+.goal-fit-share-card-footer small {
+  color: #7a7565;
+  font-size: 13px;
+}
+
+.goal-fit-share-actions {
+  display: grid;
+  gap: 12px;
+  align-content: center;
+  padding: 20px;
+  border: 1px solid rgba(139, 130, 101, 0.2);
+  border-radius: 22px;
+  background: rgba(255, 252, 244, 0.74);
+  box-shadow: 0 16px 34px rgba(72, 61, 42, 0.08);
+}
+
+.goal-fit-share-actions p {
+  margin: 4px 0 0;
+  color: #647169;
+  font-size: 14px;
+  line-height: 1.7;
+}
+
+.goal-fit-share-coupon-panel {
+  display: grid;
+  gap: 8px;
+  padding: 14px;
+  border: 1px solid rgba(145, 131, 83, 0.24);
+  border-radius: 18px;
+  background:
+    linear-gradient(145deg, rgba(255, 250, 238, 0.95), rgba(242, 232, 210, 0.68)),
+    #fffaf0;
+}
+
+.goal-fit-share-coupon-panel h2 {
+  margin: 0;
+  color: #6c4b1f;
+  font-size: 30px;
+}
+
+.goal-fit-share-coupon-panel p,
+.goal-fit-share-coupon-panel small {
+  margin: 0;
+  color: #56655f;
+  line-height: 1.68;
+}
+
+.goal-fit-share-link-button {
+  justify-content: center;
+  border: 0;
+  color: #496049;
+  background: transparent;
+  box-shadow: none;
 }
 
 .goal-fit-result-action-copy {
@@ -3331,6 +3555,27 @@ p {
   color: #6c4b1f;
   font-size: 28px;
   line-height: 1;
+}
+
+.goal-fit-unlock-price-detail {
+  display: grid;
+  gap: 6px;
+  padding: 12px;
+  border: 1px solid rgba(145, 131, 83, 0.22);
+  border-radius: 14px;
+  background: rgba(255, 250, 238, 0.82);
+  color: #5d6a61;
+}
+
+.goal-fit-unlock-price-detail span,
+.goal-fit-unlock-price-detail strong {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.goal-fit-unlock-price-detail strong {
+  color: #33463d;
 }
 
 .goal-fit-unlock-item-list {
@@ -3873,5 +4118,49 @@ p {
 
   .goal-fit-result-main-score {
     min-height: 96px;
+  }
+
+  .goal-fit-result-share-entry {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .goal-fit-result-share-entry .secondary-button {
+    width: 100%;
+  }
+
+  .goal-fit-share-layout {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 12px 0 28px;
+  }
+
+  .goal-fit-share-intro {
+    text-align: left;
+  }
+
+  .goal-fit-share-intro h1 {
+    font-size: 28px;
+  }
+
+  .goal-fit-share-card {
+    width: min(100%, 360px);
+    min-height: 480px;
+    justify-self: center;
+    padding: 24px;
+    border-radius: 24px;
+  }
+
+  .goal-fit-share-card h2 {
+    font-size: 30px;
+  }
+
+  .goal-fit-share-card-body {
+    font-size: 16px;
+    line-height: 1.66;
+  }
+
+  .goal-fit-share-actions {
+    padding: 16px;
   }
 }
