@@ -171,22 +171,18 @@ assert(
 );
 
 [
-  "专为应届生量身定做的职场适应度测试",
-  "我到底适合什么样的公司？",
-  "我现在能做哪些岗位？",
-  "找工作要听父母的，还是自己拿主意？",
-  "什么公司会让我成长，什么公司会让我煎熬？",
-  "开始 3–5 分钟风险预演",
-  "先看看我会得到什么",
-  "你是不是也在想这些问题？",
-  "测完后，你会先看到",
-  "这个目标当前值不值得优先尝试",
-  "你的综合匹配度意味着什么",
-  "最容易影响你求职反馈的问题",
-  "完整报告里会继续拆解哪些差距",
-  "免费判断先帮你看方向",
-  "先预演一次，再决定要不要投。",
-  "开始第一次工作风险预演"
+  "第一份工作风险预演",
+  "别只看岗位名",
+  "先看看你进去后会不会适应",
+  "3–5分钟｜34题｜先看基础判断",
+  "开始风险预演",
+  "先看测完能得到什么",
+  "测完先给你 4 个求职判断",
+  "这个方向值不值得先投",
+  "你和目标岗位差在哪里",
+  "哪些问题会影响投递反馈",
+  "完整报告继续拆公司、岗位和调整方向",
+  "基于21年招聘经验，帮应届生提前看清第一份工作的适应风险。"
 ].forEach((text) => {
   assert(landingPageSource.includes(text), `GoalFitLandingPage must contain copy: ${text}`);
 });
@@ -199,17 +195,25 @@ assert(
   "完整报告会继续拆解",
   "立即购买",
   "免费咨询",
-  "企业微信"
+  "企业微信",
+  "专为应届生量身定做的职场适应度测试",
+  "先看免费判断",
+  "你是不是也在想这些问题？",
+  "每年预计帮助超100万应届生少走弯路",
+  "我到底适合什么样的公司？",
+  "我现在能做哪些岗位？",
+  "找工作听父母的，还是自己拿主意？",
+  "什么公司会让我成长，什么公司会让我煎熬？",
+  "选择公司类型和岗位方向，完成 34 题判断"
 ].forEach((text) => {
   assert(!landingPageSource.includes(text), `GoalFitLandingPage must not contain removed copy: ${text}`);
 });
 
-const landingWorryCardsBlock = landingPageSource.match(/const worryCards = \[([\s\S]*?)\];/);
-assert(landingWorryCardsBlock !== null, "GoalFitLandingPage must define worryCards");
-if (!landingWorryCardsBlock) fail("GoalFitLandingPage must define worryCards");
 assert(
-  (landingWorryCardsBlock[1].match(/title:/g) ?? []).length === 4,
-  "GoalFitLandingPage must keep exactly 4 empathy question cards"
+  !landingPageSource.includes("const worryCards") &&
+    landingPageSource.includes("goal-fit-landing-text-link") &&
+    landingPageSource.includes("goal-fit-landing-judgement-list"),
+  "GoalFitLandingPage must use the mobile-first two-screen landing structure"
 );
 assert(
   landingPageSource.includes('id="goal-fit-what-you-see"') &&
