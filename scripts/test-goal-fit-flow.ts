@@ -255,8 +255,6 @@ assert(
   "你第一份工作，更想先判断哪个岗位方向？",
   "先选一个你最想试、最常投，或者最纠结的岗位方向。",
   "当前预演",
-  "当前预演目标",
-  "当前阶段",
   "为什么问这个？",
   "准备开始：正式进入风险预演",
   "你的求职风险预演即将开始",
@@ -265,9 +263,8 @@ assert(
   "这个目标当前值不值得优先尝试",
   "你的综合匹配度意味着什么",
   "最容易影响你求职反馈的问题",
-  "完整报告里会继续拆解哪些差距",
-  "免费判断先帮你看方向",
-  "完整报告再继续拆解",
+  "后续会继续拆公司、岗位和调整方向",
+  "基础判断先帮你看方向",
   "这类公司怎么用人",
   "这类岗位真实要求什么",
   "你接下来该怎么调整",
@@ -287,8 +284,8 @@ assert(
   assert(!pageSource.includes(text), `GoalFitTestPage must not contain outdated copy: ${text}`);
 });
 assert(
-  pageSource.includes("GoalFitHeader") && pageSource.includes("../components/GoalFitHeader"),
-  "GoalFitTestPage must reuse GoalFitHeader"
+  !pageSource.includes("GoalFitHeader") && !pageSource.includes("../components/GoalFitHeader"),
+  "GoalFitTestPage must remove the large brand header from the task flow"
 );
 assert(
   pageSource.includes("/result-goal-fit-free-preview?session="),
@@ -307,8 +304,11 @@ assert(
   "GoalFitTestPage must render the roadmap image in the first target selection screen"
 );
 assert(
-  pageSource.includes("goal-fit-module-title"),
-  "GoalFitTestPage must use a prominent module title for formal question sections"
+  pageSource.includes("goal-fit-task-header") &&
+    pageSource.includes("goal-fit-task-progress-copy") &&
+    pageSource.includes("goal-fit-task-target") &&
+    pageSource.includes("第 {currentIndex + 1} / {selectedQuestions.length} 题｜已完成 {progressPercent}%"),
+  "GoalFitTestPage must show the progress-first task header in formal questions"
 );
 assert(
   pageSource.includes('step === "target"') && pageSource.includes('step === "targetRole"'),
@@ -321,17 +321,24 @@ assert(
   "global.css must crop the roadmap image inside a soft Goal Fit visual card"
 );
 assert(
-  stylesSource.includes(".goal-fit-module-title") &&
-    stylesSource.includes("font-size: clamp(21px, 2.4vw, 29px);") &&
-    stylesSource.includes("text-align: center;"),
-  "global.css must make the formal question module title larger and visually centered"
+  stylesSource.includes(".goal-fit-task-header") &&
+    stylesSource.includes(".goal-fit-task-progress-copy") &&
+    stylesSource.includes(".goal-fit-task-target") &&
+    stylesSource.includes("white-space: nowrap;"),
+  "global.css must define a compact progress-first task header"
 );
 assert(
-  stylesSource.includes(".goal-fit-question-layout") &&
-    stylesSource.includes("align-items: stretch;") &&
-    stylesSource.includes(".goal-fit-question-layout > .goal-fit-side-card") &&
-    stylesSource.includes("flex-direction: column;"),
-  "global.css must keep formal question cards naturally aligned on desktop"
+  pageSource.includes("currentIndex > 0") &&
+    pageSource.includes("goal-fit-question-reason") &&
+    !pageSource.includes("<p className=\"goal-fit-question-hint\""),
+  "GoalFitTestPage must hide previous on the first question and collapse question explanations by default"
+);
+assert(
+  stylesSource.includes(".goal-fit-question-actions-single") &&
+    stylesSource.includes("position: fixed;") &&
+    stylesSource.includes("env(safe-area-inset-bottom)") &&
+    stylesSource.includes(".goal-fit-question .goal-fit-option-button"),
+  "global.css must support compact mobile question options and a safe-area bottom action bar"
 );
 
 const forbiddenVisibleTexts = [
@@ -364,7 +371,11 @@ const forbiddenVisibleTexts = [
   "保证入职",
   "立即购买",
   "免费咨询",
-  "企业微信"
+  "企业微信",
+  "给你最真实的招聘逻辑，帮助你做最适合的工作选择",
+  "先看免费判断",
+  "¥9.9",
+  "优惠券"
 ];
 const normalizedPageSource = pageSource
   .replace(/\/test-goal-fit-preview/g, "")

@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
-import GoalFitHeader from "../components/GoalFitHeader";
 import { buildGoalFitResult } from "../lib/goalFitResultBuilder";
 import { goalFitQuestionBank } from "../lib/goalFitQuestionBank";
 import { selectGoalFitQuestions } from "../lib/goalFitQuestionSelector";
@@ -22,22 +21,6 @@ import type {
 } from "../lib/goalFitTypes";
 
 type PageStep = "target" | "targetRole" | "confirm" | "questions" | "complete";
-
-const moduleLabels: Record<QuestionModule, string> = {
-  A_BACKGROUND: "第一部分：基础背景",
-  B_PERSONALITY: "第二部分：职场底色",
-  C_MOTIVATION: "第三部分：求职动机",
-  D_WORKPLACE_SCENARIO: "第四部分：职场场景",
-  E_ROLE_SCENARIO: "第五部分：岗位预演"
-};
-
-const moduleDescriptions: Record<QuestionModule, string> = {
-  A_BACKGROUND: "这一部分只看真实招聘里的基础门槛，不评价你优秀不优秀。",
-  B_PERSONALITY: "这一部分看你在不同工作环境里，是更舒服，还是更容易消耗。",
-  C_MOTIVATION: "这一部分看你为什么想选这个方向，避免只被公司名或岗位名带着走。",
-  D_WORKPLACE_SCENARIO: "这一部分看你面对真实工作情况时，会怎么反应。",
-  E_ROLE_SCENARIO: "这一部分会把你放进目标岗位的具体场景里。"
-};
 
 const moduleShortLabels: Record<QuestionModule, string> = {
   A_BACKGROUND: "基础背景",
@@ -117,7 +100,6 @@ function getSelectedQuestions(targetRole?: RoleType): GoalFitQuestion[] {
 function GoalFitPageFrame({ children }: { children: ReactNode }) {
   return (
     <main className="goal-fit-shell">
-      <GoalFitHeader />
       {children}
     </main>
   );
@@ -150,12 +132,6 @@ function GoalFitTestPage() {
     selectedQuestions.length > 0 ? Math.round((answeredCount / selectedQuestions.length) * 100) : 0;
   const targetCompanyLabel = targetCompany ? goalFitQuestionBank.companyTypes[targetCompany] : "";
   const targetRoleLabel = targetRole ? goalFitQuestionBank.roleTypes[targetRole] : "";
-  const currentModuleQuestions = currentQuestion
-    ? selectedQuestions.filter((question) => question.module === currentQuestion.module)
-    : [];
-  const currentModuleIndex = currentQuestion
-    ? currentModuleQuestions.findIndex((question) => question.id === currentQuestion.id) + 1
-    : 0;
   const currentQuestionNote = currentQuestion ? questionNotes[currentQuestion.id] : undefined;
 
   useEffect(() => {
@@ -456,10 +432,10 @@ function GoalFitTestPage() {
               <li>这个目标当前值不值得优先尝试</li>
               <li>你的综合匹配度意味着什么</li>
               <li>最容易影响你求职反馈的问题</li>
-              <li>完整报告里会继续拆解哪些差距</li>
+              <li>后续会继续拆公司、岗位和调整方向</li>
             </ol>
             <p className="goal-fit-preview-note">
-              免费判断先帮你看方向，完整报告再继续拆解：这类公司怎么用人、这类岗位真实要求什么，以及你接下来该怎么调整。
+              基础判断先帮你看方向，后续再继续拆解：这类公司怎么用人、这类岗位真实要求什么，以及你接下来该怎么调整。
             </p>
           </div>
           <div className="goal-fit-actions">
@@ -507,14 +483,29 @@ function GoalFitTestPage() {
 
   return (
     <GoalFitPageFrame>
-      <section className="goal-fit-layout-split goal-fit-question-layout">
-        <section className="goal-fit-panel goal-fit-question-panel goal-fit-layout-main">
+      <section className="goal-fit-question-task">
+        <header className="goal-fit-task-header">
+          <div className="goal-fit-task-title-row">
+            <h1>第一份工作风险预演</h1>
+            <span>招聘端判断</span>
+          </div>
+          <p className="goal-fit-task-progress-copy">
+            第 {currentIndex + 1} / {selectedQuestions.length} 题｜已完成 {progressPercent}%
+          </p>
+          <div className="goal-fit-progress" aria-label="答题进度">
+            <div className="goal-fit-progress-track">
+              <i style={{ width: `${progressPercent}%` }} />
+            </div>
+          </div>
+          <p className="goal-fit-task-target">
+            当前目标：{targetCompanyLabel} × {targetRoleLabel}
+          </p>
+        </header>
+
+        <section className="goal-fit-panel goal-fit-question-panel">
           <div className="goal-fit-question-top">
-            <p className="goal-fit-module-title">{moduleLabels[currentQuestion.module]}</p>
+            <p className="goal-fit-module-title">{moduleShortLabels[currentQuestion.module]}</p>
             <h1>{currentQuestion.text}</h1>
-            {currentQuestionNote ? (
-              <p className="goal-fit-question-note">{currentQuestionNote}</p>
-            ) : null}
           </div>
 
           <article className="goal-fit-question">
@@ -536,67 +527,37 @@ function GoalFitTestPage() {
             </div>
           </article>
 
+          {currentQuestionNote ? (
+            <details className="goal-fit-question-reason">
+              <summary>为什么问这个？</summary>
+              <p>{currentQuestionNote}</p>
+            </details>
+          ) : null}
+
           {errorMessage ? <p className="goal-fit-error">{errorMessage}</p> : null}
 
-          <div className="goal-fit-actions goal-fit-question-actions">
-            <button
-              className="goal-fit-text-button"
-              type="button"
-              onClick={handlePreviousQuestion}
-              disabled={currentIndex === 0}
-            >
-              上一题
-            </button>
+          <div
+            className={
+              currentIndex > 0
+                ? "goal-fit-actions goal-fit-question-actions"
+                : "goal-fit-actions goal-fit-question-actions goal-fit-question-actions-single"
+            }
+          >
+            {currentIndex > 0 ? (
+              <button className="goal-fit-text-button" type="button" onClick={handlePreviousQuestion}>
+                上一题
+              </button>
+            ) : null}
             <button
               className="primary-button"
               type="button"
               onClick={handleNextQuestion}
               disabled={!currentAnswer}
             >
-              {isLastQuestion ? "生成报告" : "下一题"}
+              {isLastQuestion ? "查看基础判断" : "下一题"}
             </button>
           </div>
         </section>
-
-        <aside className="goal-fit-side-card goal-fit-layout-side">
-          <section>
-            <p className="goal-fit-eyebrow">当前预演目标</p>
-            <div className="goal-fit-coordinate-strip">
-              <strong>{targetCompanyLabel}</strong>
-              <strong>{targetRoleLabel}</strong>
-            </div>
-          </section>
-          <section>
-            <p className="goal-fit-eyebrow">当前阶段</p>
-            <h2>{moduleShortLabels[currentQuestion.module]}</h2>
-            <p className="goal-fit-stage-progress">
-              {moduleShortLabels[currentQuestion.module]} {currentModuleIndex} /{" "}
-              {currentModuleQuestions.length}
-            </p>
-          </section>
-          <section>
-            <p className="goal-fit-eyebrow">为什么问这个？</p>
-            <p className="goal-fit-question-hint">
-              {currentQuestionNote ?? moduleDescriptions[currentQuestion.module]}
-            </p>
-            {currentQuestion.module === "A_BACKGROUND" ? (
-              <p className="goal-fit-question-note">
-                用于判断不同岗位方向中的门槛风险，不代表能力高低。
-              </p>
-            ) : null}
-          </section>
-          <div className="goal-fit-progress" aria-label="答题进度">
-            <div className="goal-fit-progress-meta">
-              <span>
-                第 {currentIndex + 1} 题 / 共 {selectedQuestions.length} 题
-              </span>
-              <span>已完成 {progressPercent}%</span>
-            </div>
-            <div className="goal-fit-progress-track">
-              <i style={{ width: `${progressPercent}%` }} />
-            </div>
-          </div>
-        </aside>
       </section>
     </GoalFitPageFrame>
   );
