@@ -2458,10 +2458,11 @@ p {
 }
 
 .goal-fit-free-result-frame {
-  gap: 22px;
+  gap: 14px;
 }
 
 .goal-fit-free-hero,
+.goal-fit-free-diagnosis-card,
 .goal-fit-free-main-card,
 .goal-fit-free-risk-card,
 .goal-fit-free-advice-card,
@@ -2483,7 +2484,100 @@ p {
   padding: 22px;
 }
 
+.goal-fit-free-diagnosis-card {
+  display: grid;
+  gap: 14px;
+  padding: clamp(18px, 3vw, 28px);
+  background:
+    radial-gradient(circle at 12% 12%, rgba(184, 137, 69, 0.16), transparent 34%),
+    linear-gradient(145deg, rgba(255, 252, 244, 0.98), rgba(246, 237, 220, 0.86)),
+    #fffaf0;
+}
+
+.goal-fit-free-diagnosis-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.goal-fit-free-page-title,
+.goal-fit-free-headline p,
+.goal-fit-free-risk-line,
+.goal-fit-free-target {
+  margin: 0;
+}
+
+.goal-fit-free-page-title {
+  color: #53645d;
+  font-size: 13px;
+  font-weight: 850;
+}
+
+.goal-fit-free-diagnosis-header span {
+  flex: 0 0 auto;
+  border: 1px solid #d8c9a8;
+  border-radius: 999px;
+  padding: 5px 9px;
+  background: #fff8ea;
+  color: #6c5a30;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.goal-fit-free-diagnosis-core {
+  display: grid;
+  grid-template-columns: minmax(128px, 0.32fr) minmax(0, 1fr);
+  gap: 16px;
+  align-items: center;
+}
+
+.goal-fit-free-headline {
+  display: grid;
+  gap: 8px;
+}
+
+.goal-fit-free-headline p:first-child {
+  color: #6f542a;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.goal-fit-free-headline h1 {
+  margin: 0;
+  color: #1f2e2a;
+  font-size: clamp(22px, 3.2vw, 34px);
+  line-height: 1.22;
+}
+
+.goal-fit-free-headline p:last-child {
+  color: #4b554c;
+  font-size: 15px;
+  line-height: 1.65;
+}
+
+.goal-fit-free-risk-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  align-items: center;
+  border-top: 1px solid rgba(190, 181, 148, 0.58);
+  padding-top: 12px;
+  color: #5b4b28;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.goal-fit-free-risk-line span {
+  font-weight: 800;
+}
+
+.goal-fit-free-risk-line strong {
+  color: #1f2e2a;
+}
+
 .goal-fit-free-hero h1,
+.goal-fit-free-diagnosis-card h1,
 .goal-fit-free-main-card h2,
 .goal-fit-free-risk-card h2,
 .goal-fit-free-advice-card h2,
@@ -2494,9 +2588,11 @@ p {
 }
 
 .goal-fit-free-hero p,
+.goal-fit-free-diagnosis-card p,
 .goal-fit-free-main-card p,
 .goal-fit-free-risk-card p,
 .goal-fit-free-advice-card li,
+.goal-fit-free-advice-card p,
 .goal-fit-free-lock-card p,
 .goal-fit-free-unlock-card p,
 .goal-fit-free-unlock-card small {
@@ -2522,20 +2618,19 @@ p {
 }
 
 .goal-fit-free-target {
-  margin: 0;
-}
-
-.goal-fit-free-target strong {
-  color: #4f5c35;
+  color: #64717e;
+  font-size: 13px;
+  font-weight: 750;
+  line-height: 1.5;
 }
 
 .goal-fit-free-score {
   display: grid;
   gap: 2px;
   width: fit-content;
-  min-width: 150px;
-  border-radius: 24px;
-  padding: 16px 18px;
+  min-width: 136px;
+  border-radius: 20px;
+  padding: 14px 16px;
   background:
     radial-gradient(circle at 20% 16%, rgba(184, 137, 69, 0.18), transparent 44%),
     #f5efd9;
@@ -2549,7 +2644,7 @@ p {
 
 .goal-fit-free-score strong {
   color: #4f5c35;
-  font-size: clamp(46px, 8vw, 72px);
+  font-size: clamp(50px, 8vw, 72px);
   line-height: 0.95;
 }
 
@@ -2558,6 +2653,41 @@ p {
   background:
     linear-gradient(145deg, rgba(255, 247, 231, 0.98), rgba(240, 230, 201, 0.86)),
     #fff7e7;
+}
+
+.goal-fit-free-risk-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.goal-fit-free-risk-list li {
+  display: grid;
+  gap: 4px;
+  border: 1px solid rgba(201, 183, 132, 0.56);
+  border-radius: 14px;
+  padding: 11px 12px;
+  background: rgba(255, 252, 244, 0.8);
+}
+
+.goal-fit-free-risk-list strong {
+  color: #1f2e2a;
+  font-size: 15px;
+  line-height: 1.35;
+}
+
+.goal-fit-free-risk-list span {
+  color: #5f665c;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.goal-fit-free-primary-cta {
+  width: fit-content;
+  min-width: min(100%, 260px);
+  min-height: 50px;
 }
 
 .goal-fit-free-advice-card ul,
@@ -2615,26 +2745,6 @@ p {
   min-width: min(100%, 360px);
   min-height: 54px;
   font-size: 17px;
-}
-
-.goal-fit-free-coupon-card {
-  display: grid;
-  width: min(100%, 560px);
-  gap: 10px;
-  padding: 14px;
-  border: 1px solid rgba(145, 131, 83, 0.24);
-  border-radius: 16px;
-  background: rgba(255, 250, 238, 0.82);
-}
-
-.goal-fit-free-coupon-card p {
-  margin: 0;
-  color: #53645d;
-  line-height: 1.7;
-}
-
-.goal-fit-free-coupon-card .secondary-button {
-  justify-self: center;
 }
 
 .goal-fit-result-main-score span {
@@ -4278,10 +4388,51 @@ p {
   .goal-fit-result-action-grid,
   .goal-fit-result-advice-report,
   .goal-fit-free-hero,
+  .goal-fit-free-diagnosis-core,
   .goal-fit-free-grid,
   .goal-fit-free-lock-grid,
   .goal-fit-result-actions {
     grid-template-columns: 1fr;
+  }
+
+  .goal-fit-free-result-frame {
+    gap: 12px;
+  }
+
+  .goal-fit-free-diagnosis-card,
+  .goal-fit-free-risk-card,
+  .goal-fit-free-advice-card,
+  .goal-fit-free-lock-card,
+  .goal-fit-free-unlock-card {
+    gap: 12px;
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .goal-fit-free-diagnosis-header {
+    align-items: flex-start;
+  }
+
+  .goal-fit-free-score {
+    min-width: 130px;
+    padding: 12px 14px;
+  }
+
+  .goal-fit-free-score strong {
+    font-size: 56px;
+  }
+
+  .goal-fit-free-headline h1 {
+    font-size: 20px;
+  }
+
+  .goal-fit-free-headline p:last-child,
+  .goal-fit-free-risk-list span {
+    font-size: 14px;
+  }
+
+  .goal-fit-free-primary-cta {
+    width: 100%;
   }
 
   .goal-fit-result-progress {

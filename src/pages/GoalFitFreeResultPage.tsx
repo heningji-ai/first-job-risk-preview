@@ -55,38 +55,6 @@ function getResultFromUrl(): { result: GoalFitResult | null; sessionId: string |
   };
 }
 
-function getFreeResultJudgement(score: number): { title: string; description: string } {
-  if (score >= 80) {
-    return {
-      title: "匹配度较高，这个方向可以作为当前求职的优先方向。",
-      description:
-        "你和这类公司、这类岗位之间有比较明显的适配基础。接下来更重要的不是换方向，而是把你的优势在简历和面试里讲清楚。"
-    };
-  }
-
-  if (score >= 65) {
-    return {
-      title: "中等偏上，这个方向可以尝试，但不建议盲目当成唯一第一选择。",
-      description:
-        "你和这类公司、岗位有一定匹配基础，但仍有几个关键差距，会影响后续的筛选通过率和入职适应度。"
-    };
-  }
-
-  if (score >= 50) {
-    return {
-      title: "这个方向有机会，但当前风险偏高，不建议直接作为主投方向。",
-      description:
-        "你和这个目标之间存在一些明显磨合点。如果直接投，可能会遇到反馈少、面试解释不清，或者入职后不适应的问题。"
-    };
-  }
-
-  return {
-    title: "当前不建议把这个方向作为第一优先选择。",
-    description:
-      "这不代表你以后不能做，而是以你现在的准备状态，直接冲这个方向试错成本较高。更稳的做法是先换切入点，或者补齐关键准备。"
-  };
-}
-
 function getFallbackRisk(result: GoalFitResult): FreeRisk {
   const scores = result.scores;
   const scorePairs = [
@@ -150,7 +118,24 @@ function getPrimaryRisk(result: GoalFitResult): FreeRisk {
   return getFallbackRisk(result);
 }
 
-function getFirstAdvice(riskTitle: string): string {
+function getRiskPoints(result: GoalFitResult, primaryRisk: FreeRisk): FreeRisk[] {
+  const risks = result.riskInsights.map((risk) => ({
+    title: risk.title,
+    description: risk.description
+  }));
+
+  if (risks.length > 0) return risks.slice(0, 3);
+
+  return [primaryRisk];
+}
+
+function getActionReminder(result: GoalFitResult, riskTitle: string): string {
+  const firstRecommendation = result.recommendations[0];
+
+  if (firstRecommendation) {
+    return `${firstRecommendation.title}：${firstRecommendation.description}`;
+  }
+
   if (riskTitle.includes("岗位理解")) {
     return "先确认这个岗位真实每天在处理什么问题。";
   }
@@ -190,8 +175,10 @@ function GoalFitFreeResultPage() {
 
   if (!result) return <MissingFreeResultPage />;
 
-  const judgement = getFreeResultJudgement(result.scores.overallScore);
+  const judgement = result.overallConclusion;
   const primaryRisk = getPrimaryRisk(result);
+  const riskPoints = getRiskPoints(result, primaryRisk);
+  const actionReminder = getActionReminder(result, primaryRisk.title);
 
   function handleUnlock(): void {
     if (isSample) {
@@ -204,81 +191,62 @@ function GoalFitFreeResultPage() {
     navigateTo(`/goal-fit-unlock-preview?session=${encodeURIComponent(sessionId)}`);
   }
 
-  function handleShareCoupon(): void {
-    if (isSample) {
-      navigateTo("/goal-fit-share-preview?sample=high_fit&mode=coupon");
-      return;
-    }
-
-    if (!sessionId) return;
-
-    navigateTo(`/goal-fit-share-preview?session=${encodeURIComponent(sessionId)}&mode=coupon`);
-  }
-
   return (
     <GoalFitPageFrame>
       <section className="goal-fit-panel goal-fit-free-result-frame">
-        <header className="goal-fit-free-hero">
-          <div>
-            <p className="goal-fit-eyebrow">总判断</p>
-            <h1>你的第一份工作目标判断已生成</h1>
-            <p>
-              我们先给你一个总判断。完整报告会继续拆解：你选择的公司类型、岗位类型，和你当前状态之间到底差在哪里。
-            </p>
-          </div>
-          <ol className="goal-fit-result-progress" aria-label="结果阅读进度">
-            {["总判断", "适配拆解", "建议行动"].map((label, index) => (
-              <li key={label}>
-                <span className={index === 0 ? "active" : ""}>
-                  <i>{index + 1}</i>
-                  {label}
-                </span>
-              </li>
-            ))}
-          </ol>
-        </header>
+        <section className="goal-fit-free-diagnosis-card">
+          <header className="goal-fit-free-diagnosis-header">
+            <p className="goal-fit-free-page-title">第一份工作风险预演</p>
+            <span>基础判断</span>
+          </header>
 
-        <div className="goal-fit-free-grid">
-          <section className="goal-fit-free-main-card">
-            <p className="goal-fit-eyebrow">先看总体判断</p>
-            <p className="goal-fit-free-target">
-              你选择的是：<strong>「{result.targetCompanyLabel}」×「{result.targetRoleLabel}」</strong>
-            </p>
+          <div className="goal-fit-free-diagnosis-core">
             <div className="goal-fit-free-score">
               <span>综合匹配度</span>
               <strong>{result.scores.overallScore}%</strong>
             </div>
-            <h2>{judgement.title}</h2>
-            <p>{judgement.description}</p>
-          </section>
-
-          <aside className="goal-fit-result-side-card">
-            <p className="goal-fit-eyebrow">当前预演</p>
-            <div className="goal-fit-result-path">
-              <span>公司类型：{result.targetCompanyLabel}</span>
-              <span>岗位方向：{result.targetRoleLabel}</span>
+            <div className="goal-fit-free-headline">
+              <p>这个方向可以先投吗？</p>
+              <h1>{judgement.title}</h1>
+              <p>{judgement.summary}</p>
             </div>
-          </aside>
-        </div>
+          </div>
+
+          <p className="goal-fit-free-risk-line">
+            <span>最大风险：</span>
+            <strong>{primaryRisk.title}</strong>
+          </p>
+
+          <p className="goal-fit-free-target">
+            当前预演：{result.targetCompanyLabel} × {result.targetRoleLabel}
+          </p>
+
+          <button className="primary-button goal-fit-free-primary-cta" type="button" onClick={handleUnlock}>
+            解锁完整报告
+          </button>
+        </section>
 
         <section className="goal-fit-free-risk-card">
-          <p className="goal-fit-eyebrow">你当前最需要优先确认的是：</p>
-          <h2>{primaryRisk.title}</h2>
-          <p>{primaryRisk.description}</p>
+          <p className="goal-fit-eyebrow">主要风险</p>
+          <ul className="goal-fit-free-risk-list">
+            {riskPoints.map((risk) => (
+              <li key={risk.title}>
+                <strong>{risk.title}</strong>
+                <span>{risk.description}</span>
+              </li>
+            ))}
+          </ul>
         </section>
 
         <section className="goal-fit-free-advice-card">
-          <h2>针对你的情况，我们建议：</h2>
-          <ul>
-            <li>{getFirstAdvice(primaryRisk.title)}</li>
-            <li>再判断自己是否能长期适应这类公司的节奏和这个岗位的要求。</li>
-          </ul>
+          <h2>行动提醒</h2>
+          <p>{actionReminder}</p>
         </section>
 
         <section className="goal-fit-free-lock-card">
           <div>
-            <p className="goal-fit-eyebrow">完整报告已生成</p>
-            <h2>下面这些内容已经根据你的测试结果生成，解锁后可以继续查看。</h2>
+            <p className="goal-fit-eyebrow">完整报告会继续拆</p>
+            <h2>完整报告会继续拆公司环境、岗位差距、投递风险和调整方向。</h2>
           </div>
           <div className="goal-fit-free-lock-grid">
             {[
@@ -312,14 +280,6 @@ function GoalFitFreeResultPage() {
           <button className="primary-button" type="button" onClick={handleUnlock}>
             解锁完整目标适配报告 ¥19.9
           </button>
-          <div className="goal-fit-free-coupon-card">
-            <p>
-              保存 / 分享求职方向卡，可领取 ¥10 优惠券，优惠后 ¥9.9 解锁完整报告。
-            </p>
-            <button className="secondary-button" type="button" onClick={handleShareCoupon}>
-              生成求职方向卡，领取优惠
-            </button>
-          </div>
           <p>查看公司差距、岗位差距和具体行动建议。</p>
           <small>免费页先给你总判断，完整报告会继续给你拆解和行动。</small>
         </section>

@@ -293,10 +293,39 @@ assert(
 );
 assert(
   freeResultPageSource.includes("getGoalFitSession") &&
+    freeResultPageSource.includes("第一份工作风险预演") &&
+    freeResultPageSource.includes("基础判断") &&
     freeResultPageSource.includes("综合匹配度") &&
+    freeResultPageSource.includes("这个方向可以先投吗？") &&
+    freeResultPageSource.includes("最大风险：") &&
+    freeResultPageSource.includes("当前预演：") &&
+    freeResultPageSource.includes("主要风险") &&
+    freeResultPageSource.includes("行动提醒") &&
+    freeResultPageSource.includes("解锁完整报告") &&
     freeResultPageSource.includes("解锁完整目标适配报告 ¥19.9") &&
     freeResultPageSource.includes("/goal-fit-unlock-preview?session="),
-  "GoalFitFreeResultPage must build a free result and send unlock CTA to confirmation page"
+  "GoalFitFreeResultPage must build a diagnosis-first free result and keep unlock CTA logic"
+);
+[
+  "你的第一份工作目标判断已生成",
+  "我们先给你一个总判断",
+  "[\"总判断\", \"适配拆解\", \"建议行动\"]",
+  "先看总体判断",
+  "保存一张求职方向卡",
+  "不展示你的具体分数、公司类型、岗位方向和风险点",
+  "生成我的求职方向卡",
+  "生成求职方向卡",
+  "/goal-fit-share-preview?session=",
+  "/goal-fit-share-preview?sample=high_fit&mode=coupon"
+].forEach((text) => {
+  assert(!freeResultPageSource.includes(text), `GoalFitFreeResultPage must not keep old hero copy: ${text}`);
+});
+assert(
+  freeResultPageSource.includes("getRiskPoints") &&
+    freeResultPageSource.includes("getActionReminder") &&
+    freeResultPageSource.includes("result.overallConclusion") &&
+    freeResultPageSource.includes("result.scores.overallScore"),
+  "GoalFitFreeResultPage must derive score, headline, risks and action reminder from result data"
 );
 assert(
   pageSource.includes("/goal-fit-roadmap.png") &&
