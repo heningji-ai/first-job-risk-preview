@@ -191,6 +191,17 @@ function GoalFitFreeResultPage() {
     navigateTo(`/goal-fit-unlock-preview?session=${encodeURIComponent(sessionId)}`);
   }
 
+  function handleShareCoupon(): void {
+    if (isSample) {
+      navigateTo("/goal-fit-share-preview?sample=high_fit&mode=coupon");
+      return;
+    }
+
+    if (!sessionId) return;
+
+    navigateTo(`/goal-fit-share-preview?session=${encodeURIComponent(sessionId)}&mode=coupon`);
+  }
+
   return (
     <GoalFitPageFrame>
       <section className="goal-fit-panel goal-fit-free-result-frame">
@@ -274,6 +285,19 @@ function GoalFitFreeResultPage() {
               </article>
             ))}
           </div>
+        </section>
+
+        <section className="goal-fit-free-share-discount-card">
+          <div className="goal-fit-free-share-discount-copy">
+            <p className="goal-fit-eyebrow">分享优惠</p>
+            <h2>分享给同学或朋友圈，领取 ¥10 优惠券</h2>
+            <p>保存这张求职风险预演海报，分享后可用优惠价解锁完整报告。</p>
+            <strong>优惠后 ¥9.9 解锁完整报告</strong>
+            <button className="secondary-button" type="button" onClick={handleShareCoupon}>
+              保存分享图，领取 ¥10 优惠券
+            </button>
+          </div>
+          <img src="/images/goal-fit-share-poster.png" alt="第一份工作风险预演分享海报预览" />
         </section>
 
         <section className="goal-fit-free-unlock-card">

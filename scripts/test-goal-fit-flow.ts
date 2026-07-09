@@ -226,8 +226,12 @@ assert(
   "App.tsx must route /goal-fit-share-preview to GoalFitSharePage"
 );
 [
-  "生成我的求职方向卡",
-  "我开始对未来的职场有一点信心了。",
+  "保存我的求职风险预演海报",
+  "保存分享图，领取优惠",
+  "/images/goal-fit-share-poster.png",
+  "goal-fit-share-poster-image",
+  "我已保存或分享，领取 ¥10 优惠券",
+  "coupon=share_card",
   "复制分享文案",
   "返回完整报告",
   "让同学也测一次"
@@ -302,9 +306,15 @@ assert(
     freeResultPageSource.includes("主要风险") &&
     freeResultPageSource.includes("行动提醒") &&
     freeResultPageSource.includes("解锁完整报告") &&
+    freeResultPageSource.includes("分享给同学或朋友圈，领取 ¥10 优惠券") &&
+    freeResultPageSource.includes("优惠后 ¥9.9 解锁完整报告") &&
+    freeResultPageSource.includes("保存分享图，领取 ¥10 优惠券") &&
+    freeResultPageSource.includes("/goal-fit-share-preview?session=") &&
+    freeResultPageSource.includes("/goal-fit-share-preview?sample=high_fit&mode=coupon") &&
+    freeResultPageSource.includes("/images/goal-fit-share-poster.png") &&
     freeResultPageSource.includes("解锁完整目标适配报告 ¥19.9") &&
     freeResultPageSource.includes("/goal-fit-unlock-preview?session="),
-  "GoalFitFreeResultPage must build a diagnosis-first free result and keep unlock CTA logic"
+  "GoalFitFreeResultPage must build a diagnosis-first free result and keep unlock/share CTA logic"
 );
 [
   "你的第一份工作目标判断已生成",
@@ -314,9 +324,7 @@ assert(
   "保存一张求职方向卡",
   "不展示你的具体分数、公司类型、岗位方向和风险点",
   "生成我的求职方向卡",
-  "生成求职方向卡",
-  "/goal-fit-share-preview?session=",
-  "/goal-fit-share-preview?sample=high_fit&mode=coupon"
+  "生成求职方向卡"
 ].forEach((text) => {
   assert(!freeResultPageSource.includes(text), `GoalFitFreeResultPage must not keep old hero copy: ${text}`);
 });
