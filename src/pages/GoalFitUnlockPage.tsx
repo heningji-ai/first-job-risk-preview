@@ -1,9 +1,13 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import GoalFitHeader from "../components/GoalFitHeader";
 import { buildGoalFitResult } from "../lib/goalFitResultBuilder";
 import { goalFitQuestionBank } from "../lib/goalFitQuestionBank";
-import { markGoalFitOrderPaid, markGoalFitOrderPaidWithCoupon } from "../lib/goalFitOrderStore";
+import {
+  createGoalFitOrderFromApi,
+  markGoalFitApiOrderPaid,
+  type GoalFitOrder
+} from "../lib/goalFitOrderStore";
 import { selectGoalFitQuestions } from "../lib/goalFitQuestionSelector";
 import { getGoalFitSession } from "../lib/goalFitSessionStore";
 import { isGoalFitReportUnlocked, markGoalFitReportUnlocked } from "../lib/goalFitUnlockStore";
@@ -97,6 +101,18 @@ function buildFullResultPath(context: UnlockContext): string {
   return `/result-goal-fit-preview?session=${encodeURIComponent(context.sessionId ?? "")}&section=breakdown`;
 }
 
+function formatYuan(amountCents: number): string {
+  return `¥${(amountCents / 100).toFixed(1)}`;
+}
+
+function isDevelopmentPaymentEnabled(): boolean {
+  const viteEnv = (import.meta as unknown as { env?: { DEV?: boolean } }).env;
+  if (viteEnv?.DEV) return true;
+  if (typeof window === "undefined") return false;
+
+  return ["localhost", "127.0.0.1"].includes(window.location.hostname);
+}
+
 function MissingUnlockPage() {
   return (
     <GoalFitPageFrame>
@@ -115,24 +131,72 @@ function MissingUnlockPage() {
 function GoalFitUnlockPage() {
   const context = useMemo(() => getUnlockContextFromUrl(), []);
   const [isUnlocked, setIsUnlocked] = useState(context.isUnlocked);
+  const [order, setOrder] = useState<GoalFitOrder | null>(null);
+  const [isCreatingOrder, setIsCreatingOrder] = useState(false);
+  const [isMarkingPaid, setIsMarkingPaid] = useState(false);
+  const [orderError, setOrderError] = useState("");
+
+  useEffect(() => {
+    if (!context.result || !context.sessionId || isUnlocked) return;
+
+    let ignore = false;
+
+    async function createOrder(): Promise<void> {
+      if (!context.sessionId) return;
+
+      setIsCreatingOrder(true);
+      setOrderError("");
+
+      try {
+        const createdOrder = await createGoalFitOrderFromApi({
+          sessionId: context.sessionId,
+          accessMode: context.hasShareCardCoupon ? "share_coupon" : "direct",
+          couponCode: context.hasShareCardCoupon ? "share_card" : null,
+          paymentMode: "mock"
+        });
+
+        if (!ignore) setOrder(createdOrder);
+      } catch {
+        if (!ignore) setOrderError("订单创建暂时失败，请稍后重试。");
+      } finally {
+        if (!ignore) setIsCreatingOrder(false);
+      }
+    }
+
+    void createOrder();
+
+    return () => {
+      ignore = true;
+    };
+  }, [context.hasShareCardCoupon, context.result, context.sessionId, isUnlocked]);
 
   if (!context.result || !context.sessionId) return <MissingUnlockPage />;
 
   const fullResultPath = buildFullResultPath(context);
   const freeResultPath = buildFreeResultPath(context);
+  const developmentPaymentEnabled = isDevelopmentPaymentEnabled();
+  const displayedOriginalAmount = order?.originalAmountCents ?? 1990;
+  const displayedDiscountAmount = order?.discountAmountCents ?? (context.hasShareCardCoupon ? 1000 : 0);
+  const displayedPayAmount = order?.payAmountCents ?? (context.hasShareCardCoupon ? 990 : 1990);
 
-  function handleConfirmUnlock(): void {
-    if (!context.sessionId) return;
+  async function handleMarkPaid(): Promise<void> {
+    if (!context.sessionId || !order?.orderId) return;
 
-    if (context.hasShareCardCoupon) {
-      markGoalFitOrderPaidWithCoupon(context.sessionId, "share_card");
-    } else {
-      markGoalFitOrderPaid(context.sessionId);
+    setIsMarkingPaid(true);
+    setOrderError("");
+
+    try {
+      await markGoalFitApiOrderPaid(order.orderId);
+      if (!context.isSample) {
+        markGoalFitReportUnlocked(context.sessionId);
+      }
+      setIsUnlocked(true);
+      navigateTo(fullResultPath);
+    } catch {
+      setOrderError("支付状态更新失败，请稍后重试。");
+    } finally {
+      setIsMarkingPaid(false);
     }
-    if (!context.isSample) {
-      markGoalFitReportUnlocked(context.sessionId);
-    }
-    setIsUnlocked(true);
   }
 
   if (isUnlocked) {
@@ -174,17 +238,15 @@ function GoalFitUnlockPage() {
               <span>产品名称</span>
               <strong>完整目标适配报告</strong>
             </div>
-            <div className="goal-fit-unlock-price">
-              <span>{context.hasShareCardCoupon ? "应付" : "价格"}</span>
-              <strong>{context.hasShareCardCoupon ? "¥9.9" : "¥19.9"}</strong>
+            <div className="goal-fit-unlock-price-detail">
+              <span>原价 {formatYuan(displayedOriginalAmount)}</span>
+              {context.hasShareCardCoupon ? <span>优惠 ¥10</span> : null}
+              <strong>应付 {formatYuan(displayedPayAmount)}</strong>
             </div>
-            {context.hasShareCardCoupon ? (
-              <div className="goal-fit-unlock-price-detail">
-                <span>标准价：¥19.9</span>
-                <span>求职方向卡优惠：-¥10</span>
-                <strong>应付：¥9.9</strong>
-              </div>
-            ) : null}
+            <div className="goal-fit-unlock-price">
+              <span>应付</span>
+              <strong>{formatYuan(displayedPayAmount)}</strong>
+            </div>
             <div className="goal-fit-unlock-item-list">
               {unlockItems.map((item) => (
                 <article className="goal-fit-unlock-item" key={item.title}>
@@ -201,9 +263,28 @@ function GoalFitUnlockPage() {
               <span>公司类型：{context.result.targetCompanyLabel}</span>
               <span>岗位方向：{context.result.targetRoleLabel}</span>
             </div>
-            <button className="primary-button" type="button" onClick={handleConfirmUnlock}>
-              {context.hasShareCardCoupon ? "¥9.9 解锁完整报告" : "确认解锁完整报告"}
-            </button>
+            {isCreatingOrder ? <p className="goal-fit-unlock-note">正在创建订单...</p> : null}
+            {order ? (
+              <div className="goal-fit-unlock-order-summary">
+                <span>订单状态：待支付</span>
+                <span>订单号：{order.outTradeNo}</span>
+              </div>
+            ) : null}
+            {orderError ? <p className="goal-fit-unlock-error">{orderError}</p> : null}
+            {developmentPaymentEnabled ? (
+              <button
+                className="primary-button"
+                type="button"
+                disabled={!order || isMarkingPaid}
+                onClick={handleMarkPaid}
+              >
+                {isMarkingPaid ? "正在确认支付状态" : "开发环境：标记为已支付"}
+              </button>
+            ) : (
+              <button className="primary-button" type="button" disabled>
+                等待支付完成
+              </button>
+            )}
             <p className="goal-fit-unlock-note">解锁后可查看完整报告，并可在当前设备上再次打开。</p>
             <button className="secondary-button" type="button" onClick={() => navigateTo(freeResultPath)}>
               返回免费判断

@@ -23,6 +23,9 @@ const pagePath = path.join(projectRoot, "src", "pages", "GoalFitTestPage.tsx");
 const landingPagePath = path.join(projectRoot, "src", "pages", "GoalFitLandingPage.tsx");
 const freeResultPagePath = path.join(projectRoot, "src", "pages", "GoalFitFreeResultPage.tsx");
 const sharePagePath = path.join(projectRoot, "src", "pages", "GoalFitSharePage.tsx");
+const unlockPagePath = path.join(projectRoot, "src", "pages", "GoalFitUnlockPage.tsx");
+const resultPagePath = path.join(projectRoot, "src", "pages", "GoalFitResultPage.tsx");
+const orderStorePath = path.join(projectRoot, "src", "lib", "goalFitOrderStore.ts");
 const headerPath = path.join(projectRoot, "src", "components", "GoalFitHeader.tsx");
 const stylesPath = path.join(projectRoot, "src", "styles", "global.css");
 const questionBank = JSON.parse(fs.readFileSync(questionsPath, "utf8")) as GoalFitQuestionBank;
@@ -124,6 +127,9 @@ const appSource = fs.readFileSync(appPath, "utf8");
 const landingPageSource = fs.readFileSync(landingPagePath, "utf8");
 const freeResultPageSource = fs.readFileSync(freeResultPagePath, "utf8");
 const sharePageSource = fs.readFileSync(sharePagePath, "utf8");
+const unlockPageSource = fs.readFileSync(unlockPagePath, "utf8");
+const resultPageSource = fs.readFileSync(resultPagePath, "utf8");
+const orderStoreSource = fs.readFileSync(orderStorePath, "utf8");
 const headerSource = fs.readFileSync(headerPath, "utf8");
 const stylesSource = fs.readFileSync(stylesPath, "utf8");
 
@@ -334,6 +340,38 @@ assert(
     freeResultPageSource.includes("result.overallConclusion") &&
     freeResultPageSource.includes("result.scores.overallScore"),
   "GoalFitFreeResultPage must derive score, headline, risks and action reminder from result data"
+);
+assert(
+  orderStoreSource.includes("createGoalFitOrderFromApi") &&
+    orderStoreSource.includes("/api/orders/create") &&
+    orderStoreSource.includes("markGoalFitApiOrderPaid") &&
+    orderStoreSource.includes("/mock-paid") &&
+    orderStoreSource.includes("getGoalFitUnlockStatusFromApi") &&
+    orderStoreSource.includes("/api/unlock/status?sessionId="),
+  "goalFitOrderStore must expose order and unlock API helpers"
+);
+assert(
+  unlockPageSource.includes("createGoalFitOrderFromApi") &&
+    unlockPageSource.includes("markGoalFitApiOrderPaid") &&
+    unlockPageSource.includes('accessMode: context.hasShareCardCoupon ? "share_coupon" : "direct"') &&
+    unlockPageSource.includes('couponCode: context.hasShareCardCoupon ? "share_card" : null') &&
+    unlockPageSource.includes('paymentMode: "mock"') &&
+    unlockPageSource.includes("原价") &&
+    unlockPageSource.includes("优惠 ¥10") &&
+    unlockPageSource.includes("应付") &&
+    unlockPageSource.includes("formatYuan(displayedPayAmount)") &&
+    unlockPageSource.includes("开发环境：标记为已支付"),
+  "GoalFitUnlockPage must create backend orders, show direct/coupon amounts, and use the development paid marker"
+);
+["模拟支付", "测试支付", "mock pay"].forEach((text) => {
+  assert(!unlockPageSource.includes(text), `GoalFitUnlockPage must not expose forbidden payment wording: ${text}`);
+});
+assert(
+  resultPageSource.includes("getGoalFitUnlockStatusFromApi") &&
+    resultPageSource.includes("正在确认解锁状态") &&
+    resultPageSource.includes("LockedReportPage") &&
+    resultPageSource.includes("apiUnlocked === true || reportContext.isUnlocked"),
+  "GoalFitResultPage must check backend unlock status and keep local development compatibility"
 );
 assert(
   pageSource.includes("/goal-fit-roadmap.png") &&

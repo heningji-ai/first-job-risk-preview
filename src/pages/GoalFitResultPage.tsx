@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import GoalFitHeader from "../components/GoalFitHeader";
 import { buildGoalFitResult } from "../lib/goalFitResultBuilder";
@@ -6,6 +6,7 @@ import { goalFitQuestionBank } from "../lib/goalFitQuestionBank";
 import { selectGoalFitQuestions } from "../lib/goalFitQuestionSelector";
 import { navigateTo } from "../lib/router";
 import { getGoalFitSession } from "../lib/goalFitSessionStore";
+import { getGoalFitUnlockStatusFromApi } from "../lib/goalFitOrderStore";
 import { isGoalFitReportUnlocked } from "../lib/goalFitUnlockStore";
 import type {
   CompanyType,
@@ -733,11 +734,52 @@ function LockedReportPage({ sessionId }: { sessionId: string }) {
 function GoalFitResultPage() {
   const [currentResultScreen, setCurrentResultScreen] = useState(() => getInitialResultScreen());
   const reportContext = getReportContextFromUrl();
+  const [apiUnlocked, setApiUnlocked] = useState<boolean | null>(reportContext.isSample ? true : null);
+  const [unlockCheckComplete, setUnlockCheckComplete] = useState(reportContext.isSample || reportContext.isUnlocked);
   const result = reportContext.result;
   const openedAtBreakdown = new URLSearchParams(window.location.search).get("section") === "breakdown";
 
+  useEffect(() => {
+    if (reportContext.isSample || !reportContext.sessionId) return;
+
+    let ignore = false;
+
+    async function checkUnlockStatus(): Promise<void> {
+      if (!reportContext.sessionId) return;
+
+      try {
+        const status = await getGoalFitUnlockStatusFromApi(reportContext.sessionId);
+        if (!ignore) setApiUnlocked(status.unlocked);
+      } catch {
+        if (!ignore) setApiUnlocked(null);
+      } finally {
+        if (!ignore) setUnlockCheckComplete(true);
+      }
+    }
+
+    void checkUnlockStatus();
+
+    return () => {
+      ignore = true;
+    };
+  }, [reportContext.isSample, reportContext.sessionId]);
+
   if (!result) return <MissingReportPage />;
-  if (!reportContext.isSample && reportContext.sessionId && !reportContext.isUnlocked) {
+  if (!reportContext.isSample && reportContext.sessionId && !unlockCheckComplete) {
+    return (
+      <GoalFitPageFrame>
+        <section className="goal-fit-panel goal-fit-result-empty goal-fit-result-locked">
+          <p className="goal-fit-eyebrow">正在确认解锁状态</p>
+          <h1>正在打开完整报告</h1>
+          <p>我们正在确认这份报告的解锁状态，请稍等片刻。</p>
+        </section>
+      </GoalFitPageFrame>
+    );
+  }
+
+  const hasUnlockedAccess = reportContext.isSample || apiUnlocked === true || reportContext.isUnlocked;
+
+  if (!reportContext.isSample && reportContext.sessionId && !hasUnlockedAccess) {
     return <LockedReportPage sessionId={reportContext.sessionId} />;
   }
 
