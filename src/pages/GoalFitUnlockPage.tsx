@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import GoalFitHeader from "../components/GoalFitHeader";
+import { PAYMENT_MODE } from "../config/api";
 import { buildGoalFitResult } from "../lib/goalFitResultBuilder";
 import { goalFitQuestionBank } from "../lib/goalFitQuestionBank";
 import {
   createGoalFitOrderFromApi,
+  getGoalFitOrderFromApi,
   markGoalFitApiOrderPaid,
   type GoalFitOrder
 } from "../lib/goalFitOrderStore";
@@ -135,6 +137,9 @@ function GoalFitUnlockPage() {
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
   const [orderError, setOrderError] = useState("");
+  const [qrCodeDataUrl, setQrCodeDataUrl] = useState("");
+  const fullResultPath = buildFullResultPath(context);
+  const freeResultPath = buildFreeResultPath(context);
 
   useEffect(() => {
     if (!context.result || !context.sessionId || isUnlocked) return;
@@ -152,7 +157,7 @@ function GoalFitUnlockPage() {
           sessionId: context.sessionId,
           accessMode: context.hasShareCardCoupon ? "share_coupon" : "direct",
           couponCode: context.hasShareCardCoupon ? "share_card" : null,
-          paymentMode: "mock"
+          paymentMode: PAYMENT_MODE
         });
 
         if (!ignore) setOrder(createdOrder);
@@ -170,13 +175,84 @@ function GoalFitUnlockPage() {
     };
   }, [context.hasShareCardCoupon, context.result, context.sessionId, isUnlocked]);
 
+  useEffect(() => {
+    let ignore = false;
+
+    async function buildQrCode(): Promise<void> {
+      if (!order?.wechatCodeUrl) {
+        setQrCodeDataUrl("");
+        return;
+      }
+
+      try {
+        const QRCode = await import("qrcode");
+        const dataUrl = await QRCode.toDataURL(order.wechatCodeUrl, {
+          margin: 1,
+          width: 220,
+          color: {
+            dark: "#24372f",
+            light: "#fffaf0"
+          }
+        });
+
+        if (!ignore) setQrCodeDataUrl(dataUrl);
+      } catch {
+        if (!ignore) setOrderError("二维码生成失败，请稍后刷新重试。");
+      }
+    }
+
+    void buildQrCode();
+
+    return () => {
+      ignore = true;
+    };
+  }, [order?.wechatCodeUrl]);
+
+  useEffect(() => {
+    if (!order?.orderId || PAYMENT_MODE !== "native" || isUnlocked) return;
+
+    const orderId = order.orderId;
+    const startedAt = Date.now();
+    const maxPollingMs = 10 * 60 * 1000;
+    let ignore = false;
+
+    async function pollOrder(): Promise<void> {
+      if (ignore) return;
+      if (Date.now() - startedAt > maxPollingMs) return;
+
+      try {
+        const latestOrder = await getGoalFitOrderFromApi(orderId);
+        if (ignore) return;
+        setOrder(latestOrder);
+
+        if (latestOrder.status === "paid" && context.sessionId) {
+          if (!context.isSample) {
+            markGoalFitReportUnlocked(context.sessionId);
+          }
+          setIsUnlocked(true);
+          navigateTo(fullResultPath);
+        }
+      } catch {
+        // Keep polling quiet; the manual refresh button still exposes a recoverable path.
+      }
+    }
+
+    const intervalId = window.setInterval(() => {
+      void pollOrder();
+    }, 2000);
+
+    void pollOrder();
+
+    return () => {
+      ignore = true;
+      window.clearInterval(intervalId);
+    };
+  }, [context.isSample, context.sessionId, fullResultPath, isUnlocked, order?.orderId]);
+
   if (!context.result || !context.sessionId) return <MissingUnlockPage />;
 
-  const fullResultPath = buildFullResultPath(context);
-  const freeResultPath = buildFreeResultPath(context);
-  const developmentPaymentEnabled = isDevelopmentPaymentEnabled();
+  const developmentPaymentEnabled = isDevelopmentPaymentEnabled() && PAYMENT_MODE === "mock";
   const displayedOriginalAmount = order?.originalAmountCents ?? 1990;
-  const displayedDiscountAmount = order?.discountAmountCents ?? (context.hasShareCardCoupon ? 1000 : 0);
   const displayedPayAmount = order?.payAmountCents ?? (context.hasShareCardCoupon ? 990 : 1990);
 
   async function handleMarkPaid(): Promise<void> {
@@ -194,6 +270,30 @@ function GoalFitUnlockPage() {
       navigateTo(fullResultPath);
     } catch {
       setOrderError("支付状态更新失败，请稍后重试。");
+    } finally {
+      setIsMarkingPaid(false);
+    }
+  }
+
+  async function handleRefreshOrderStatus(): Promise<void> {
+    if (!context.sessionId || !order?.orderId) return;
+
+    setIsMarkingPaid(true);
+    setOrderError("");
+
+    try {
+      const latestOrder = await getGoalFitOrderFromApi(order.orderId);
+      setOrder(latestOrder);
+
+      if (latestOrder.status === "paid") {
+        if (!context.isSample) {
+          markGoalFitReportUnlocked(context.sessionId);
+        }
+        setIsUnlocked(true);
+        navigateTo(fullResultPath);
+      }
+    } catch {
+      setOrderError("暂时无法刷新订单状态，请稍后重试。");
     } finally {
       setIsMarkingPaid(false);
     }
@@ -271,7 +371,25 @@ function GoalFitUnlockPage() {
               </div>
             ) : null}
             {orderError ? <p className="goal-fit-unlock-error">{orderError}</p> : null}
-            {developmentPaymentEnabled ? (
+            {PAYMENT_MODE === "native" ? (
+              <div className="goal-fit-unlock-wechat-pay">
+                <strong>微信扫码支付</strong>
+                <p>请使用微信扫码完成支付，支付成功后页面会自动进入完整报告。</p>
+                {qrCodeDataUrl ? (
+                  <img src={qrCodeDataUrl} alt="微信支付二维码" />
+                ) : (
+                  <div className="goal-fit-unlock-qrcode-placeholder">正在生成二维码...</div>
+                )}
+                <button
+                  className="secondary-button"
+                  type="button"
+                  disabled={!order || isMarkingPaid}
+                  onClick={handleRefreshOrderStatus}
+                >
+                  {isMarkingPaid ? "正在刷新状态" : "我已支付，刷新状态"}
+                </button>
+              </div>
+            ) : developmentPaymentEnabled ? (
               <button
                 className="primary-button"
                 type="button"

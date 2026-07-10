@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import GoalFitHeader from "../components/GoalFitHeader";
+import { IS_PRODUCTION } from "../config/api";
 import { buildGoalFitResult } from "../lib/goalFitResultBuilder";
 import { goalFitQuestionBank } from "../lib/goalFitQuestionBank";
 import { selectGoalFitQuestions } from "../lib/goalFitQuestionSelector";
@@ -735,7 +736,9 @@ function GoalFitResultPage() {
   const [currentResultScreen, setCurrentResultScreen] = useState(() => getInitialResultScreen());
   const reportContext = getReportContextFromUrl();
   const [apiUnlocked, setApiUnlocked] = useState<boolean | null>(reportContext.isSample ? true : null);
-  const [unlockCheckComplete, setUnlockCheckComplete] = useState(reportContext.isSample || reportContext.isUnlocked);
+  const [unlockCheckComplete, setUnlockCheckComplete] = useState(
+    reportContext.isSample || (!IS_PRODUCTION && reportContext.isUnlocked)
+  );
   const result = reportContext.result;
   const openedAtBreakdown = new URLSearchParams(window.location.search).get("section") === "breakdown";
 
@@ -777,7 +780,8 @@ function GoalFitResultPage() {
     );
   }
 
-  const hasUnlockedAccess = reportContext.isSample || apiUnlocked === true || reportContext.isUnlocked;
+  const hasUnlockedAccess =
+    reportContext.isSample || apiUnlocked === true || (!IS_PRODUCTION && reportContext.isUnlocked);
 
   if (!reportContext.isSample && reportContext.sessionId && !hasUnlockedAccess) {
     return <LockedReportPage sessionId={reportContext.sessionId} />;

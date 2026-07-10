@@ -1,6 +1,7 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import { serverConfig } from "./config.js";
 import { initializeDatabase } from "./db.js";
 import {
   createOrder,
@@ -11,16 +12,17 @@ import {
   isPaymentMode,
   updateOrderStatus
 } from "./orders.js";
-import { createWechatNativePayment } from "./wechatPay.js";
+import { getWechatNotifyHeaders, handleWechatNotify } from "./wechatNotify.js";
+import { createWechatNativeOrder } from "./wechatPay.js";
 import type { CouponCode } from "./types.js";
 
 dotenv.config();
 initializeDatabase();
 
 const app = express();
-const port = Number(process.env.PORT || 3001);
-const nodeEnv = process.env.NODE_ENV || "development";
-const frontendOrigin = process.env.FRONTEND_ORIGIN || "http://127.0.0.1:5173";
+const port = serverConfig.port;
+const nodeEnv = serverConfig.nodeEnv;
+const frontendOrigin = serverConfig.frontendOrigin;
 
 app.use(
   cors({
@@ -28,6 +30,26 @@ app.use(
     credentials: false
   })
 );
+
+app.post("/api/wechat/notify", express.raw({ type: "application/json" }), async (req, res) => {
+  try {
+    const rawBody = Buffer.isBuffer(req.body) ? req.body : Buffer.from(req.body);
+    const headers = getWechatNotifyHeaders(req.headers);
+    await handleWechatNotify(rawBody, headers);
+
+    res.json({
+      code: "SUCCESS",
+      message: "成功"
+    });
+  } catch (error) {
+    console.error("[wechat-notify]", error instanceof Error ? error.message : error);
+    res.status(400).json({
+      code: "FAIL",
+      message: "失败原因"
+    });
+  }
+});
+
 app.use(express.json());
 
 app.get("/api/health", (_req, res) => {
@@ -35,7 +57,8 @@ app.get("/api/health", (_req, res) => {
 });
 
 app.post("/api/orders/create", async (req, res) => {
-  const { sessionId, accessMode, couponCode, paymentMode } = req.body as Record<string, unknown>;
+  const { sessionId, accessMode, couponCode } = req.body as Record<string, unknown>;
+  const requestedPaymentMode = (req.body as Record<string, unknown>).paymentMode ?? serverConfig.paymentMode;
 
   if (typeof sessionId !== "string" || sessionId.trim().length === 0) {
     res.status(400).json({ error: "sessionId is required" });
@@ -54,12 +77,12 @@ app.post("/api/orders/create", async (req, res) => {
     return;
   }
 
-  if (!isPaymentMode(paymentMode)) {
+  if (!isPaymentMode(requestedPaymentMode)) {
     res.status(400).json({ error: "paymentMode is invalid" });
     return;
   }
 
-  if (paymentMode === "mock" && nodeEnv === "production") {
+  if (requestedPaymentMode === "mock" && nodeEnv === "production") {
     res.status(403).json({ error: "mock payment is not available in production" });
     return;
   }
@@ -68,16 +91,22 @@ app.post("/api/orders/create", async (req, res) => {
     sessionId: sessionId.trim(),
     accessMode,
     couponCode: normalizedCouponCode,
-    paymentMode
+    paymentMode: requestedPaymentMode
   });
 
-  if (paymentMode === "native") {
-    const payment = await createWechatNativePayment(order);
-    res.status(202).json({
-      ...order,
-      payment
-    });
-    return;
+  if (requestedPaymentMode === "native") {
+    try {
+      const payment = await createWechatNativeOrder(order);
+      res.status(202).json({
+        ...payment.order,
+        wechatCodeUrl: payment.codeUrl
+      });
+      return;
+    } catch (error) {
+      console.error("[wechat-native-order]", error instanceof Error ? error.message : error);
+      res.status(502).json({ error: "支付订单创建失败，请稍后重试。" });
+      return;
+    }
   }
 
   res.json(order);

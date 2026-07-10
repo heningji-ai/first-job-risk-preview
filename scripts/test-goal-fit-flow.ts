@@ -26,6 +26,15 @@ const sharePagePath = path.join(projectRoot, "src", "pages", "GoalFitSharePage.t
 const unlockPagePath = path.join(projectRoot, "src", "pages", "GoalFitUnlockPage.tsx");
 const resultPagePath = path.join(projectRoot, "src", "pages", "GoalFitResultPage.tsx");
 const orderStorePath = path.join(projectRoot, "src", "lib", "goalFitOrderStore.ts");
+const apiConfigPath = path.join(projectRoot, "src", "config", "api.ts");
+const serverPackagePath = path.join(projectRoot, "server", "package.json");
+const serverDbPath = path.join(projectRoot, "server", "src", "db.ts");
+const serverWechatPayPath = path.join(projectRoot, "server", "src", "wechatPay.ts");
+const serverWechatNotifyPath = path.join(projectRoot, "server", "src", "wechatNotify.ts");
+const serverWechatPlatformCertsPath = path.join(projectRoot, "server", "src", "wechatPlatformCerts.ts");
+const serverCryptoPath = path.join(projectRoot, "server", "src", "crypto.ts");
+const serverIndexPath = path.join(projectRoot, "server", "src", "index.ts");
+const serverGitignorePath = path.join(projectRoot, "server", ".gitignore");
 const headerPath = path.join(projectRoot, "src", "components", "GoalFitHeader.tsx");
 const stylesPath = path.join(projectRoot, "src", "styles", "global.css");
 const questionBank = JSON.parse(fs.readFileSync(questionsPath, "utf8")) as GoalFitQuestionBank;
@@ -130,6 +139,15 @@ const sharePageSource = fs.readFileSync(sharePagePath, "utf8");
 const unlockPageSource = fs.readFileSync(unlockPagePath, "utf8");
 const resultPageSource = fs.readFileSync(resultPagePath, "utf8");
 const orderStoreSource = fs.readFileSync(orderStorePath, "utf8");
+const apiConfigSource = fs.readFileSync(apiConfigPath, "utf8");
+const serverPackageSource = fs.readFileSync(serverPackagePath, "utf8");
+const serverDbSource = fs.readFileSync(serverDbPath, "utf8");
+const serverWechatPaySource = fs.readFileSync(serverWechatPayPath, "utf8");
+const serverWechatNotifySource = fs.readFileSync(serverWechatNotifyPath, "utf8");
+const serverWechatPlatformCertsSource = fs.readFileSync(serverWechatPlatformCertsPath, "utf8");
+const serverCryptoSource = fs.readFileSync(serverCryptoPath, "utf8");
+const serverIndexSource = fs.readFileSync(serverIndexPath, "utf8");
+const serverGitignoreSource = fs.readFileSync(serverGitignorePath, "utf8");
 const headerSource = fs.readFileSync(headerPath, "utf8");
 const stylesSource = fs.readFileSync(stylesPath, "utf8");
 
@@ -344,6 +362,7 @@ assert(
 assert(
   orderStoreSource.includes("createGoalFitOrderFromApi") &&
     orderStoreSource.includes("/api/orders/create") &&
+    orderStoreSource.includes("getGoalFitOrderFromApi") &&
     orderStoreSource.includes("markGoalFitApiOrderPaid") &&
     orderStoreSource.includes("/mock-paid") &&
     orderStoreSource.includes("getGoalFitUnlockStatusFromApi") &&
@@ -352,26 +371,97 @@ assert(
 );
 assert(
   unlockPageSource.includes("createGoalFitOrderFromApi") &&
+    unlockPageSource.includes("QRCode.toDataURL") &&
+    unlockPageSource.includes("getGoalFitOrderFromApi") &&
     unlockPageSource.includes("markGoalFitApiOrderPaid") &&
     unlockPageSource.includes('accessMode: context.hasShareCardCoupon ? "share_coupon" : "direct"') &&
     unlockPageSource.includes('couponCode: context.hasShareCardCoupon ? "share_card" : null') &&
-    unlockPageSource.includes('paymentMode: "mock"') &&
+    unlockPageSource.includes("paymentMode: PAYMENT_MODE") &&
     unlockPageSource.includes("原价") &&
     unlockPageSource.includes("优惠 ¥10") &&
     unlockPageSource.includes("应付") &&
     unlockPageSource.includes("formatYuan(displayedPayAmount)") &&
+    unlockPageSource.includes("微信扫码支付") &&
+    unlockPageSource.includes("我已支付，刷新状态") &&
     unlockPageSource.includes("开发环境：标记为已支付"),
-  "GoalFitUnlockPage must create backend orders, show direct/coupon amounts, and use the development paid marker"
+  "GoalFitUnlockPage must create backend orders, show direct/coupon amounts, QR payment, polling, and the development paid marker"
 );
-["模拟支付", "测试支付", "mock pay"].forEach((text) => {
+["模拟支付", "测试支付", "mock pay", "Native Pay", "API v3", "code_url", "notify_url", "mchid", "appid", "serial_no"].forEach((text) => {
   assert(!unlockPageSource.includes(text), `GoalFitUnlockPage must not expose forbidden payment wording: ${text}`);
 });
 assert(
   resultPageSource.includes("getGoalFitUnlockStatusFromApi") &&
+    resultPageSource.includes("IS_PRODUCTION") &&
     resultPageSource.includes("正在确认解锁状态") &&
     resultPageSource.includes("LockedReportPage") &&
-    resultPageSource.includes("apiUnlocked === true || reportContext.isUnlocked"),
-  "GoalFitResultPage must check backend unlock status and keep local development compatibility"
+    resultPageSource.includes("apiUnlocked === true || (!IS_PRODUCTION && reportContext.isUnlocked)"),
+  "GoalFitResultPage must check backend unlock status and only keep local compatibility outside production"
+);
+assert(
+  apiConfigSource.includes("VITE_PAYMENT_MODE") &&
+    apiConfigSource.includes('viteEnv?.PROD ? "native" : "mock"'),
+  "api config must default to native in production and mock in local development"
+);
+assert(
+  serverPackageSource.includes('"engines"') &&
+    serverPackageSource.includes('"node": ">=24"') &&
+    !serverPackageSource.includes("better-sqlite3") &&
+    !serverPackageSource.includes('"sqlite3"'),
+  "server package must require Node >=24 and avoid third-party SQLite native dependencies"
+);
+assert(
+  serverDbSource.includes('from "node:sqlite"') &&
+    serverDbSource.includes("wechatTransactionId") &&
+    serverDbSource.includes("ALTER TABLE orders ADD COLUMN wechatTransactionId"),
+  "server db must keep node:sqlite and persist WeChat transaction ids"
+);
+assert(
+  serverWechatPaySource.includes("createWechatNativeOrder") &&
+    serverWechatPaySource.includes("/v3/pay/transactions/native") &&
+    serverWechatPaySource.includes("order.payAmountCents") &&
+    serverWechatPaySource.includes("saveWechatNativePayment") &&
+    serverWechatPaySource.includes("支付订单创建失败") === false,
+  "wechatPay must create native orders with backend-calculated amount and no frontend-facing sensitive error"
+);
+assert(
+  serverCryptoSource.includes("WECHATPAY2-SHA256-RSA2048") &&
+    serverCryptoSource.includes("RSA-SHA256") &&
+    serverCryptoSource.includes("aes-256-gcm") &&
+    serverCryptoSource.includes("readPrivateKey") &&
+    serverCryptoSource.includes("decryptWechatResource"),
+  "crypto helpers must implement WeChat signing and AES-GCM resource decryption"
+);
+assert(
+  serverWechatPlatformCertsSource.includes("/v3/certificates") &&
+    serverWechatPlatformCertsSource.includes("decryptWechatResource<string>") &&
+    serverWechatPlatformCertsSource.includes("cachedCertificates") &&
+    serverWechatPlatformCertsSource.includes("getWechatPlatformCertificate"),
+  "platform certificate module must fetch, decrypt, cache and select certificates"
+);
+assert(
+  serverWechatNotifySource.includes("handleWechatNotify") &&
+    serverWechatNotifySource.includes("verifyWechatSignature") &&
+    serverWechatNotifySource.includes("decryptWechatResource<WechatTransaction>") &&
+    serverWechatNotifySource.includes('transaction.trade_state !== "SUCCESS"') &&
+    serverWechatNotifySource.includes("paidAmount !== order.payAmountCents") &&
+    serverWechatNotifySource.includes("markOrderPaidByOutTradeNo") &&
+    serverWechatNotifySource.includes('order.status === "paid"'),
+  "wechat notify handler must verify signature, decrypt resource, check amount and update paid idempotently"
+);
+assert(
+  serverIndexSource.indexOf('/api/wechat/notify", express.raw') < serverIndexSource.indexOf("app.use(express.json())") &&
+    serverIndexSource.includes("handleWechatNotify") &&
+    serverIndexSource.includes("mock payment is not available in production"),
+  "server index must register raw notify route before express.json and keep production mock blocked"
+);
+[".env", "*.db", "*.sqlite", "certs/", "apiclient_key.pem", "apiclient_cert.pem"].forEach((text) => {
+  assert(serverGitignoreSource.includes(text), `server .gitignore must contain ${text}`);
+});
+assert(
+  !serverPackageSource.includes("WECHAT_PAY_API_V3_KEY") &&
+    !serverWechatPaySource.includes("WECHAT_PAY_API_V3_KEY=") &&
+    !serverCryptoSource.includes("WECHAT_PAY_API_V3_KEY="),
+  "server code must not contain real WeChat Pay secret values"
 );
 assert(
   pageSource.includes("/goal-fit-roadmap.png") &&

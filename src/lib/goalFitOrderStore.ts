@@ -26,6 +26,7 @@ export type GoalFitOrder = {
   paymentMode?: GoalFitPaymentMode;
   wechatPrepayId?: string | null;
   wechatCodeUrl?: string | null;
+  wechatTransactionId?: string | null;
   currency: "CNY";
   createdAt: string;
   updatedAt?: string;
@@ -200,6 +201,11 @@ export async function markGoalFitApiOrderPaid(orderId: string): Promise<GoalFitO
     body: JSON.stringify({})
   });
 
+  return normalizeApiOrder(order);
+}
+
+export async function getGoalFitOrderFromApi(orderId: string): Promise<GoalFitOrder> {
+  const order = await requestJson<GoalFitOrder>(`/api/orders/${encodeURIComponent(orderId)}`);
   return normalizeApiOrder(order);
 }
 

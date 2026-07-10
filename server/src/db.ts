@@ -29,6 +29,7 @@ export function initializeDatabase(): void {
       paymentMode TEXT NOT NULL,
       wechatPrepayId TEXT,
       wechatCodeUrl TEXT,
+      wechatTransactionId TEXT,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
       paidAt TEXT
@@ -36,5 +37,15 @@ export function initializeDatabase(): void {
 
     CREATE INDEX IF NOT EXISTS idx_orders_session_status
       ON orders (sessionId, status, updatedAt);
+
+    CREATE INDEX IF NOT EXISTS idx_orders_out_trade_no
+      ON orders (outTradeNo);
   `);
+
+  const columns = db.prepare("PRAGMA table_info(orders)").all() as Array<{ name: string }>;
+  const columnNames = new Set(columns.map((column) => column.name));
+
+  if (!columnNames.has("wechatTransactionId")) {
+    db.exec("ALTER TABLE orders ADD COLUMN wechatTransactionId TEXT");
+  }
 }

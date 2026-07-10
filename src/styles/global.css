@@ -3811,6 +3811,51 @@ p {
   color: #8b3f2a;
 }
 
+.goal-fit-unlock-wechat-pay {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  border: 1px solid rgba(207, 218, 197, 0.9);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255, 252, 244, 0.88);
+  text-align: center;
+}
+
+.goal-fit-unlock-wechat-pay strong {
+  color: #253a33;
+  font-size: 17px;
+}
+
+.goal-fit-unlock-wechat-pay p {
+  margin: 0;
+  color: #5d6b62;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.goal-fit-unlock-wechat-pay img,
+.goal-fit-unlock-qrcode-placeholder {
+  width: 220px;
+  max-width: 100%;
+  border: 1px solid rgba(139, 130, 101, 0.2);
+  border-radius: 16px;
+  background: #fffaf0;
+}
+
+.goal-fit-unlock-wechat-pay img {
+  display: block;
+  height: auto;
+}
+
+.goal-fit-unlock-qrcode-placeholder {
+  display: grid;
+  min-height: 220px;
+  place-items: center;
+  color: #6f7b72;
+  font-size: 14px;
+}
+
 .goal-fit-unlock-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(320px, 0.42fr);
