@@ -11,6 +11,7 @@ function getDefaultPaymentMode(nodeEnv: string): PaymentModeConfig {
 }
 
 const nodeEnv = getEnv("NODE_ENV", "development");
+const wechatPayPublicKeyPath = getEnv("WECHAT_PAY_PUBLIC_KEY_PATH");
 
 export const serverConfig = {
   port: Number(getEnv("PORT", "3001")),
@@ -23,6 +24,8 @@ export const serverConfig = {
     certSerialNo: getEnv("WECHAT_PAY_CERT_SERIAL_NO"),
     apiV3Key: getEnv("WECHAT_PAY_API_V3_KEY"),
     privateKeyPath: path.resolve(process.cwd(), getEnv("WECHAT_PAY_PRIVATE_KEY_PATH", "./certs/apiclient_key.pem")),
+    publicKeyId: getEnv("WECHAT_PAY_PUBLIC_KEY_ID"),
+    publicKeyPath: wechatPayPublicKeyPath ? path.resolve(process.cwd(), wechatPayPublicKeyPath) : "",
     notifyUrl: getEnv("WECHAT_PAY_NOTIFY_URL"),
     description: getEnv("WECHAT_PAY_DESCRIPTION", "第一份工作风险预演完整报告")
   }

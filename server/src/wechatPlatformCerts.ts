@@ -43,6 +43,7 @@ async function fetchWechatPlatformCertificates(): Promise<PlatformCertificate[]>
     method,
     headers: {
       Accept: "application/json",
+      "Accept-Language": "zh-CN",
       Authorization: authorization,
       "Content-Type": "application/json",
       "User-Agent": "first-job-risk-preview-server"

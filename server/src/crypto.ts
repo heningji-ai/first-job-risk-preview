@@ -14,6 +14,14 @@ export function readPrivateKey(): string {
   return fs.readFileSync(serverConfig.wechatPay.privateKeyPath, "utf8");
 }
 
+export function readWechatPayPublicKey(): string {
+  if (!serverConfig.wechatPay.publicKeyPath) {
+    throw new Error("WeChat Pay public key is not configured.");
+  }
+
+  return fs.readFileSync(serverConfig.wechatPay.publicKeyPath, "utf8");
+}
+
 export function signWithMerchantPrivateKey(message: string): string {
   return crypto.createSign("RSA-SHA256").update(message, "utf8").sign(readPrivateKey(), "base64");
 }

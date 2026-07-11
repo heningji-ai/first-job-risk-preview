@@ -1,4 +1,5 @@
-import { decryptWechatResource, verifyWechatSignature } from "./crypto.js";
+import { serverConfig } from "./config.js";
+import { decryptWechatResource, readWechatPayPublicKey, verifyWechatSignature } from "./crypto.js";
 import { getOrderByOutTradeNo, markOrderPaidByOutTradeNo } from "./orders.js";
 import type { WechatNotifyPayload, WechatTransaction } from "./types.js";
 import { getWechatPlatformCertificate } from "./wechatPlatformCerts.js";
@@ -33,20 +34,49 @@ export function getWechatNotifyHeaders(headers: Record<string, string | string[]
   };
 }
 
-export async function handleWechatNotify(rawBody: Buffer, headers: WechatNotifyHeaders): Promise<void> {
-  console.log(`[wechat-notify] received serial=${headers.serial}`);
+function isWechatPayPublicKeySerial(serial: string): boolean {
+  return serial.startsWith("PUB_KEY_ID_");
+}
 
-  const certificate = await getWechatPlatformCertificate(headers.serial);
+function getWechatPayPublicKeyForNotify(serial: string): string {
+  if (!serverConfig.wechatPay.publicKeyId || !serverConfig.wechatPay.publicKeyPath) {
+    throw new Error("WeChat Pay public key is not configured.");
+  }
+
+  if (serial !== serverConfig.wechatPay.publicKeyId) {
+    console.error(
+      `[wechat-notify] WeChat Pay public key id mismatch: received=${serial} configured=${serverConfig.wechatPay.publicKeyId}`
+    );
+    throw new Error("WeChat Pay public key id mismatch.");
+  }
+
+  return readWechatPayPublicKey();
+}
+
+async function getVerifierKeyForNotify(serial: string): Promise<string> {
+  if (isWechatPayPublicKeySerial(serial)) {
+    return getWechatPayPublicKeyForNotify(serial);
+  }
+
+  const certificate = await getWechatPlatformCertificate(serial);
   if (!certificate) {
     throw new Error("WeChat platform certificate not found.");
   }
+
+  return certificate;
+}
+
+export async function handleWechatNotify(rawBody: Buffer, headers: WechatNotifyHeaders): Promise<void> {
+  console.log(`[wechat-notify] received serial=${headers.serial}`);
+
+  const verifierKey = await getVerifierKeyForNotify(headers.serial);
 
   const verified = verifyWechatSignature({
     timestamp: headers.timestamp,
     nonce: headers.nonce,
     body: rawBody,
     signature: headers.signature,
-    certificate
+    certificate: verifierKey
   });
 
   if (!verified) {

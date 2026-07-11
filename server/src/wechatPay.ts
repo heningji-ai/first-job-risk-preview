@@ -39,6 +39,7 @@ export async function createWechatNativeOrder(order: OrderRecord): Promise<Wecha
     method,
     headers: {
       Accept: "application/json",
+      "Accept-Language": "zh-CN",
       Authorization: authorization,
       "Content-Type": "application/json",
       "User-Agent": "first-job-risk-preview-server"
