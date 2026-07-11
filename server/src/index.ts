@@ -9,7 +9,6 @@ import {
   getPaidOrderBySessionId,
   isAccessMode,
   isCouponCode,
-  isPaymentMode,
   updateOrderStatus
 } from "./orders.js";
 import { getWechatNotifyHeaders, handleWechatNotify } from "./wechatNotify.js";
@@ -58,7 +57,7 @@ app.get("/api/health", (_req, res) => {
 
 app.post("/api/orders/create", async (req, res) => {
   const { sessionId, accessMode, couponCode } = req.body as Record<string, unknown>;
-  const requestedPaymentMode = (req.body as Record<string, unknown>).paymentMode ?? serverConfig.paymentMode;
+  const paymentMode = serverConfig.paymentMode;
 
   if (typeof sessionId !== "string" || sessionId.trim().length === 0) {
     res.status(400).json({ error: "sessionId is required" });
@@ -77,12 +76,12 @@ app.post("/api/orders/create", async (req, res) => {
     return;
   }
 
-  if (!isPaymentMode(requestedPaymentMode)) {
+  if (paymentMode !== "mock" && paymentMode !== "native") {
     res.status(400).json({ error: "paymentMode is invalid" });
     return;
   }
 
-  if (requestedPaymentMode === "mock" && nodeEnv === "production") {
+  if (paymentMode === "mock" && nodeEnv === "production") {
     res.status(403).json({ error: "mock payment is not available in production" });
     return;
   }
@@ -91,10 +90,10 @@ app.post("/api/orders/create", async (req, res) => {
     sessionId: sessionId.trim(),
     accessMode,
     couponCode: normalizedCouponCode,
-    paymentMode: requestedPaymentMode
+    paymentMode
   });
 
-  if (requestedPaymentMode === "native") {
+  if (paymentMode === "native") {
     try {
       const payment = await createWechatNativeOrder(order);
       res.status(202).json({

@@ -376,17 +376,21 @@ assert(
     unlockPageSource.includes("markGoalFitApiOrderPaid") &&
     unlockPageSource.includes('accessMode: context.hasShareCardCoupon ? "share_coupon" : "direct"') &&
     unlockPageSource.includes('couponCode: context.hasShareCardCoupon ? "share_card" : null') &&
-    unlockPageSource.includes("paymentMode: PAYMENT_MODE") &&
+    !unlockPageSource.includes("paymentMode: PAYMENT_MODE") &&
+    !unlockPageSource.includes("PAYMENT_MODE") &&
+    unlockPageSource.includes("order?.wechatCodeUrl ?") &&
+    unlockPageSource.includes("isMockOrder") &&
+    unlockPageSource.includes("确认解锁完整报告") &&
     unlockPageSource.includes("原价") &&
     unlockPageSource.includes("优惠 ¥10") &&
     unlockPageSource.includes("应付") &&
     unlockPageSource.includes("formatYuan(displayedPayAmount)") &&
     unlockPageSource.includes("微信扫码支付") &&
     unlockPageSource.includes("我已支付，刷新状态") &&
-    unlockPageSource.includes("开发环境：标记为已支付"),
-  "GoalFitUnlockPage must create backend orders, show direct/coupon amounts, QR payment, polling, and the development paid marker"
+    !unlockPageSource.includes("开发环境"),
+  "GoalFitUnlockPage must create backend orders without frontend paymentMode, show QR only when code URL exists, and use neutral mock unlock copy"
 );
-["模拟支付", "测试支付", "mock pay", "Native Pay", "API v3", "code_url", "notify_url", "mchid", "appid", "serial_no"].forEach((text) => {
+["模拟支付", "测试支付", "mock pay", "Native Pay", "API v3", "code_url", "notify_url", "mchid", "appid", "serial_no", "开发", "debug"].forEach((text) => {
   assert(!unlockPageSource.includes(text), `GoalFitUnlockPage must not expose forbidden payment wording: ${text}`);
 });
 assert(
@@ -451,8 +455,10 @@ assert(
 assert(
   serverIndexSource.indexOf('/api/wechat/notify", express.raw') < serverIndexSource.indexOf("app.use(express.json())") &&
     serverIndexSource.includes("handleWechatNotify") &&
+    serverIndexSource.includes("const paymentMode = serverConfig.paymentMode") &&
+    !serverIndexSource.includes("req.body as Record<string, unknown>).paymentMode") &&
     serverIndexSource.includes("mock payment is not available in production"),
-  "server index must register raw notify route before express.json and keep production mock blocked"
+  "server index must register raw notify route before express.json, ignore request paymentMode, and keep production mock blocked"
 );
 [".env", "*.db", "*.sqlite", "certs/", "apiclient_key.pem", "apiclient_cert.pem"].forEach((text) => {
   assert(serverGitignoreSource.includes(text), `server .gitignore must contain ${text}`);

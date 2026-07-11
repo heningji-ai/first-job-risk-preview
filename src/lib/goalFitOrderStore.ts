@@ -37,7 +37,6 @@ export type CreateGoalFitOrderRequest = {
   sessionId: string;
   accessMode: GoalFitAccessMode;
   couponCode: "share_card" | null;
-  paymentMode: GoalFitPaymentMode;
 };
 
 export type GoalFitUnlockStatus = {
