@@ -44,11 +44,16 @@ async function fetchWechatPlatformCertificates(): Promise<PlatformCertificate[]>
     headers: {
       Accept: "application/json",
       Authorization: authorization,
+      "Content-Type": "application/json",
       "User-Agent": "first-job-risk-preview-server"
     }
   });
 
   if (!response.ok) {
+    const errorBody = await response.text();
+    console.error(
+      `[wechat-platform-certs] Failed to fetch WeChat platform certificates: ${response.status} ${errorBody}`
+    );
     throw new Error(`Failed to fetch WeChat platform certificates: ${response.status}`);
   }
 

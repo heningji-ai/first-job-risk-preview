@@ -34,6 +34,8 @@ export function getWechatNotifyHeaders(headers: Record<string, string | string[]
 }
 
 export async function handleWechatNotify(rawBody: Buffer, headers: WechatNotifyHeaders): Promise<void> {
+  console.log(`[wechat-notify] received serial=${headers.serial}`);
+
   const certificate = await getWechatPlatformCertificate(headers.serial);
   if (!certificate) {
     throw new Error("WeChat platform certificate not found.");
