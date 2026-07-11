@@ -15,7 +15,7 @@ export function readPrivateKey(): string {
 }
 
 export function signWithMerchantPrivateKey(message: string): string {
-  return crypto.createSign("RSA-SHA256").update(message).sign(readPrivateKey(), "base64");
+  return crypto.createSign("RSA-SHA256").update(message, "utf8").sign(readPrivateKey(), "base64");
 }
 
 export function signWechatPayRequest(
@@ -44,14 +44,15 @@ export function buildAuthorizationHeader(params: {
     params.body
   );
 
-  return [
-    'WECHATPAY2-SHA256-RSA2048',
+  const authorizationParams = [
     `mchid="${serverConfig.wechatPay.mchId}"`,
     `nonce_str="${params.nonce}"`,
     `signature="${signature}"`,
     `timestamp="${params.timestamp}"`,
     `serial_no="${serverConfig.wechatPay.certSerialNo}"`
   ].join(",");
+
+  return `WECHATPAY2-SHA256-RSA2048 ${authorizationParams}`;
 }
 
 export function decryptWechatResource<T>(resource: {
@@ -88,5 +89,5 @@ export function verifyWechatSignature(params: {
   const body = Buffer.isBuffer(params.body) ? params.body.toString("utf8") : params.body;
   const message = `${params.timestamp}\n${params.nonce}\n${body}\n`;
 
-  return crypto.createVerify("RSA-SHA256").update(message).verify(params.certificate, params.signature, "base64");
+  return crypto.createVerify("RSA-SHA256").update(message, "utf8").verify(params.certificate, params.signature, "base64");
 }

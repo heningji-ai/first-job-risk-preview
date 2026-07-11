@@ -47,6 +47,8 @@ export async function createWechatNativeOrder(order: OrderRecord): Promise<Wecha
   });
 
   if (!response.ok) {
+    const errorBody = await response.text();
+    console.error(`[wechat-native-order] WeChat Native order failed: ${response.status} ${errorBody}`);
     await updateOrderStatus(order.id, "failed");
     throw new Error(`WeChat Native order failed: ${response.status}`);
   }
