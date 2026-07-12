@@ -28,6 +28,7 @@ const resultPagePath = path.join(projectRoot, "src", "pages", "GoalFitResultPage
 const orderStorePath = path.join(projectRoot, "src", "lib", "goalFitOrderStore.ts");
 const apiConfigPath = path.join(projectRoot, "src", "config", "api.ts");
 const serverPackagePath = path.join(projectRoot, "server", "package.json");
+const serverConfigPath = path.join(projectRoot, "server", "src", "config.ts");
 const serverDbPath = path.join(projectRoot, "server", "src", "db.ts");
 const serverWechatPayPath = path.join(projectRoot, "server", "src", "wechatPay.ts");
 const serverWechatNotifyPath = path.join(projectRoot, "server", "src", "wechatNotify.ts");
@@ -141,6 +142,7 @@ const resultPageSource = fs.readFileSync(resultPagePath, "utf8");
 const orderStoreSource = fs.readFileSync(orderStorePath, "utf8");
 const apiConfigSource = fs.readFileSync(apiConfigPath, "utf8");
 const serverPackageSource = fs.readFileSync(serverPackagePath, "utf8");
+const serverConfigSource = fs.readFileSync(serverConfigPath, "utf8");
 const serverDbSource = fs.readFileSync(serverDbPath, "utf8");
 const serverWechatPaySource = fs.readFileSync(serverWechatPayPath, "utf8");
 const serverWechatNotifySource = fs.readFileSync(serverWechatNotifyPath, "utf8");
@@ -414,6 +416,13 @@ assert(
   "server package must require Node >=24 and avoid third-party SQLite native dependencies"
 );
 assert(
+  serverConfigSource.includes("WECHAT_PAY_PUBLIC_KEY_ID") &&
+    serverConfigSource.includes("WECHAT_PAY_PUBLIC_KEY_PATH") &&
+    serverConfigSource.includes("publicKeyId") &&
+    serverConfigSource.includes("publicKeyPath"),
+  "server config must read WeChat Pay public key id and public key path"
+);
+assert(
   serverDbSource.includes('from "node:sqlite"') &&
     serverDbSource.includes("wechatTransactionId") &&
     serverDbSource.includes("ALTER TABLE orders ADD COLUMN wechatTransactionId"),
@@ -422,6 +431,7 @@ assert(
 assert(
   serverWechatPaySource.includes("createWechatNativeOrder") &&
     serverWechatPaySource.includes("/v3/pay/transactions/native") &&
+    serverWechatPaySource.includes('"Accept-Language": "zh-CN"') &&
     serverWechatPaySource.includes("order.payAmountCents") &&
     serverWechatPaySource.includes("saveWechatNativePayment") &&
     serverWechatPaySource.includes("支付订单创建失败") === false,
@@ -432,11 +442,13 @@ assert(
     serverCryptoSource.includes("RSA-SHA256") &&
     serverCryptoSource.includes("aes-256-gcm") &&
     serverCryptoSource.includes("readPrivateKey") &&
+    serverCryptoSource.includes("readWechatPayPublicKey") &&
     serverCryptoSource.includes("decryptWechatResource"),
-  "crypto helpers must implement WeChat signing and AES-GCM resource decryption"
+  "crypto helpers must implement WeChat signing, public key reading and AES-GCM resource decryption"
 );
 assert(
   serverWechatPlatformCertsSource.includes("/v3/certificates") &&
+    serverWechatPlatformCertsSource.includes('"Accept-Language": "zh-CN"') &&
     serverWechatPlatformCertsSource.includes("decryptWechatResource<string>") &&
     serverWechatPlatformCertsSource.includes("cachedCertificates") &&
     serverWechatPlatformCertsSource.includes("getWechatPlatformCertificate"),
@@ -445,12 +457,17 @@ assert(
 assert(
   serverWechatNotifySource.includes("handleWechatNotify") &&
     serverWechatNotifySource.includes("verifyWechatSignature") &&
+    serverWechatNotifySource.includes('startsWith("PUB_KEY_ID_")') &&
+    serverWechatNotifySource.includes("readWechatPayPublicKey") &&
+    serverWechatNotifySource.includes("WeChat Pay public key is not configured.") &&
+    serverWechatNotifySource.includes("WeChat Pay public key id mismatch.") &&
+    serverWechatNotifySource.includes("getWechatPlatformCertificate") &&
     serverWechatNotifySource.includes("decryptWechatResource<WechatTransaction>") &&
     serverWechatNotifySource.includes('transaction.trade_state !== "SUCCESS"') &&
     serverWechatNotifySource.includes("paidAmount !== order.payAmountCents") &&
     serverWechatNotifySource.includes("markOrderPaidByOutTradeNo") &&
     serverWechatNotifySource.includes('order.status === "paid"'),
-  "wechat notify handler must verify signature, decrypt resource, check amount and update paid idempotently"
+  "wechat notify handler must support public-key and platform-certificate signature verification, decrypt resource, check amount and update paid idempotently"
 );
 assert(
   serverIndexSource.indexOf('/api/wechat/notify", express.raw') < serverIndexSource.indexOf("app.use(express.json())") &&
