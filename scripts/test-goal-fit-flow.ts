@@ -256,13 +256,16 @@ assert(
   "保存分享图，领取优惠",
   "/images/goal-fit-share-poster.png",
   "goal-fit-share-poster-image",
-  "我已保存或分享，领取 ¥10 优惠券",
+  "领取优惠券，¥9.9 解锁完整报告",
   "coupon=share_card",
-  "复制分享文案",
+  "复制链接，发给同学也测一下",
   "返回完整报告",
-  "让同学也测一次"
+  "保存卡片，发给同学也测一下"
 ].forEach((text) => {
   assert(sharePageSource.includes(text), `GoalFitSharePage must contain copy: ${text}`);
+});
+["我已保存或分享，领取 ¥10 优惠券", "让同学也测一次"].forEach((text) => {
+  assert(!sharePageSource.includes(text), `GoalFitSharePage must not keep confusing share CTA copy: ${text}`);
 });
 ["匹配度", "公司类型：", "岗位类型：", "最大风险", "我的测试结果", "我的匹配度"].forEach(
   (text) => {
@@ -332,13 +335,13 @@ assert(
     freeResultPageSource.includes("主要风险") &&
     freeResultPageSource.includes("行动提醒") &&
     freeResultPageSource.includes("解锁完整报告") &&
-    freeResultPageSource.includes("分享给同学或朋友圈，领取 ¥10 优惠券") &&
+    freeResultPageSource.includes("领取 ¥10 优惠券，¥9.9 解锁完整报告") &&
+    freeResultPageSource.includes("保存求职方向卡，也可以发给同学一起测。") &&
     freeResultPageSource.includes("优惠后 ¥9.9 解锁完整报告") &&
-    freeResultPageSource.includes("保存分享图，领取 ¥10 优惠券") &&
+    freeResultPageSource.includes("不领取优惠，直接 ¥19.9 解锁") &&
     freeResultPageSource.includes("/goal-fit-share-preview?session=") &&
     freeResultPageSource.includes("/goal-fit-share-preview?sample=high_fit&mode=coupon") &&
     freeResultPageSource.includes("/images/goal-fit-share-poster.png") &&
-    freeResultPageSource.includes("解锁完整目标适配报告 ¥19.9") &&
     freeResultPageSource.includes("/goal-fit-unlock-preview?session="),
   "GoalFitFreeResultPage must build a diagnosis-first free result and keep unlock/share CTA logic"
 );
@@ -385,8 +388,14 @@ assert(
     unlockPageSource.includes("确认解锁完整报告") &&
     unlockPageSource.includes("原价") &&
     unlockPageSource.includes("优惠 ¥10") &&
+    unlockPageSource.includes("已使用 ¥10 优惠券") &&
+    unlockPageSource.includes("优惠后 ¥9.9 解锁完整报告") &&
+    unlockPageSource.includes("当前为标准价 ¥19.9") &&
+    unlockPageSource.includes("想优惠后 ¥9.9？返回领取 ¥10 优惠券") &&
+    unlockPageSource.includes("返回领取优惠券") &&
     unlockPageSource.includes("应付") &&
     unlockPageSource.includes("formatYuan(displayedPayAmount)") &&
+    unlockPageSource.includes("实际支付金额：") &&
     unlockPageSource.includes("微信扫码支付") &&
     unlockPageSource.includes("我已支付，刷新状态") &&
     !unlockPageSource.includes("开发环境"),

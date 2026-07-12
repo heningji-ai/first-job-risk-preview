@@ -232,8 +232,8 @@ function GoalFitFreeResultPage() {
             当前预演：{result.targetCompanyLabel} × {result.targetRoleLabel}
           </p>
 
-          <button className="primary-button goal-fit-free-primary-cta" type="button" onClick={handleUnlock}>
-            解锁完整报告
+          <button className="primary-button goal-fit-free-primary-cta" type="button" onClick={handleShareCoupon}>
+            领取 ¥10 优惠券，¥9.9 解锁完整报告
           </button>
         </section>
 
@@ -252,6 +252,19 @@ function GoalFitFreeResultPage() {
         <section className="goal-fit-free-advice-card">
           <h2>行动提醒</h2>
           <p>{actionReminder}</p>
+        </section>
+
+        <section className="goal-fit-free-share-discount-card goal-fit-free-share-discount-card-primary">
+          <div className="goal-fit-free-share-discount-copy">
+            <p className="goal-fit-eyebrow">先领优惠，再解锁</p>
+            <h2>领取 ¥10 优惠券，¥9.9 解锁完整报告</h2>
+            <p>保存求职方向卡，也可以发给同学一起测。</p>
+            <strong>优惠后 ¥9.9 解锁完整报告</strong>
+            <button className="primary-button" type="button" onClick={handleShareCoupon}>
+              领取 ¥10 优惠券，¥9.9 解锁完整报告
+            </button>
+          </div>
+          <img src="/images/goal-fit-share-poster.png" alt="第一份工作风险预演分享海报预览" />
         </section>
 
         <section className="goal-fit-free-lock-card">
@@ -287,22 +300,9 @@ function GoalFitFreeResultPage() {
           </div>
         </section>
 
-        <section className="goal-fit-free-share-discount-card">
-          <div className="goal-fit-free-share-discount-copy">
-            <p className="goal-fit-eyebrow">分享优惠</p>
-            <h2>分享给同学或朋友圈，领取 ¥10 优惠券</h2>
-            <p>保存这张求职风险预演海报，分享后可用优惠价解锁完整报告。</p>
-            <strong>优惠后 ¥9.9 解锁完整报告</strong>
-            <button className="secondary-button" type="button" onClick={handleShareCoupon}>
-              保存分享图，领取 ¥10 优惠券
-            </button>
-          </div>
-          <img src="/images/goal-fit-share-poster.png" alt="第一份工作风险预演分享海报预览" />
-        </section>
-
         <section className="goal-fit-free-unlock-card">
-          <button className="primary-button" type="button" onClick={handleUnlock}>
-            解锁完整目标适配报告 ¥19.9
+          <button className="secondary-button goal-fit-free-direct-unlock-link" type="button" onClick={handleUnlock}>
+            不领取优惠，直接 ¥19.9 解锁
           </button>
           <p>查看公司差距、岗位差距和具体行动建议。</p>
           <small>免费页先给你总判断，完整报告会继续给你拆解和行动。</small>

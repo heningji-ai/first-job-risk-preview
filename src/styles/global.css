@@ -2744,6 +2744,16 @@ p {
   text-align: center;
 }
 
+.goal-fit-free-direct-unlock-link {
+  min-height: auto;
+  border-color: transparent;
+  background: transparent;
+  box-shadow: none;
+  color: #6f6246;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
 .goal-fit-free-unlock-card .primary-button {
   min-width: min(100%, 360px);
   min-height: 54px;
@@ -2798,6 +2808,15 @@ p {
   object-fit: cover;
   object-position: center;
   box-shadow: 0 18px 32px rgba(72, 61, 42, 0.12);
+}
+
+.goal-fit-free-share-discount-card-primary {
+  border-color: rgba(121, 138, 76, 0.62);
+  box-shadow: 0 22px 48px rgba(94, 100, 65, 0.16);
+}
+
+.goal-fit-free-share-discount-card-primary .primary-button {
+  width: fit-content;
 }
 
 .goal-fit-result-main-score span {
@@ -3809,6 +3828,28 @@ p {
   border: 1px solid rgba(176, 89, 68, 0.24);
   background: rgba(255, 242, 235, 0.82);
   color: #8b3f2a;
+}
+
+.goal-fit-unlock-coupon-reminder {
+  display: grid;
+  gap: 8px;
+  border: 1px solid rgba(171, 147, 84, 0.42);
+  border-radius: 18px;
+  padding: 14px;
+  background: rgba(255, 249, 232, 0.88);
+}
+
+.goal-fit-unlock-coupon-reminder strong,
+.goal-fit-unlock-pay-amount {
+  color: #253a33;
+  font-weight: 800;
+}
+
+.goal-fit-unlock-coupon-reminder p {
+  margin: 0;
+  color: #6c6354;
+  font-size: 14px;
+  line-height: 1.55;
 }
 
 .goal-fit-unlock-wechat-pay {

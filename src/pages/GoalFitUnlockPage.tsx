@@ -102,6 +102,11 @@ function buildFullResultPath(context: UnlockContext): string {
   return `/result-goal-fit-preview?session=${encodeURIComponent(context.sessionId ?? "")}&section=breakdown`;
 }
 
+function buildShareCouponPath(context: UnlockContext): string {
+  if (context.isSample) return "/goal-fit-share-preview?sample=high_fit&mode=coupon";
+  return `/goal-fit-share-preview?session=${encodeURIComponent(context.sessionId ?? "")}&mode=coupon`;
+}
+
 function formatYuan(amountCents: number): string {
   return `¥${(amountCents / 100).toFixed(1)}`;
 }
@@ -131,6 +136,7 @@ function GoalFitUnlockPage() {
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState("");
   const fullResultPath = buildFullResultPath(context);
   const freeResultPath = buildFreeResultPath(context);
+  const shareCouponPath = buildShareCouponPath(context);
 
   useEffect(() => {
     if (!context.result || !context.sessionId || isUnlocked) return;
@@ -322,8 +328,12 @@ function GoalFitUnlockPage() {
       <section className="goal-fit-panel goal-fit-unlock-frame">
         <header className="goal-fit-unlock-header">
           <p className="goal-fit-eyebrow">完整报告确认</p>
-          <h1>解锁完整目标适配报告</h1>
-          <p>免费判断已经帮你看到了总方向。完整报告会继续拆解：公司差距、岗位差距和建议行动。</p>
+          <h1>{context.hasShareCardCoupon ? "已使用 ¥10 优惠券" : "解锁完整目标适配报告"}</h1>
+          <p>
+            {context.hasShareCardCoupon
+              ? "优惠后 ¥9.9 解锁完整报告。完整报告会继续拆解：公司差距、岗位差距和建议行动。"
+              : "免费判断已经帮你看到了总方向。完整报告会继续拆解：公司差距、岗位差距和建议行动。"}
+          </p>
         </header>
 
         <div className="goal-fit-unlock-layout">
@@ -365,9 +375,19 @@ function GoalFitUnlockPage() {
               </div>
             ) : null}
             {orderError ? <p className="goal-fit-unlock-error">{orderError}</p> : null}
+            {!context.hasShareCardCoupon ? (
+              <div className="goal-fit-unlock-coupon-reminder">
+                <strong>当前为标准价 ¥19.9</strong>
+                <p>想优惠后 ¥9.9？返回领取 ¥10 优惠券。</p>
+                <button className="secondary-button" type="button" onClick={() => navigateTo(shareCouponPath)}>
+                  返回领取优惠券
+                </button>
+              </div>
+            ) : null}
             {order?.wechatCodeUrl ? (
               <div className="goal-fit-unlock-wechat-pay">
                 <strong>微信扫码支付</strong>
+                <p className="goal-fit-unlock-pay-amount">实际支付金额：{formatYuan(displayedPayAmount)}</p>
                 <p>请使用微信扫码完成支付，支付成功后页面会自动进入完整报告。</p>
                 {qrCodeDataUrl ? (
                   <img src={qrCodeDataUrl} alt="微信支付二维码" />

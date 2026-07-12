@@ -48,7 +48,7 @@ function getShareContext() {
 }
 
 function GoalFitSharePage() {
-  const [copyState, setCopyState] = useState("复制分享文案");
+  const [copyState, setCopyState] = useState("复制链接，发给同学也测一下");
   const { couponUnlockPath, freeResultPath, isCouponMode, returnPath } = useMemo(
     () => getShareContext(),
     []
@@ -104,11 +104,11 @@ function GoalFitSharePage() {
 
           {isCouponMode ? (
             <button className="primary-button" type="button" onClick={() => navigateTo(couponUnlockPath)}>
-              我已保存或分享，领取 ¥10 优惠券
+              领取优惠券，¥9.9 解锁完整报告
             </button>
           ) : (
-            <button className="primary-button" type="button" onClick={handleCopy}>
-              {copyState}
+            <button className="primary-button" type="button" onClick={() => navigateTo(couponUnlockPath)}>
+              领取优惠券，¥9.9 解锁完整报告
             </button>
           )}
 
@@ -131,9 +131,9 @@ function GoalFitSharePage() {
           <button
             className="secondary-button goal-fit-share-link-button"
             type="button"
-            onClick={() => navigateTo("/goal-fit-preview")}
+            onClick={handleCopy}
           >
-            让同学也测一次
+            保存卡片，发给同学也测一下
           </button>
           <p>这张海报可以直接截图保存。它不会展示你的具体测试结果。</p>
         </div>
