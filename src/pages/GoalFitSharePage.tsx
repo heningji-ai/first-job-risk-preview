@@ -70,15 +70,15 @@ function GoalFitSharePage() {
       <section className="goal-fit-share-layout">
         <div className="goal-fit-share-intro">
           <p className="goal-fit-eyebrow">分享海报</p>
-          <h1>{isCouponMode ? "保存分享图，领取优惠" : "保存我的求职风险预演海报"}</h1>
+          <h1>保存这张求职风险预演海报</h1>
           <p>
             {isCouponMode
-              ? "保存或分享这张求职风险预演海报后，可领取 ¥10 优惠券，¥9.9 解锁完整报告。"
+              ? "分享给同学或朋友，一起提前看看第一份工作的适应风险。"
               : "这张海报适合手机截图或保存，用来表达你正在认真判断第一份工作的方向。"}
           </p>
           <p className="goal-fit-share-device-hint">
             {isCouponMode
-              ? "这张求职风险预演海报更适合在手机上截图或保存。你也可以先复制分享文案，或领取优惠后继续解锁完整报告。"
+              ? "这张求职风险预演海报更适合在手机上截图或保存。你也可以先保存海报，再继续解锁完整报告。"
               : "这张求职风险预演海报更适合在手机上截图或保存。你也可以先复制分享文案，或返回完整报告继续查看。"}
           </p>
         </div>
@@ -94,27 +94,25 @@ function GoalFitSharePage() {
         <div className="goal-fit-share-actions">
           {isCouponMode ? (
             <section className="goal-fit-share-coupon-panel">
-              <p className="goal-fit-eyebrow">保存 / 分享后领取</p>
-              <h2>¥10 优惠券</h2>
-              <p>完整报告标准价 ¥19.9。</p>
-              <p>保存或分享这张求职风险预演海报后，可领取 ¥10 优惠券，优惠后 ¥9.9 解锁完整报告。</p>
-              <small>你可以先保存截图，也可以复制文案后再决定是否发布。</small>
+              <p className="goal-fit-eyebrow">保存 / 分享海报</p>
+              <h2>保存并分享后，可按 ¥9.9 解锁完整报告。</h2>
+              <p>海报不会展示你的具体测试分数，适合截图保存后发给同学或朋友。</p>
             </section>
           ) : null}
 
           {isCouponMode ? (
             <button className="primary-button" type="button" onClick={() => navigateTo(couponUnlockPath)}>
-              领取优惠券，¥9.9 解锁完整报告
+              保存图片并分享
             </button>
           ) : (
             <button className="primary-button" type="button" onClick={() => navigateTo(couponUnlockPath)}>
-              领取优惠券，¥9.9 解锁完整报告
+              保存图片并分享
             </button>
           )}
 
           {isCouponMode ? (
-            <button className="secondary-button" type="button" onClick={handleCopy}>
-              {copyState}
+            <button className="secondary-button" type="button" onClick={() => navigateTo(freeResultPath)}>
+              返回结果页
             </button>
           ) : (
             <button className="secondary-button" type="button" onClick={() => navigateTo(returnPath)}>
@@ -122,18 +120,12 @@ function GoalFitSharePage() {
             </button>
           )}
 
-          {isCouponMode ? (
-            <button className="secondary-button" type="button" onClick={() => navigateTo(freeResultPath)}>
-              返回免费判断
-            </button>
-          ) : null}
-
           <button
             className="secondary-button goal-fit-share-link-button"
             type="button"
             onClick={handleCopy}
           >
-            保存卡片，发给同学也测一下
+            {copyState}
           </button>
           <p>这张海报可以直接截图保存。它不会展示你的具体测试结果。</p>
         </div>

@@ -425,10 +425,10 @@ function GoalFitUnlockPage() {
       <section className="goal-fit-panel goal-fit-unlock-frame">
         <header className="goal-fit-unlock-header">
           <p className="goal-fit-eyebrow">完整报告确认</p>
-          <h1>{context.hasShareCardCoupon ? "已使用 ¥10 优惠券" : "解锁完整目标适配报告"}</h1>
+          <h1>{context.hasShareCardCoupon ? "已享 ¥10 优惠" : "解锁完整目标适配报告"}</h1>
           <p>
             {context.hasShareCardCoupon
-              ? "优惠后 ¥9.9 解锁完整报告。完整报告会继续拆解：公司差距、岗位差距和建议行动。"
+              ? "完整报告原价 ¥19.9，本次优惠后 ¥9.9 解锁。完整报告会继续拆解：公司差距、岗位差距和建议行动。"
               : "免费判断已经帮你看到了总方向。完整报告会继续拆解：公司差距、岗位差距和建议行动。"}
           </p>
         </header>
@@ -440,9 +440,9 @@ function GoalFitUnlockPage() {
               <strong>完整目标适配报告</strong>
             </div>
             <div className="goal-fit-unlock-price-detail">
-              <span>原价 {formatYuan(displayedOriginalAmount)}</span>
-              {context.hasShareCardCoupon ? <span>优惠 ¥10</span> : null}
-              <strong>应付 {formatYuan(displayedPayAmount)}</strong>
+              <span>{context.hasShareCardCoupon ? "完整报告原价" : "完整报告解锁价"} {formatYuan(displayedOriginalAmount)}</span>
+              {context.hasShareCardCoupon ? <span>已享 ¥10 优惠</span> : null}
+              <strong>{context.hasShareCardCoupon ? "本次支付" : "应付"} {formatYuan(displayedPayAmount)}</strong>
             </div>
             <div className="goal-fit-unlock-price">
               <span>应付</span>
@@ -483,10 +483,10 @@ function GoalFitUnlockPage() {
             ) : null}
             {!context.hasShareCardCoupon ? (
               <div className="goal-fit-unlock-coupon-reminder">
-                <strong>当前为标准价 ¥19.9</strong>
-                <p>想优惠后 ¥9.9？返回领取 ¥10 优惠券。</p>
+                <strong>完整报告解锁价 ¥19.9</strong>
+                <p>想优惠后 ¥9.9？返回保存并分享海报。</p>
                 <button className="secondary-button" type="button" onClick={() => navigateTo(shareCouponPath)}>
-                  返回领取优惠券
+                  返回保存并分享海报
                 </button>
               </div>
             ) : null}

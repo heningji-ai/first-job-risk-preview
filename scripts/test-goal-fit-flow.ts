@@ -256,19 +256,20 @@ assert(
   "App.tsx must route /goal-fit-share-preview to GoalFitSharePage"
 );
 [
-  "保存我的求职风险预演海报",
-  "保存分享图，领取优惠",
+  "保存这张求职风险预演海报",
+  "分享给同学或朋友，一起提前看看第一份工作的适应风险。",
   "/images/goal-fit-share-poster.png",
   "goal-fit-share-poster-image",
-  "领取优惠券，¥9.9 解锁完整报告",
+  "保存并分享后，可按 ¥9.9 解锁完整报告。",
+  "保存图片并分享",
   "coupon=share_card",
   "复制链接，发给同学也测一下",
   "返回完整报告",
-  "保存卡片，发给同学也测一下"
+  "返回结果页"
 ].forEach((text) => {
   assert(sharePageSource.includes(text), `GoalFitSharePage must contain copy: ${text}`);
 });
-["我已保存或分享，领取 ¥10 优惠券", "让同学也测一次"].forEach((text) => {
+["我已保存或分享，领取 ¥10 优惠券", "让同学也测一次", "领取优惠券，¥9.9 解锁完整报告", "保存分享图，领取优惠"].forEach((text) => {
   assert(!sharePageSource.includes(text), `GoalFitSharePage must not keep confusing share CTA copy: ${text}`);
 });
 ["匹配度", "公司类型：", "岗位类型：", "最大风险", "我的测试结果", "我的匹配度"].forEach(
@@ -339,10 +340,11 @@ assert(
     freeResultPageSource.includes("主要风险") &&
     freeResultPageSource.includes("行动提醒") &&
     freeResultPageSource.includes("解锁完整报告") &&
-    freeResultPageSource.includes("领取 ¥10 优惠券，¥9.9 解锁完整报告") &&
+    freeResultPageSource.includes("完整报告解锁价 ¥19.9") &&
+    freeResultPageSource.includes("保存并分享本次测试海报，可以享受 ¥10 优惠，优惠后 ¥9.9 解锁完整报告。") &&
     freeResultPageSource.includes("保存求职方向卡，也可以发给同学一起测。") &&
-    freeResultPageSource.includes("优惠后 ¥9.9 解锁完整报告") &&
-    freeResultPageSource.includes("不领取优惠，直接 ¥19.9 解锁") &&
+    freeResultPageSource.includes("保存图片并分享，¥9.9 解锁") &&
+    freeResultPageSource.includes("不分享，直接 ¥19.9 解锁") &&
     freeResultPageSource.includes("/goal-fit-share-preview?session=") &&
     freeResultPageSource.includes("/goal-fit-share-preview?sample=high_fit&mode=coupon") &&
     freeResultPageSource.includes("/images/goal-fit-share-poster.png") &&
@@ -357,7 +359,8 @@ assert(
   "保存一张求职方向卡",
   "不展示你的具体分数、公司类型、岗位方向和风险点",
   "生成我的求职方向卡",
-  "生成求职方向卡"
+  "生成求职方向卡",
+  "领取 ¥10 优惠券，¥9.9 解锁完整报告"
 ].forEach((text) => {
   assert(!freeResultPageSource.includes(text), `GoalFitFreeResultPage must not keep old hero copy: ${text}`);
 });
@@ -398,13 +401,12 @@ assert(
     unlockPageSource.includes("order?.wechatCodeUrl ?") &&
     unlockPageSource.includes("isMockOrder") &&
     unlockPageSource.includes("确认解锁完整报告") &&
-    unlockPageSource.includes("原价") &&
-    unlockPageSource.includes("优惠 ¥10") &&
-    unlockPageSource.includes("已使用 ¥10 优惠券") &&
-    unlockPageSource.includes("优惠后 ¥9.9 解锁完整报告") &&
-    unlockPageSource.includes("当前为标准价 ¥19.9") &&
-    unlockPageSource.includes("想优惠后 ¥9.9？返回领取 ¥10 优惠券") &&
-    unlockPageSource.includes("返回领取优惠券") &&
+    unlockPageSource.includes("完整报告原价") &&
+    unlockPageSource.includes("已享 ¥10 优惠") &&
+    unlockPageSource.includes("本次支付") &&
+    unlockPageSource.includes("完整报告解锁价 ¥19.9") &&
+    unlockPageSource.includes("想优惠后 ¥9.9？返回保存并分享海报") &&
+    unlockPageSource.includes("返回保存并分享海报") &&
     unlockPageSource.includes("应付") &&
     unlockPageSource.includes("formatYuan(displayedPayAmount)") &&
     unlockPageSource.includes("实际支付金额：") &&
