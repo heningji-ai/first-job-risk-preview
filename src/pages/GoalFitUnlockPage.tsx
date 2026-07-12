@@ -1,12 +1,14 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import GoalFitHeader from "../components/GoalFitHeader";
+import { buildApiUrl } from "../config/api";
 import { buildGoalFitResult } from "../lib/goalFitResultBuilder";
 import { goalFitQuestionBank } from "../lib/goalFitQuestionBank";
 import {
   createGoalFitOrderFromApi,
   getGoalFitOrderFromApi,
   markGoalFitApiOrderPaid,
+  type GoalFitJsapiPaymentParams,
   type GoalFitOrder
 } from "../lib/goalFitOrderStore";
 import { selectGoalFitQuestions } from "../lib/goalFitQuestionSelector";
@@ -21,6 +23,7 @@ type UnlockContext = {
   isSample: boolean;
   isUnlocked: boolean;
   hasShareCardCoupon: boolean;
+  wechatOpenidToken: string | null;
 };
 
 const unlockItems = [
@@ -68,6 +71,7 @@ function getUnlockContextFromUrl(): UnlockContext {
   const sample = params.get("sample");
   const sessionId = params.get("session");
   const hasShareCardCoupon = params.get("coupon") === "share_card";
+  const wechatOpenidToken = params.get("wechatOpenidToken");
 
   if (sample === "high_fit") {
     return {
@@ -75,12 +79,13 @@ function getUnlockContextFromUrl(): UnlockContext {
       sessionId: "sample_high_fit",
       isSample: true,
       isUnlocked: false,
-      hasShareCardCoupon
+      hasShareCardCoupon,
+      wechatOpenidToken
     };
   }
 
   if (!sessionId) {
-    return { result: null, sessionId: null, isSample: false, isUnlocked: false, hasShareCardCoupon };
+    return { result: null, sessionId: null, isSample: false, isUnlocked: false, hasShareCardCoupon, wechatOpenidToken };
   }
 
   return {
@@ -88,7 +93,8 @@ function getUnlockContextFromUrl(): UnlockContext {
     sessionId,
     isSample: false,
     isUnlocked: isGoalFitReportUnlocked(sessionId),
-    hasShareCardCoupon
+    hasShareCardCoupon,
+    wechatOpenidToken
   };
 }
 
@@ -109,6 +115,36 @@ function buildShareCouponPath(context: UnlockContext): string {
 
 function formatYuan(amountCents: number): string {
   return `¥${(amountCents / 100).toFixed(1)}`;
+}
+
+function isWechatBrowser(): boolean {
+  return /MicroMessenger/i.test(navigator.userAgent);
+}
+
+function getCurrentOauthReturnTo(): string {
+  return `${window.location.pathname}${window.location.search}`;
+}
+
+function invokeWechatJsapiPay(params: GoalFitJsapiPaymentParams): Promise<"ok" | "cancel" | "fail"> {
+  return new Promise((resolve) => {
+    if (!window.WeixinJSBridge) {
+      resolve("fail");
+      return;
+    }
+
+    window.WeixinJSBridge.invoke("getBrandWCPayRequest", params, (response) => {
+      const message = response.err_msg ?? "";
+      if (message.endsWith(":ok")) {
+        resolve("ok");
+        return;
+      }
+      if (message.endsWith(":cancel")) {
+        resolve("cancel");
+        return;
+      }
+      resolve("fail");
+    });
+  });
 }
 
 function MissingUnlockPage() {
@@ -132,14 +168,17 @@ function GoalFitUnlockPage() {
   const [order, setOrder] = useState<GoalFitOrder | null>(null);
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
+  const [isInvokingJsapiPay, setIsInvokingJsapiPay] = useState(false);
   const [orderError, setOrderError] = useState("");
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState("");
+  const isWechatInAppBrowser = isWechatBrowser();
   const fullResultPath = buildFullResultPath(context);
   const freeResultPath = buildFreeResultPath(context);
   const shareCouponPath = buildShareCouponPath(context);
 
   useEffect(() => {
     if (!context.result || !context.sessionId || isUnlocked) return;
+    if (isWechatInAppBrowser && !context.wechatOpenidToken) return;
 
     let ignore = false;
 
@@ -153,7 +192,9 @@ function GoalFitUnlockPage() {
         const createdOrder = await createGoalFitOrderFromApi({
           sessionId: context.sessionId,
           accessMode: context.hasShareCardCoupon ? "share_coupon" : "direct",
-          couponCode: context.hasShareCardCoupon ? "share_card" : null
+          couponCode: context.hasShareCardCoupon ? "share_card" : null,
+          paymentMethod: isWechatInAppBrowser ? "jsapi" : "native",
+          wechatOpenidToken: context.wechatOpenidToken ?? undefined
         });
 
         if (!ignore) setOrder(createdOrder);
@@ -169,7 +210,14 @@ function GoalFitUnlockPage() {
     return () => {
       ignore = true;
     };
-  }, [context.hasShareCardCoupon, context.result, context.sessionId, isUnlocked]);
+  }, [
+    context.hasShareCardCoupon,
+    context.result,
+    context.sessionId,
+    context.wechatOpenidToken,
+    isWechatInAppBrowser,
+    isUnlocked
+  ]);
 
   useEffect(() => {
     let ignore = false;
@@ -299,6 +347,55 @@ function GoalFitUnlockPage() {
     }
   }
 
+  function handleStartWechatOauth(): void {
+    const returnTo = getCurrentOauthReturnTo();
+    window.location.assign(buildApiUrl(`/api/wechat/oauth/start?returnTo=${encodeURIComponent(returnTo)}`));
+  }
+
+  async function waitForPaidOrder(orderId: string): Promise<void> {
+    for (let attempt = 0; attempt < 12; attempt += 1) {
+      await new Promise((resolve) => window.setTimeout(resolve, attempt === 0 ? 800 : 1500));
+      const latestOrder = await getGoalFitOrderFromApi(orderId);
+      setOrder(latestOrder);
+
+      if (latestOrder.status === "paid") {
+        if (!context.isSample && context.sessionId) {
+          markGoalFitReportUnlocked(context.sessionId);
+        }
+        setIsUnlocked(true);
+        navigateTo(fullResultPath);
+        return;
+      }
+    }
+
+    setOrderError("支付结果正在确认中，请稍后刷新状态。");
+  }
+
+  async function handleWechatJsapiPay(): Promise<void> {
+    if (!order?.orderId || !order.jsapiPaymentParams) return;
+
+    setIsInvokingJsapiPay(true);
+    setOrderError("");
+
+    try {
+      const result = await invokeWechatJsapiPay(order.jsapiPaymentParams);
+      if (result === "cancel") {
+        setOrderError("支付未完成，可重新发起支付。");
+        return;
+      }
+      if (result !== "ok") {
+        setOrderError("暂时无法唤起微信支付，请稍后重试。");
+        return;
+      }
+
+      await waitForPaidOrder(order.orderId);
+    } catch {
+      setOrderError("暂时无法确认支付状态，请稍后重试。");
+    } finally {
+      setIsInvokingJsapiPay(false);
+    }
+  }
+
   if (isUnlocked) {
     return (
       <GoalFitPageFrame>
@@ -375,6 +472,15 @@ function GoalFitUnlockPage() {
               </div>
             ) : null}
             {orderError ? <p className="goal-fit-unlock-error">{orderError}</p> : null}
+            {isWechatInAppBrowser && !context.wechatOpenidToken ? (
+              <div className="goal-fit-unlock-wechat-pay">
+                <strong>微信支付</strong>
+                <p>当前在微信内打开，可直接唤起微信支付。</p>
+                <button className="primary-button" type="button" onClick={handleStartWechatOauth}>
+                  微信内支付
+                </button>
+              </div>
+            ) : null}
             {!context.hasShareCardCoupon ? (
               <div className="goal-fit-unlock-coupon-reminder">
                 <strong>当前为标准价 ¥19.9</strong>
@@ -384,7 +490,21 @@ function GoalFitUnlockPage() {
                 </button>
               </div>
             ) : null}
-            {order?.wechatCodeUrl ? (
+            {order?.jsapiPaymentParams ? (
+              <div className="goal-fit-unlock-wechat-pay">
+                <strong>微信支付</strong>
+                <p>当前在微信内打开，可直接唤起微信支付。</p>
+                <p className="goal-fit-unlock-pay-amount">实际支付金额：{formatYuan(displayedPayAmount)}</p>
+                <button
+                  className="primary-button"
+                  type="button"
+                  disabled={isInvokingJsapiPay}
+                  onClick={handleWechatJsapiPay}
+                >
+                  {isInvokingJsapiPay ? "正在确认支付" : "立即支付"}
+                </button>
+              </div>
+            ) : order?.wechatCodeUrl ? (
               <div className="goal-fit-unlock-wechat-pay">
                 <strong>微信扫码支付</strong>
                 <p className="goal-fit-unlock-pay-amount">实际支付金额：{formatYuan(displayedPayAmount)}</p>
@@ -412,7 +532,7 @@ function GoalFitUnlockPage() {
               >
                 {isMarkingPaid ? "正在确认解锁状态" : "确认解锁完整报告"}
               </button>
-            ) : (
+            ) : isWechatInAppBrowser && !context.wechatOpenidToken ? null : (
               <button className="primary-button" type="button" disabled>
                 等待支付完成
               </button>

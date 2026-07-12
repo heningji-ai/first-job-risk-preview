@@ -40,6 +40,21 @@ export function initializeDatabase(): void {
 
     CREATE INDEX IF NOT EXISTS idx_orders_out_trade_no
       ON orders (outTradeNo);
+
+    CREATE TABLE IF NOT EXISTS wechat_oauth_states (
+      state TEXT PRIMARY KEY,
+      returnTo TEXT NOT NULL,
+      createdAt TEXT NOT NULL,
+      expiresAt TEXT NOT NULL,
+      usedAt TEXT
+    );
+
+    CREATE TABLE IF NOT EXISTS wechat_openid_tokens (
+      token TEXT PRIMARY KEY,
+      openid TEXT NOT NULL,
+      createdAt TEXT NOT NULL,
+      expiresAt TEXT NOT NULL
+    );
   `);
 
   const columns = db.prepare("PRAGMA table_info(orders)").all() as Array<{ name: string }>;

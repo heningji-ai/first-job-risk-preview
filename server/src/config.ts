@@ -26,6 +26,12 @@ export const serverConfig = {
     privateKeyPath: path.resolve(process.cwd(), getEnv("WECHAT_PAY_PRIVATE_KEY_PATH", "./certs/apiclient_key.pem")),
     publicKeyId: getEnv("WECHAT_PAY_PUBLIC_KEY_ID"),
     publicKeyPath: wechatPayPublicKeyPath ? path.resolve(process.cwd(), wechatPayPublicKeyPath) : "",
+    jsapiAppId: getEnv("WECHAT_PAY_JSAPI_APP_ID"),
+    jsapiAppSecret: getEnv("WECHAT_PAY_JSAPI_APP_SECRET"),
+    jsapiOauthCallbackUrl: getEnv(
+      "WECHAT_PAY_JSAPI_OAUTH_CALLBACK_URL",
+      "https://first-job-risk.jobeyes.com/api/wechat/oauth/callback"
+    ),
     notifyUrl: getEnv("WECHAT_PAY_NOTIFY_URL"),
     description: getEnv("WECHAT_PAY_DESCRIPTION", "第一份工作风险预演完整报告")
   }

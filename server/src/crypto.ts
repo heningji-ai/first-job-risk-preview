@@ -99,3 +99,13 @@ export function verifyWechatSignature(params: {
 
   return crypto.createVerify("RSA-SHA256").update(message, "utf8").verify(params.certificate, params.signature, "base64");
 }
+
+export function buildWechatJsapiPaySign(params: {
+  appId: string;
+  timeStamp: string;
+  nonceStr: string;
+  package: string;
+}): string {
+  const message = `${params.appId}\n${params.timeStamp}\n${params.nonceStr}\n${params.package}\n`;
+  return signWithMerchantPrivateKey(message);
+}

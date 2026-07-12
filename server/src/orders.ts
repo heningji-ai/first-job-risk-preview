@@ -148,6 +148,29 @@ export function saveWechatNativePayment(orderId: string, codeUrl: string): Order
   return getOrder(orderId);
 }
 
+export function saveWechatJsapiPayment(orderId: string, prepayId: string): OrderRecord | null {
+  const now = new Date().toISOString();
+
+  db.prepare(
+    `
+      UPDATE orders
+      SET paymentProvider = 'wechat',
+          paymentMode = 'jsapi',
+          wechatPrepayId = @prepayId,
+          wechatCodeUrl = NULL,
+          status = 'pending',
+          updatedAt = @updatedAt
+      WHERE id = @orderId
+    `
+  ).run({
+    orderId,
+    prepayId,
+    updatedAt: now
+  });
+
+  return getOrder(orderId);
+}
+
 export function markOrderPaidByOutTradeNo(params: {
   outTradeNo: string;
   transactionId: string;

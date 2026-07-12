@@ -46,6 +46,19 @@ export type WechatNativeOrderResponse = {
   code_url: string;
 };
 
+export type WechatJsapiOrderResponse = {
+  prepay_id: string;
+};
+
+export type WechatJsapiPaymentParams = {
+  appId: string;
+  timeStamp: string;
+  nonceStr: string;
+  package: string;
+  signType: "RSA";
+  paySign: string;
+};
+
 export type WechatNotifyResource = {
   algorithm: "AEAD_AES_256_GCM";
   ciphertext: string;

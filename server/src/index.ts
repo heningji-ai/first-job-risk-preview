@@ -11,9 +11,17 @@ import {
   isCouponCode,
   updateOrderStatus
 } from "./orders.js";
+import {
+  buildWechatOauthUrl,
+  consumeWechatOpenidToken,
+  createWechatOauthState,
+  handleWechatOauthCallback,
+  normalizeOauthReturnTo
+} from "./wechatOAuth.js";
+import { createWechatJsapiOrder } from "./wechatJsapiPay.js";
 import { getWechatNotifyHeaders, handleWechatNotify } from "./wechatNotify.js";
 import { createWechatNativeOrder } from "./wechatPay.js";
-import type { CouponCode } from "./types.js";
+import type { CouponCode, PaymentMode } from "./types.js";
 
 dotenv.config();
 initializeDatabase();
@@ -55,9 +63,41 @@ app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
 });
 
+app.get("/api/wechat/oauth/start", (req, res) => {
+  try {
+    const returnTo = normalizeOauthReturnTo(req.query.returnTo);
+    if (!returnTo) {
+      res.status(400).json({ error: "returnTo must be a local path" });
+      return;
+    }
+
+    const state = createWechatOauthState(returnTo);
+    res.redirect(buildWechatOauthUrl(state));
+  } catch (error) {
+    console.error("[wechat-oauth-start]", error instanceof Error ? error.message : error);
+    res.status(500).json({ error: "WeChat OAuth start failed" });
+  }
+});
+
+app.get("/api/wechat/oauth/callback", async (req, res) => {
+  const { code, state } = req.query;
+
+  if (typeof code !== "string" || typeof state !== "string") {
+    res.status(400).json({ error: "code and state are required" });
+    return;
+  }
+
+  try {
+    res.redirect(await handleWechatOauthCallback(code, state));
+  } catch (error) {
+    console.error("[wechat-oauth-callback]", error instanceof Error ? error.message : error);
+    res.status(400).json({ error: "WeChat OAuth callback failed" });
+  }
+});
+
 app.post("/api/orders/create", async (req, res) => {
-  const { sessionId, accessMode, couponCode } = req.body as Record<string, unknown>;
-  const paymentMode = serverConfig.paymentMode;
+  const { sessionId, accessMode, couponCode, paymentMethod, wechatOpenidToken } = req.body as Record<string, unknown>;
+  const serverPaymentMode = serverConfig.paymentMode;
 
   if (typeof sessionId !== "string" || sessionId.trim().length === 0) {
     res.status(400).json({ error: "sessionId is required" });
@@ -76,24 +116,57 @@ app.post("/api/orders/create", async (req, res) => {
     return;
   }
 
-  if (paymentMode !== "mock" && paymentMode !== "native") {
+  if (serverPaymentMode !== "mock" && serverPaymentMode !== "native") {
     res.status(400).json({ error: "paymentMode is invalid" });
     return;
   }
 
-  if (paymentMode === "mock" && nodeEnv === "production") {
+  if (serverPaymentMode === "mock" && nodeEnv === "production") {
     res.status(403).json({ error: "mock payment is not available in production" });
     return;
+  }
+
+  const requestedPaymentMode: PaymentMode =
+    serverPaymentMode === "mock" ? "mock" : paymentMethod === "jsapi" ? "jsapi" : "native";
+
+  let jsapiOpenid = "";
+  if (requestedPaymentMode === "jsapi") {
+    if (typeof wechatOpenidToken !== "string" || wechatOpenidToken.trim().length === 0) {
+      res.status(400).json({ error: "wechatOpenidToken is required for JSAPI payment" });
+      return;
+    }
+
+    try {
+      jsapiOpenid = consumeWechatOpenidToken(wechatOpenidToken.trim());
+    } catch {
+      res.status(401).json({ error: "wechatOpenidToken is invalid or expired" });
+      return;
+    }
   }
 
   const order = createOrder({
     sessionId: sessionId.trim(),
     accessMode,
     couponCode: normalizedCouponCode,
-    paymentMode
+    paymentMode: requestedPaymentMode
   });
 
-  if (paymentMode === "native") {
+  if (requestedPaymentMode === "jsapi") {
+    try {
+      const payment = await createWechatJsapiOrder(order, jsapiOpenid);
+      res.status(202).json({
+        ...payment.order,
+        jsapiPaymentParams: payment.paymentParams
+      });
+      return;
+    } catch (error) {
+      console.error("[wechat-jsapi-order]", error instanceof Error ? error.message : error);
+      res.status(502).json({ error: "支付订单创建失败，请稍后重试。" });
+      return;
+    }
+  }
+
+  if (requestedPaymentMode === "native") {
     try {
       const payment = await createWechatNativeOrder(order);
       res.status(202).json({

@@ -31,6 +31,8 @@ const serverPackagePath = path.join(projectRoot, "server", "package.json");
 const serverConfigPath = path.join(projectRoot, "server", "src", "config.ts");
 const serverDbPath = path.join(projectRoot, "server", "src", "db.ts");
 const serverWechatPayPath = path.join(projectRoot, "server", "src", "wechatPay.ts");
+const serverWechatJsapiPayPath = path.join(projectRoot, "server", "src", "wechatJsapiPay.ts");
+const serverWechatOauthPath = path.join(projectRoot, "server", "src", "wechatOAuth.ts");
 const serverWechatNotifyPath = path.join(projectRoot, "server", "src", "wechatNotify.ts");
 const serverWechatPlatformCertsPath = path.join(projectRoot, "server", "src", "wechatPlatformCerts.ts");
 const serverCryptoPath = path.join(projectRoot, "server", "src", "crypto.ts");
@@ -145,6 +147,8 @@ const serverPackageSource = fs.readFileSync(serverPackagePath, "utf8");
 const serverConfigSource = fs.readFileSync(serverConfigPath, "utf8");
 const serverDbSource = fs.readFileSync(serverDbPath, "utf8");
 const serverWechatPaySource = fs.readFileSync(serverWechatPayPath, "utf8");
+const serverWechatJsapiPaySource = fs.readFileSync(serverWechatJsapiPayPath, "utf8");
+const serverWechatOauthSource = fs.readFileSync(serverWechatOauthPath, "utf8");
 const serverWechatNotifySource = fs.readFileSync(serverWechatNotifyPath, "utf8");
 const serverWechatPlatformCertsSource = fs.readFileSync(serverWechatPlatformCertsPath, "utf8");
 const serverCryptoSource = fs.readFileSync(serverCryptoPath, "utf8");
@@ -379,6 +383,14 @@ assert(
     unlockPageSource.includes("QRCode.toDataURL") &&
     unlockPageSource.includes("getGoalFitOrderFromApi") &&
     unlockPageSource.includes("markGoalFitApiOrderPaid") &&
+    unlockPageSource.includes("isWechatBrowser") &&
+    unlockPageSource.includes("MicroMessenger") &&
+    unlockPageSource.includes("wechatOpenidToken") &&
+    unlockPageSource.includes('paymentMethod: isWechatInAppBrowser ? "jsapi" : "native"') &&
+    unlockPageSource.includes("/api/wechat/oauth/start?returnTo=") &&
+    unlockPageSource.includes("WeixinJSBridge.invoke") &&
+    unlockPageSource.includes("getBrandWCPayRequest") &&
+    unlockPageSource.includes("jsapiPaymentParams") &&
     unlockPageSource.includes('accessMode: context.hasShareCardCoupon ? "share_coupon" : "direct"') &&
     unlockPageSource.includes('couponCode: context.hasShareCardCoupon ? "share_card" : null') &&
     !unlockPageSource.includes("paymentMode: PAYMENT_MODE") &&
@@ -427,15 +439,23 @@ assert(
 assert(
   serverConfigSource.includes("WECHAT_PAY_PUBLIC_KEY_ID") &&
     serverConfigSource.includes("WECHAT_PAY_PUBLIC_KEY_PATH") &&
+    serverConfigSource.includes("WECHAT_PAY_JSAPI_APP_ID") &&
+    serverConfigSource.includes("WECHAT_PAY_JSAPI_APP_SECRET") &&
+    serverConfigSource.includes("WECHAT_PAY_JSAPI_OAUTH_CALLBACK_URL") &&
     serverConfigSource.includes("publicKeyId") &&
-    serverConfigSource.includes("publicKeyPath"),
-  "server config must read WeChat Pay public key id and public key path"
+    serverConfigSource.includes("publicKeyPath") &&
+    serverConfigSource.includes("jsapiAppId") &&
+    serverConfigSource.includes("jsapiAppSecret") &&
+    serverConfigSource.includes("jsapiOauthCallbackUrl"),
+  "server config must read WeChat Pay public key and JSAPI OAuth config"
 );
 assert(
   serverDbSource.includes('from "node:sqlite"') &&
     serverDbSource.includes("wechatTransactionId") &&
-    serverDbSource.includes("ALTER TABLE orders ADD COLUMN wechatTransactionId"),
-  "server db must keep node:sqlite and persist WeChat transaction ids"
+    serverDbSource.includes("ALTER TABLE orders ADD COLUMN wechatTransactionId") &&
+    serverDbSource.includes("CREATE TABLE IF NOT EXISTS wechat_oauth_states") &&
+    serverDbSource.includes("CREATE TABLE IF NOT EXISTS wechat_openid_tokens"),
+  "server db must keep node:sqlite and persist WeChat transaction ids plus OAuth state/token tables"
 );
 assert(
   serverWechatPaySource.includes("createWechatNativeOrder") &&
@@ -447,13 +467,39 @@ assert(
   "wechatPay must create native orders with backend-calculated amount and no frontend-facing sensitive error"
 );
 assert(
+  serverWechatJsapiPaySource.includes("createWechatJsapiOrder") &&
+    serverWechatJsapiPaySource.includes("/v3/pay/transactions/jsapi") &&
+    serverWechatJsapiPaySource.includes("serverConfig.wechatPay.jsapiAppId") &&
+    serverWechatJsapiPaySource.includes("payer") &&
+    serverWechatJsapiPaySource.includes("openid") &&
+    serverWechatJsapiPaySource.includes("order.payAmountCents") &&
+    serverWechatJsapiPaySource.includes("buildWechatJsapiPaySign") &&
+    serverWechatJsapiPaySource.includes("jsapiPaymentParams") === false &&
+    serverWechatJsapiPaySource.includes('"Accept-Language": "zh-CN"'),
+  "wechatJsapiPay must create JSAPI orders using backend amount and generate signed payment params"
+);
+assert(
   serverCryptoSource.includes("WECHATPAY2-SHA256-RSA2048") &&
     serverCryptoSource.includes("RSA-SHA256") &&
     serverCryptoSource.includes("aes-256-gcm") &&
     serverCryptoSource.includes("readPrivateKey") &&
     serverCryptoSource.includes("readWechatPayPublicKey") &&
+    serverCryptoSource.includes("buildWechatJsapiPaySign") &&
     serverCryptoSource.includes("decryptWechatResource"),
   "crypto helpers must implement WeChat signing, public key reading and AES-GCM resource decryption"
+);
+assert(
+  serverWechatOauthSource.includes("normalizeOauthReturnTo") &&
+    serverWechatOauthSource.includes("startsWith(\"/\")") &&
+    serverWechatOauthSource.includes("startsWith(\"//\")") &&
+    serverWechatOauthSource.includes("createWechatOauthState") &&
+    serverWechatOauthSource.includes("snsapi_base") &&
+    serverWechatOauthSource.includes("handleWechatOauthCallback") &&
+    serverWechatOauthSource.includes("wechatOpenidToken") &&
+    serverWechatOauthSource.includes("consumeWechatOpenidToken") &&
+    !serverWechatOauthSource.includes("console.log") &&
+    !serverWechatOauthSource.includes("console.error"),
+  "wechatOAuth must constrain returnTo, store state/token, and avoid logging openid or app secret"
 );
 assert(
   serverWechatPlatformCertsSource.includes("/v3/certificates") &&
@@ -481,10 +527,17 @@ assert(
 assert(
   serverIndexSource.indexOf('/api/wechat/notify", express.raw') < serverIndexSource.indexOf("app.use(express.json())") &&
     serverIndexSource.includes("handleWechatNotify") &&
-    serverIndexSource.includes("const paymentMode = serverConfig.paymentMode") &&
+    serverIndexSource.includes("/api/wechat/oauth/start") &&
+    serverIndexSource.includes("/api/wechat/oauth/callback") &&
+    serverIndexSource.includes("normalizeOauthReturnTo") &&
+    serverIndexSource.includes("createWechatJsapiOrder") &&
+    serverIndexSource.includes("paymentMethod === \"jsapi\"") &&
+    serverIndexSource.includes("wechatOpenidToken") &&
+    serverIndexSource.includes("jsapiPaymentParams") &&
+    serverIndexSource.includes("const serverPaymentMode = serverConfig.paymentMode") &&
     !serverIndexSource.includes("req.body as Record<string, unknown>).paymentMode") &&
     serverIndexSource.includes("mock payment is not available in production"),
-  "server index must register raw notify route before express.json, ignore request paymentMode, and keep production mock blocked"
+  "server index must register raw notify route before express.json, support OAuth/JSAPI, ignore request paymentMode, and keep production mock blocked"
 );
 [".env", "*.db", "*.sqlite", "certs/", "apiclient_key.pem", "apiclient_cert.pem"].forEach((text) => {
   assert(serverGitignoreSource.includes(text), `server .gitignore must contain ${text}`);

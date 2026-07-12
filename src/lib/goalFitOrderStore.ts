@@ -8,6 +8,15 @@ export type GoalFitAccessMode = "direct" | "share_coupon";
 
 export type GoalFitPaymentMode = "mock" | "native" | "jsapi" | "h5";
 
+export type GoalFitJsapiPaymentParams = {
+  appId: string;
+  timeStamp: string;
+  nonceStr: string;
+  package: string;
+  signType: "RSA";
+  paySign: string;
+};
+
 export type GoalFitOrder = {
   id?: string;
   orderId?: string;
@@ -26,6 +35,7 @@ export type GoalFitOrder = {
   paymentMode?: GoalFitPaymentMode;
   wechatPrepayId?: string | null;
   wechatCodeUrl?: string | null;
+  jsapiPaymentParams?: GoalFitJsapiPaymentParams;
   wechatTransactionId?: string | null;
   currency: "CNY";
   createdAt: string;
@@ -37,6 +47,8 @@ export type CreateGoalFitOrderRequest = {
   sessionId: string;
   accessMode: GoalFitAccessMode;
   couponCode: "share_card" | null;
+  paymentMethod?: "native" | "jsapi";
+  wechatOpenidToken?: string;
 };
 
 export type GoalFitUnlockStatus = {
