@@ -256,14 +256,11 @@ assert(
   "App.tsx must route /goal-fit-share-preview to GoalFitSharePage"
 );
 [
-  "保存这张求职风险预演海报",
-  "分享到朋友圈或微信群，领取 ¥10 优惠券。",
-  "¥9.9 解锁完整报告",
-  "/images/goal-fit-share-poster.png",
-  "goal-fit-share-poster-image",
-  "保存图片并分享",
+  "请确认你已经把测试链接分享给同学",
+  "分享后可领取 ¥10 优惠券，¥9.9 查看完整报告。",
+  "我已分享，领取优惠券",
+  "¥9.9 查看完整报告",
   "coupon=share_card",
-  "复制链接，发给同学也测一下",
   "返回完整报告",
   "返回结果页"
 ].forEach((text) => {
@@ -275,7 +272,12 @@ assert(
   "领取优惠券，¥9.9 解锁完整报告",
   "保存分享图，领取优惠",
   "这张求职风险预演海报更适合在手机上截图或保存。你也可以先保存海报，再继续解锁完整报告。",
-  "保存并分享后，可按 ¥9.9 解锁完整报告。"
+  "保存并分享后，可按 ¥9.9 解锁完整报告。",
+  "生成我的求职方向卡",
+  "保存图片并分享",
+  "保存海报",
+  "分享海报",
+  "复制分享文案"
 ].forEach((text) => {
   assert(!sharePageSource.includes(text), `GoalFitSharePage must not keep confusing share CTA copy: ${text}`);
 });
@@ -347,19 +349,19 @@ assert(
     freeResultPageSource.includes("主要风险") &&
     freeResultPageSource.includes("行动提醒") &&
     freeResultPageSource.includes("解锁完整报告") &&
-    freeResultPageSource.includes("解锁完整报告：¥19.9") &&
+    freeResultPageSource.includes("第一份工作风险预演：综合匹配度") &&
+    freeResultPageSource.includes("这个方向可以投递吗？") &&
     freeResultPageSource.includes("完整报告包括") &&
     freeResultPageSource.includes("目标岗位适配判断") &&
     freeResultPageSource.includes("主要风险拆解") &&
     freeResultPageSource.includes("公司类型适配建议") &&
     freeResultPageSource.includes("求职方向调整提醒") &&
     freeResultPageSource.includes("下一步行动建议") &&
-    freeResultPageSource.includes("保存并分享本次测试海报，可领取 ¥10 优惠券，优惠后仅需 ¥9.9。") &&
-    freeResultPageSource.includes("保存图片并分享，¥9.9 查看完整报告") &&
-    freeResultPageSource.includes("直接 ¥19.9 查看完整报告") &&
+    freeResultPageSource.includes("¥19.9 解锁完整报告") &&
+    freeResultPageSource.includes("¥19.9 查看完整报告") &&
+    freeResultPageSource.includes("复制链接给同学，领取 ¥10 优惠券") &&
     freeResultPageSource.includes("/goal-fit-share-preview?session=") &&
     freeResultPageSource.includes("/goal-fit-share-preview?sample=high_fit&mode=coupon") &&
-    freeResultPageSource.includes("/images/goal-fit-share-poster.png") &&
     freeResultPageSource.includes("/goal-fit-unlock-preview?session="),
   "GoalFitFreeResultPage must build a diagnosis-first free result and keep unlock/share CTA logic"
 );
@@ -373,7 +375,10 @@ assert(
   "生成我的求职方向卡",
   "生成求职方向卡",
   "领取 ¥10 优惠券，¥9.9 解锁完整报告",
-  "保存图片并分享，¥9.9 解锁"
+  "保存图片并分享，¥9.9 解锁",
+  "保存图片并分享，¥9.9 查看完整报告",
+  "生成我的求职方向卡",
+  "保存求职方向卡"
 ].forEach((text) => {
   assert(!freeResultPageSource.includes(text), `GoalFitFreeResultPage must not keep old hero copy: ${text}`);
 });
@@ -420,18 +425,22 @@ assert(
     unlockPageSource.includes("order?.wechatCodeUrl ?") &&
     unlockPageSource.includes("isMockOrder") &&
     unlockPageSource.includes("确认解锁完整报告") &&
-    unlockPageSource.includes("完整报告 {formatYuan(displayedOriginalAmount)}") &&
+    unlockPageSource.includes("恭喜你获得 ¥10 优惠券") &&
+    unlockPageSource.includes("优惠后仅需 ¥9.9") &&
+    unlockPageSource.includes("完整报告原价 {formatYuan(displayedOriginalAmount)}") &&
     unlockPageSource.includes("已享 ¥10 优惠") &&
     unlockPageSource.includes("本次支付") &&
     unlockPageSource.includes("完整报告 ¥19.9") &&
     unlockPageSource.includes("保存并分享海报，可 ¥9.9 查看完整报告") &&
     unlockPageSource.includes("返回保存并分享海报") &&
+    unlockPageSource.includes("根据你的选择，预演你在职场可能遇到的问题。") &&
+    unlockPageSource.includes("你选择的是：") &&
     unlockPageSource.includes("应付") &&
     unlockPageSource.includes("formatYuan(displayedPayAmount)") &&
     unlockPageSource.includes("实际支付金额：") &&
     unlockPageSource.includes("正在准备支付...") &&
     unlockPageSource.includes("支付准备中") &&
-    unlockPageSource.includes("`立即支付 ${payAmountLabel}`") &&
+    unlockPageSource.includes("`${payAmountLabel} 支付后查看完整报告`") &&
     unlockPageSource.includes("微信扫码支付") &&
     unlockPageSource.includes("我已支付，刷新状态") &&
     !unlockPageSource.includes("等待支付完成") &&
@@ -448,6 +457,21 @@ assert(
     resultPageSource.includes("LockedReportPage") &&
     resultPageSource.includes("apiUnlocked === true || (!IS_PRODUCTION && reportContext.isUnlocked)"),
   "GoalFitResultPage must check backend unlock status and only keep local compatibility outside production"
+);
+assert(
+  resultPageSource.includes('["你的整体情况", "工作适配拆解", "建议求职行动"]') &&
+    resultPageSource.includes('return params.get("section") === "breakdown" ? 1 : 0') &&
+    resultPageSource.includes("你的整体情况") &&
+    resultPageSource.includes("看工作适配拆解") &&
+    resultPageSource.includes("返回整体情况") &&
+    resultPageSource.includes("看建议求职行动") &&
+    resultPageSource.includes("如果你在求职中还有其他问题，可以关注公众号：") &&
+    resultPageSource.includes("猎头季哥人才重估实验室") &&
+    resultPageSource.includes("继续陪你看清方向、优化简历、准备面试，为顺利进入职场保驾护航。") &&
+    !resultPageSource.includes('["总判断", "适配拆解", "建议行动"]') &&
+    !resultPageSource.includes("生成我的求职方向卡") &&
+    !resultPageSource.includes("保存一张求职方向卡"),
+  "GoalFitResultPage must use the new report navigation, start from overall view by default, and remove share-card entry"
 );
 assert(
   apiConfigSource.includes("VITE_PAYMENT_MODE") &&

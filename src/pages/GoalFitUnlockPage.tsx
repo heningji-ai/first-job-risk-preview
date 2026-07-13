@@ -26,21 +26,6 @@ type UnlockContext = {
   wechatOpenidToken: string | null;
 };
 
-const unlockItems = [
-  {
-    title: "公司差距",
-    body: "这类公司怎么用人，你进去后会是什么体感。"
-  },
-  {
-    title: "岗位差距",
-    body: "这类岗位真正考验什么，你当前离它还有多远。"
-  },
-  {
-    title: "建议行动",
-    body: "你接下来该验证什么、补什么、怎么调整求职材料和面试表达。"
-  }
-];
-
 function GoalFitPageFrame({ children }: { children: ReactNode }) {
   return (
     <main className="goal-fit-shell goal-fit-result-shell">
@@ -104,8 +89,8 @@ function buildFreeResultPath(context: UnlockContext): string {
 }
 
 function buildFullResultPath(context: UnlockContext): string {
-  if (context.isSample) return "/result-goal-fit-preview?sample=high_fit&section=breakdown";
-  return `/result-goal-fit-preview?session=${encodeURIComponent(context.sessionId ?? "")}&section=breakdown`;
+  if (context.isSample) return "/result-goal-fit-preview?sample=high_fit";
+  return `/result-goal-fit-preview?session=${encodeURIComponent(context.sessionId ?? "")}`;
 }
 
 function buildShareCouponPath(context: UnlockContext): string {
@@ -408,7 +393,7 @@ function GoalFitUnlockPage() {
           <p>
             {context.isUnlocked
               ? "你已经解锁过这份报告，可以直接继续查看。"
-              : "你现在可以查看完整报告，继续看公司差距、岗位差距和建议行动。"}
+              : "你现在可以查看完整报告，先确认这份报告讲的是你的当前选择。"}
           </p>
           <div className="goal-fit-unlock-actions">
             <button className="primary-button" type="button" onClick={() => navigateTo(fullResultPath)}>
@@ -428,11 +413,11 @@ function GoalFitUnlockPage() {
       <section className="goal-fit-panel goal-fit-unlock-frame">
         <header className="goal-fit-unlock-header">
           <p className="goal-fit-eyebrow">完整报告确认</p>
-          <h1>{context.hasShareCardCoupon ? "已享 ¥10 优惠" : "解锁完整目标适配报告"}</h1>
+          <h1>{context.hasShareCardCoupon ? "恭喜你获得 ¥10 优惠券" : "解锁完整目标适配报告"}</h1>
           <p>
             {context.hasShareCardCoupon
-              ? "完整报告 ¥19.9，保存并分享海报后已享 ¥10 优惠。完整报告会继续拆解：公司差距、岗位差距和建议行动。"
-              : "免费判断已经帮你看到了总方向。完整报告会继续拆解：公司差距、岗位差距和建议行动。"}
+              ? "优惠后仅需 ¥9.9，即可查看完整报告。"
+              : "免费判断已经帮你看到了总方向。完整报告会继续帮你判断这份选择是否值得继续投递。"}
           </p>
         </header>
 
@@ -443,26 +428,20 @@ function GoalFitUnlockPage() {
               <strong>完整目标适配报告</strong>
             </div>
             <div className="goal-fit-unlock-price-detail">
-              <span>完整报告 {formatYuan(displayedOriginalAmount)}</span>
+              <span>完整报告原价 {formatYuan(displayedOriginalAmount)}</span>
               {context.hasShareCardCoupon ? <span>已享 ¥10 优惠</span> : null}
-              <strong>{context.hasShareCardCoupon ? "本次支付" : "应付"} {payAmountLabel}</strong>
+              <strong>{context.hasShareCardCoupon ? "优惠后仅需" : "应付"} {payAmountLabel}</strong>
             </div>
             <div className="goal-fit-unlock-price">
-              <span>应付</span>
+              <span>{context.hasShareCardCoupon ? "本次支付" : "应付"}</span>
               <strong>{payAmountLabel}</strong>
-            </div>
-            <div className="goal-fit-unlock-item-list">
-              {unlockItems.map((item) => (
-                <article className="goal-fit-unlock-item" key={item.title}>
-                  <h2>{item.title}</h2>
-                  <p>{item.body}</p>
-                </article>
-              ))}
             </div>
           </section>
 
           <aside className="goal-fit-unlock-summary-card">
             <p className="goal-fit-eyebrow">当前预演</p>
+            <p className="goal-fit-unlock-note">根据你的选择，预演你在职场可能遇到的问题。</p>
+            <strong>你选择的是：</strong>
             <div className="goal-fit-result-path">
               <span>公司类型：{context.result.targetCompanyLabel}</span>
               <span>岗位方向：{context.result.targetRoleLabel}</span>
@@ -513,7 +492,7 @@ function GoalFitUnlockPage() {
                   disabled={isInvokingJsapiPay}
                   onClick={handleWechatJsapiPay}
                 >
-                  {isInvokingJsapiPay ? "正在确认支付" : `立即支付 ${payAmountLabel}`}
+                  {isInvokingJsapiPay ? "正在确认支付" : `${payAmountLabel} 支付后查看完整报告`}
                 </button>
               </div>
             ) : order?.wechatCodeUrl ? (

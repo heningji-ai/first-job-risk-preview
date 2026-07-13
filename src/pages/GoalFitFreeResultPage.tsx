@@ -232,8 +232,8 @@ function GoalFitFreeResultPage() {
             当前预演：{result.targetCompanyLabel} × {result.targetRoleLabel}
           </p>
 
-          <button className="primary-button goal-fit-free-primary-cta" type="button" onClick={handleShareCoupon}>
-            保存图片并分享，¥9.9 查看完整报告
+          <button className="primary-button goal-fit-free-primary-cta" type="button" onClick={handleUnlock}>
+            ¥19.9 查看完整报告
           </button>
         </section>
 
@@ -257,7 +257,9 @@ function GoalFitFreeResultPage() {
         <section className="goal-fit-free-share-discount-card goal-fit-free-share-discount-card-primary">
           <div className="goal-fit-free-share-discount-copy">
             <p className="goal-fit-eyebrow">完整报告解锁</p>
-            <h2>解锁完整报告：¥19.9</h2>
+            <h2>第一份工作风险预演：综合匹配度 {result.scores.overallScore}%</h2>
+            <h3>这个方向可以投递吗？</h3>
+            <p>完整报告将继续帮你拆解：你预期公司的真实环境、你和目标岗位的差距、当前投递可能遇到的风险，以及下一步求职调整方向。</p>
             <div className="goal-fit-free-report-includes">
               <strong>完整报告包括</strong>
               <ul>
@@ -268,12 +270,14 @@ function GoalFitFreeResultPage() {
                 <li>下一步行动建议</li>
               </ul>
             </div>
-            <p>保存并分享本次测试海报，可领取 ¥10 优惠券，优惠后仅需 ¥9.9。</p>
-            <button className="primary-button" type="button" onClick={handleShareCoupon}>
-              保存图片并分享，¥9.9 查看完整报告
+            <strong>¥19.9 解锁完整报告</strong>
+            <button className="primary-button" type="button" onClick={handleUnlock}>
+              ¥19.9 查看完整报告
+            </button>
+            <button className="secondary-button" type="button" onClick={handleShareCoupon}>
+              复制链接给同学，领取 ¥10 优惠券
             </button>
           </div>
-          <img src="/images/goal-fit-share-poster.png" alt="第一份工作风险预演分享海报预览" />
         </section>
 
         <section className="goal-fit-free-lock-card">

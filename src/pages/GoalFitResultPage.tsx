@@ -23,7 +23,7 @@ const severityLabels: Record<GoalFitRiskInsightSeverity, string> = {
   low: "作为参考"
 };
 
-const screenLabels = ["总判断", "适配拆解", "建议行动"];
+const screenLabels = ["你的整体情况", "工作适配拆解", "建议求职行动"];
 
 type ResultBand = "high" | "medium" | "low";
 
@@ -256,15 +256,6 @@ function getInitialResultScreen(): number {
   const params = new URLSearchParams(window.location.search);
   if (params.get("section") === "action") return 2;
   return params.get("section") === "breakdown" ? 1 : 0;
-}
-
-function buildSharePagePath(context: ReportContext): string {
-  if (context.isSample) return "/goal-fit-share-preview?sample=high_fit";
-  if (context.sessionId) {
-    return `/goal-fit-share-preview?session=${encodeURIComponent(context.sessionId)}`;
-  }
-
-  return "/goal-fit-share-preview";
 }
 
 function GoalFitPageFrame({ children }: { children: ReactNode }) {
@@ -805,7 +796,7 @@ function GoalFitResultPage() {
 
         {currentResultScreen === 0 ? (
           <section className="goal-fit-result-screen">
-            <p className="goal-fit-eyebrow">先看总判断</p>
+            <p className="goal-fit-eyebrow">你的整体情况</p>
             <div className="goal-fit-result-split">
               <div className="goal-fit-result-primary">
                 <div className="goal-fit-result-overview goal-fit-result-judgement">
@@ -840,7 +831,7 @@ function GoalFitResultPage() {
                 type="button"
                 onClick={() => setCurrentResultScreen(1)}
               >
-                看具体差距
+                看工作适配拆解
               </button>
             </div>
           </section>
@@ -848,13 +839,13 @@ function GoalFitResultPage() {
 
         {currentResultScreen === 1 ? (
           <section className="goal-fit-result-screen">
-            <p className="goal-fit-eyebrow">适配拆解</p>
+            <p className="goal-fit-eyebrow">工作适配拆解</p>
             {openedAtBreakdown ? (
               <div className="goal-fit-result-breakdown-summary">
                 <span>完整报告已解锁</span>
                 <strong>目标组合：{result.targetCompanyLabel} × {result.targetRoleLabel}</strong>
                 <p>综合匹配度：{scores.overallScore}%｜{getOverallScoreText(scores.overallScore)}</p>
-                <small>你已经看过总判断，下面直接看公司类型和岗位类型与你之间的具体差距。</small>
+                <small>你已经看过整体情况，下面直接看公司类型和岗位类型与你之间的具体差距。</small>
               </div>
             ) : null}
             <div className="goal-fit-result-narrative-groups">
@@ -897,14 +888,14 @@ function GoalFitResultPage() {
                 type="button"
                 onClick={() => setCurrentResultScreen(0)}
               >
-                返回总判断
+                返回整体情况
               </button>
               <button
                 className="primary-button"
                 type="button"
                 onClick={() => setCurrentResultScreen(2)}
               >
-                看建议行动
+                看建议求职行动
               </button>
             </div>
           </section>
@@ -912,7 +903,7 @@ function GoalFitResultPage() {
 
         {currentResultScreen === 2 ? (
           <section className="goal-fit-result-screen">
-            <p className="goal-fit-eyebrow">最后看建议行动</p>
+            <p className="goal-fit-eyebrow">建议求职行动</p>
             <div className="goal-fit-result-advice-report">
               <article className="goal-fit-result-action-card featured">
                 <h2>你最需要优先处理的问题</h2>
@@ -936,28 +927,12 @@ function GoalFitResultPage() {
               <article className="goal-fit-result-action-card goal-fit-result-cta wide">
                 <h2>继续获得求职方向帮助</h2>
                 <p>
-                  如果你还想继续看清第一份工作怎么选、简历怎么改、面试怎么说，可以关注公众号：
+                  如果你在求职中还有其他问题，可以关注公众号：
                   <strong>猎头季哥人才重估实验室</strong>
                 </p>
                 <p>
-                  这里会继续分享更真实的招聘判断、岗位选择方法、简历表达方式和面试准备思路。
+                  继续陪你看清方向、优化简历、准备面试，为顺利进入职场保驾护航。
                 </p>
-              </article>
-
-              <article className="goal-fit-result-share-entry">
-                <div>
-                  <h2>保存一张求职方向卡</h2>
-                  <p>
-                    不展示你的具体分数、公司类型、岗位方向和风险点，只保留一张适合朋友圈表达的求职状态卡。
-                  </p>
-                </div>
-                <button
-                  className="secondary-button"
-                  type="button"
-                  onClick={() => navigateTo(buildSharePagePath(reportContext))}
-                >
-                  生成我的求职方向卡
-                </button>
               </article>
             </div>
 
