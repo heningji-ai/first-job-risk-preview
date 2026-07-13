@@ -257,25 +257,23 @@ function GoalFitFreeResultPage() {
         <section className="goal-fit-free-share-discount-card goal-fit-free-share-discount-card-primary">
           <div className="goal-fit-free-share-discount-copy">
             <p className="goal-fit-eyebrow">完整报告解锁</p>
-            <h2>第一份工作风险预演：综合匹配度 {result.scores.overallScore}%</h2>
+            <h2>完整报告 ¥19.9</h2>
+            <p>第一份工作风险预演：综合匹配度 {result.scores.overallScore}%</p>
             <h3>这个方向可以投递吗？</h3>
-            <p>完整报告将继续帮你拆解：你预期公司的真实环境、你和目标岗位的差距、当前投递可能遇到的风险，以及下一步求职调整方向。</p>
+            <p>完整报告将继续帮你拆解：</p>
             <div className="goal-fit-free-report-includes">
-              <strong>完整报告包括</strong>
               <ul>
-                <li>目标岗位适配判断</li>
-                <li>主要风险拆解</li>
-                <li>公司类型适配建议</li>
-                <li>求职方向调整提醒</li>
-                <li>下一步行动建议</li>
+                <li>你预期公司的环境</li>
+                <li>你和目标岗位的差距</li>
+                <li>当前投递风险</li>
+                <li>下一步调整方向</li>
               </ul>
             </div>
-            <strong>¥19.9 解锁完整报告</strong>
             <button className="primary-button" type="button" onClick={handleUnlock}>
               ¥19.9 查看完整报告
             </button>
             <button className="secondary-button" type="button" onClick={handleShareCoupon}>
-              复制链接给同学，领取 ¥10 优惠券
+              复制链接分享好友，领取 ¥10 优惠券
             </button>
           </div>
         </section>

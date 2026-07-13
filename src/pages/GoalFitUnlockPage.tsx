@@ -384,6 +384,17 @@ function GoalFitUnlockPage() {
     }
   }
 
+  function handlePrimaryPay(): void {
+    if (isWechatInAppBrowser && !context.wechatOpenidToken) {
+      handleStartWechatOauth();
+      return;
+    }
+
+    if (order?.jsapiPaymentParams) {
+      void handleWechatJsapiPay();
+    }
+  }
+
   if (isUnlocked) {
     return (
       <GoalFitPageFrame>
@@ -413,7 +424,13 @@ function GoalFitUnlockPage() {
       <section className="goal-fit-panel goal-fit-unlock-frame">
         <header className="goal-fit-unlock-header">
           <p className="goal-fit-eyebrow">完整报告确认</p>
-          <h1>{context.hasShareCardCoupon ? "恭喜你获得 ¥10 优惠券" : "解锁完整目标适配报告"}</h1>
+          <h1>
+            {context.hasShareCardCoupon && !context.wechatOpenidToken
+              ? "恭喜你获得 ¥10 优惠券"
+              : context.hasShareCardCoupon
+                ? "正在准备支付"
+                : "解锁完整目标适配报告"}
+          </h1>
           <p>
             {context.hasShareCardCoupon
               ? "优惠后仅需 ¥9.9，即可查看完整报告。"
@@ -429,8 +446,7 @@ function GoalFitUnlockPage() {
             </div>
             <div className="goal-fit-unlock-price-detail">
               <span>完整报告原价 {formatYuan(displayedOriginalAmount)}</span>
-              {context.hasShareCardCoupon ? <span>已享 ¥10 优惠</span> : null}
-              <strong>{context.hasShareCardCoupon ? "优惠后仅需" : "应付"} {payAmountLabel}</strong>
+              <strong>{context.hasShareCardCoupon ? "本次支付" : "应付"} {payAmountLabel}</strong>
             </div>
             <div className="goal-fit-unlock-price">
               <span>{context.hasShareCardCoupon ? "本次支付" : "应付"}</span>
@@ -456,16 +472,14 @@ function GoalFitUnlockPage() {
             {orderError ? <p className="goal-fit-unlock-error">{orderError}</p> : null}
             {isWechatInAppBrowser && !context.wechatOpenidToken ? (
               <div className="goal-fit-unlock-wechat-pay">
-                <strong>微信支付</strong>
-                <p>当前在微信内打开，可直接唤起微信支付。</p>
-                <button className="primary-button" type="button" onClick={handleStartWechatOauth}>
-                  微信内支付
+                <p>点击下方按钮后，将进入微信支付准备流程。</p>
+                <button className="primary-button" type="button" onClick={handlePrimaryPay}>
+                  {payAmountLabel} 支付后查看完整报告
                 </button>
               </div>
             ) : null}
             {isWaitingForJsapiPaymentParams ? (
               <div className="goal-fit-unlock-wechat-pay">
-                <strong>微信支付</strong>
                 <p>正在准备支付...</p>
                 <button className="primary-button" type="button" disabled>
                   支付准备中
@@ -483,14 +497,12 @@ function GoalFitUnlockPage() {
             ) : null}
             {order?.jsapiPaymentParams ? (
               <div className="goal-fit-unlock-wechat-pay">
-                <strong>微信支付</strong>
-                <p>当前在微信内打开，可直接唤起微信支付。</p>
                 <p className="goal-fit-unlock-pay-amount">实际支付金额：{payAmountLabel}</p>
                 <button
                   className="primary-button"
                   type="button"
                   disabled={isInvokingJsapiPay}
-                  onClick={handleWechatJsapiPay}
+                  onClick={handlePrimaryPay}
                 >
                   {isInvokingJsapiPay ? "正在确认支付" : `${payAmountLabel} 支付后查看完整报告`}
                 </button>

@@ -348,18 +348,15 @@ assert(
     freeResultPageSource.includes("当前预演：") &&
     freeResultPageSource.includes("主要风险") &&
     freeResultPageSource.includes("行动提醒") &&
-    freeResultPageSource.includes("解锁完整报告") &&
-    freeResultPageSource.includes("第一份工作风险预演：综合匹配度") &&
+    freeResultPageSource.includes("完整报告解锁") &&
+    freeResultPageSource.includes("完整报告 ¥19.9") &&
     freeResultPageSource.includes("这个方向可以投递吗？") &&
-    freeResultPageSource.includes("完整报告包括") &&
-    freeResultPageSource.includes("目标岗位适配判断") &&
-    freeResultPageSource.includes("主要风险拆解") &&
-    freeResultPageSource.includes("公司类型适配建议") &&
-    freeResultPageSource.includes("求职方向调整提醒") &&
-    freeResultPageSource.includes("下一步行动建议") &&
-    freeResultPageSource.includes("¥19.9 解锁完整报告") &&
+    freeResultPageSource.includes("你预期公司的环境") &&
+    freeResultPageSource.includes("你和目标岗位的差距") &&
+    freeResultPageSource.includes("当前投递风险") &&
+    freeResultPageSource.includes("下一步调整方向") &&
     freeResultPageSource.includes("¥19.9 查看完整报告") &&
-    freeResultPageSource.includes("复制链接给同学，领取 ¥10 优惠券") &&
+    freeResultPageSource.includes("复制链接分享好友，领取 ¥10 优惠券") &&
     freeResultPageSource.includes("/goal-fit-share-preview?session=") &&
     freeResultPageSource.includes("/goal-fit-share-preview?sample=high_fit&mode=coupon") &&
     freeResultPageSource.includes("/goal-fit-unlock-preview?session="),
@@ -378,7 +375,8 @@ assert(
   "保存图片并分享，¥9.9 解锁",
   "保存图片并分享，¥9.9 查看完整报告",
   "生成我的求职方向卡",
-  "保存求职方向卡"
+  "保存求职方向卡",
+  "分享海报"
 ].forEach((text) => {
   assert(!freeResultPageSource.includes(text), `GoalFitFreeResultPage must not keep old hero copy: ${text}`);
 });
@@ -415,6 +413,8 @@ assert(
     unlockPageSource.includes("WeixinJSBridge.invoke") &&
     unlockPageSource.includes("getBrandWCPayRequest") &&
     unlockPageSource.includes("if (!order?.orderId || !order.jsapiPaymentParams) return") &&
+    unlockPageSource.includes("function handlePrimaryPay()") &&
+    unlockPageSource.includes("handleStartWechatOauth()") &&
     unlockPageSource.includes("jsapiPaymentParams") &&
     unlockPageSource.includes("isWaitingForJsapiPaymentParams") &&
     unlockPageSource.includes("isWaitingForNativeCodeUrl") &&
@@ -428,7 +428,6 @@ assert(
     unlockPageSource.includes("恭喜你获得 ¥10 优惠券") &&
     unlockPageSource.includes("优惠后仅需 ¥9.9") &&
     unlockPageSource.includes("完整报告原价 {formatYuan(displayedOriginalAmount)}") &&
-    unlockPageSource.includes("已享 ¥10 优惠") &&
     unlockPageSource.includes("本次支付") &&
     unlockPageSource.includes("完整报告 ¥19.9") &&
     unlockPageSource.includes("保存并分享海报，可 ¥9.9 查看完整报告") &&
@@ -443,6 +442,8 @@ assert(
     unlockPageSource.includes("`${payAmountLabel} 支付后查看完整报告`") &&
     unlockPageSource.includes("微信扫码支付") &&
     unlockPageSource.includes("我已支付，刷新状态") &&
+    !unlockPageSource.includes("微信内支付") &&
+    !unlockPageSource.includes("已享 ¥10 优惠") &&
     !unlockPageSource.includes("等待支付完成") &&
     !unlockPageSource.includes("开发环境"),
   "GoalFitUnlockPage must create backend orders without frontend paymentMode, show QR only when code URL exists, and use neutral mock unlock copy"
