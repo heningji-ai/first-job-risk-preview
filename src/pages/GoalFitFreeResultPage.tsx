@@ -235,6 +235,9 @@ function GoalFitFreeResultPage() {
           <button className="primary-button goal-fit-free-primary-cta" type="button" onClick={handleUnlock}>
             ¥19.9 查看完整报告
           </button>
+          <button className="secondary-button goal-fit-free-coupon-cta" type="button" onClick={handleShareCoupon}>
+            复制链接分享好友，领取 ¥10 优惠券
+          </button>
         </section>
 
         <section className="goal-fit-free-risk-card">

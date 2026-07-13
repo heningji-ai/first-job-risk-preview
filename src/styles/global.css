@@ -2693,6 +2693,15 @@ p {
   min-height: 50px;
 }
 
+.goal-fit-free-coupon-cta {
+  width: fit-content;
+  min-width: min(100%, 260px);
+  margin-top: 8px;
+  border-color: #b78342;
+  background: #fff6e6;
+  color: #5c331d;
+}
+
 .goal-fit-free-advice-card ul,
 .goal-fit-free-lock-grid ul {
   display: grid;
@@ -4004,9 +4013,26 @@ p {
 
 .goal-fit-unlock-actions .primary-button,
 .goal-fit-unlock-actions .secondary-button,
+.goal-fit-unlock-main-card .primary-button,
+.goal-fit-unlock-main-card .secondary-button,
 .goal-fit-unlock-summary-card .primary-button,
 .goal-fit-unlock-summary-card .secondary-button {
   width: 100%;
+}
+
+.goal-fit-pay-primary {
+  min-height: 52px;
+  background: #8f2f24;
+  border-color: #8f2f24;
+  color: #fffaf0;
+  box-shadow: 0 14px 28px rgba(143, 47, 36, 0.2);
+}
+
+.goal-fit-pay-primary:disabled {
+  background: #c9b6a6;
+  border-color: #c9b6a6;
+  box-shadow: none;
+  color: #fffaf0;
 }
 
 .goal-fit-locked-actions {

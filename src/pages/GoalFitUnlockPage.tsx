@@ -425,11 +425,11 @@ function GoalFitUnlockPage() {
         <header className="goal-fit-unlock-header">
           <p className="goal-fit-eyebrow">完整报告确认</p>
           <h1>
-            {context.hasShareCardCoupon && !context.wechatOpenidToken
-              ? "恭喜你获得 ¥10 优惠券"
+            {context.wechatOpenidToken
+              ? "正在准备支付"
               : context.hasShareCardCoupon
-                ? "正在准备支付"
-                : "解锁完整目标适配报告"}
+              ? "恭喜你获得 ¥10 优惠券"
+              : "解锁完整目标适配报告"}
           </h1>
           <p>
             {context.hasShareCardCoupon
@@ -452,28 +452,11 @@ function GoalFitUnlockPage() {
               <span>{context.hasShareCardCoupon ? "本次支付" : "应付"}</span>
               <strong>{payAmountLabel}</strong>
             </div>
-          </section>
-
-          <aside className="goal-fit-unlock-summary-card">
-            <p className="goal-fit-eyebrow">当前预演</p>
-            <p className="goal-fit-unlock-note">根据你的选择，预演你在职场可能遇到的问题。</p>
-            <strong>你选择的是：</strong>
-            <div className="goal-fit-result-path">
-              <span>公司类型：{context.result.targetCompanyLabel}</span>
-              <span>岗位方向：{context.result.targetRoleLabel}</span>
-            </div>
-            {isCreatingOrder ? <p className="goal-fit-unlock-note">正在创建订单...</p> : null}
-            {order ? (
-              <div className="goal-fit-unlock-order-summary">
-                <span>订单状态：待支付</span>
-                <span>订单号：{order.outTradeNo}</span>
-              </div>
-            ) : null}
             {orderError ? <p className="goal-fit-unlock-error">{orderError}</p> : null}
             {isWechatInAppBrowser && !context.wechatOpenidToken ? (
               <div className="goal-fit-unlock-wechat-pay">
                 <p>点击下方按钮后，将进入微信支付准备流程。</p>
-                <button className="primary-button" type="button" onClick={handlePrimaryPay}>
+                <button className="primary-button goal-fit-pay-primary" type="button" onClick={handlePrimaryPay}>
                   {payAmountLabel} 支付后查看完整报告
                 </button>
               </div>
@@ -481,17 +464,8 @@ function GoalFitUnlockPage() {
             {isWaitingForJsapiPaymentParams ? (
               <div className="goal-fit-unlock-wechat-pay">
                 <p>正在准备支付...</p>
-                <button className="primary-button" type="button" disabled>
+                <button className="primary-button goal-fit-pay-primary" type="button" disabled>
                   支付准备中
-                </button>
-              </div>
-            ) : null}
-            {!context.hasShareCardCoupon ? (
-              <div className="goal-fit-unlock-coupon-reminder">
-                <strong>完整报告 ¥19.9</strong>
-                <p>保存并分享海报，可 ¥9.9 查看完整报告。</p>
-                <button className="secondary-button" type="button" onClick={() => navigateTo(shareCouponPath)}>
-                  返回保存并分享海报
                 </button>
               </div>
             ) : null}
@@ -499,7 +473,7 @@ function GoalFitUnlockPage() {
               <div className="goal-fit-unlock-wechat-pay">
                 <p className="goal-fit-unlock-pay-amount">实际支付金额：{payAmountLabel}</p>
                 <button
-                  className="primary-button"
+                  className="primary-button goal-fit-pay-primary"
                   type="button"
                   disabled={isInvokingJsapiPay}
                   onClick={handlePrimaryPay}
@@ -536,12 +510,38 @@ function GoalFitUnlockPage() {
                 {isMarkingPaid ? "正在确认解锁状态" : "确认解锁完整报告"}
               </button>
             ) : isWechatInAppBrowser && !context.wechatOpenidToken ? null : isWaitingForJsapiPaymentParams ? null : isWaitingForNativeCodeUrl || isCreatingOrder ? (
-              <button className="primary-button" type="button" disabled>
+              <button className="primary-button goal-fit-pay-primary" type="button" disabled>
                 支付准备中
               </button>
             ) : (
               <p className="goal-fit-unlock-note">正在准备支付...</p>
             )}
+          </section>
+
+          <aside className="goal-fit-unlock-summary-card">
+            <p className="goal-fit-eyebrow">当前预演</p>
+            <p className="goal-fit-unlock-note">根据你的选择，预演你在职场可能遇到的问题。</p>
+            <strong>你选择的是：</strong>
+            <div className="goal-fit-result-path">
+              <span>公司类型：{context.result.targetCompanyLabel}</span>
+              <span>岗位方向：{context.result.targetRoleLabel}</span>
+            </div>
+            {isCreatingOrder ? <p className="goal-fit-unlock-note">正在创建订单...</p> : null}
+            {order ? (
+              <div className="goal-fit-unlock-order-summary">
+                <span>订单状态：待支付</span>
+                <span>订单号：{order.outTradeNo}</span>
+              </div>
+            ) : null}
+            {!context.hasShareCardCoupon ? (
+              <div className="goal-fit-unlock-coupon-reminder">
+                <strong>完整报告 ¥19.9</strong>
+                <p>保存并分享海报，可 ¥9.9 查看完整报告。</p>
+                <button className="secondary-button" type="button" onClick={() => navigateTo(shareCouponPath)}>
+                  返回保存并分享海报
+                </button>
+              </div>
+            ) : null}
             <p className="goal-fit-unlock-note">解锁后可查看完整报告，并可在当前设备上再次打开。</p>
             <button className="secondary-button" type="button" onClick={() => navigateTo(freeResultPath)}>
               返回免费判断

@@ -356,6 +356,7 @@ assert(
     freeResultPageSource.includes("当前投递风险") &&
     freeResultPageSource.includes("下一步调整方向") &&
     freeResultPageSource.includes("¥19.9 查看完整报告") &&
+    freeResultPageSource.includes("goal-fit-free-coupon-cta") &&
     freeResultPageSource.includes("复制链接分享好友，领取 ¥10 优惠券") &&
     freeResultPageSource.includes("/goal-fit-share-preview?session=") &&
     freeResultPageSource.includes("/goal-fit-share-preview?sample=high_fit&mode=coupon") &&
@@ -425,6 +426,8 @@ assert(
     unlockPageSource.includes("order?.wechatCodeUrl ?") &&
     unlockPageSource.includes("isMockOrder") &&
     unlockPageSource.includes("确认解锁完整报告") &&
+    unlockPageSource.includes("context.wechatOpenidToken") &&
+    unlockPageSource.includes('"正在准备支付"') &&
     unlockPageSource.includes("恭喜你获得 ¥10 优惠券") &&
     unlockPageSource.includes("优惠后仅需 ¥9.9") &&
     unlockPageSource.includes("完整报告原价 {formatYuan(displayedOriginalAmount)}") &&
@@ -434,6 +437,7 @@ assert(
     unlockPageSource.includes("返回保存并分享海报") &&
     unlockPageSource.includes("根据你的选择，预演你在职场可能遇到的问题。") &&
     unlockPageSource.includes("你选择的是：") &&
+    unlockPageSource.includes("goal-fit-pay-primary") &&
     unlockPageSource.includes("应付") &&
     unlockPageSource.includes("formatYuan(displayedPayAmount)") &&
     unlockPageSource.includes("实际支付金额：") &&
@@ -447,6 +451,12 @@ assert(
     !unlockPageSource.includes("等待支付完成") &&
     !unlockPageSource.includes("开发环境"),
   "GoalFitUnlockPage must create backend orders without frontend paymentMode, show QR only when code URL exists, and use neutral mock unlock copy"
+);
+assert(
+  stylesSource.includes(".goal-fit-free-coupon-cta") &&
+    stylesSource.includes(".goal-fit-pay-primary") &&
+    stylesSource.includes("background: #8f2f24;"),
+  "global.css must make the coupon CTA visible and payment primary button stronger without changing payment logic"
 );
 ["模拟支付", "测试支付", "mock pay", "Native Pay", "API v3", "code_url", "notify_url", "mchid", "appid", "serial_no", "开发", "debug"].forEach((text) => {
   assert(!unlockPageSource.includes(text), `GoalFitUnlockPage must not expose forbidden payment wording: ${text}`);
