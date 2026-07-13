@@ -428,7 +428,7 @@ function GoalFitUnlockPage() {
           <h1>{context.hasShareCardCoupon ? "已享 ¥10 优惠" : "解锁完整目标适配报告"}</h1>
           <p>
             {context.hasShareCardCoupon
-              ? "完整报告原价 ¥19.9，本次优惠后 ¥9.9 解锁。完整报告会继续拆解：公司差距、岗位差距和建议行动。"
+              ? "完整报告 ¥19.9，保存并分享海报后已享 ¥10 优惠。完整报告会继续拆解：公司差距、岗位差距和建议行动。"
               : "免费判断已经帮你看到了总方向。完整报告会继续拆解：公司差距、岗位差距和建议行动。"}
           </p>
         </header>
@@ -440,7 +440,7 @@ function GoalFitUnlockPage() {
               <strong>完整目标适配报告</strong>
             </div>
             <div className="goal-fit-unlock-price-detail">
-              <span>{context.hasShareCardCoupon ? "完整报告原价" : "完整报告解锁价"} {formatYuan(displayedOriginalAmount)}</span>
+              <span>完整报告 {formatYuan(displayedOriginalAmount)}</span>
               {context.hasShareCardCoupon ? <span>已享 ¥10 优惠</span> : null}
               <strong>{context.hasShareCardCoupon ? "本次支付" : "应付"} {formatYuan(displayedPayAmount)}</strong>
             </div>
@@ -483,8 +483,8 @@ function GoalFitUnlockPage() {
             ) : null}
             {!context.hasShareCardCoupon ? (
               <div className="goal-fit-unlock-coupon-reminder">
-                <strong>完整报告解锁价 ¥19.9</strong>
-                <p>想优惠后 ¥9.9？返回保存并分享海报。</p>
+                <strong>完整报告 ¥19.9</strong>
+                <p>保存并分享海报，可 ¥9.9 查看完整报告。</p>
                 <button className="secondary-button" type="button" onClick={() => navigateTo(shareCouponPath)}>
                   返回保存并分享海报
                 </button>

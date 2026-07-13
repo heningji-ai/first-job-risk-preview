@@ -73,14 +73,10 @@ function GoalFitSharePage() {
           <h1>保存这张求职风险预演海报</h1>
           <p>
             {isCouponMode
-              ? "分享给同学或朋友，一起提前看看第一份工作的适应风险。"
+              ? "分享到朋友圈或微信群，领取 ¥10 优惠券。"
               : "这张海报适合手机截图或保存，用来表达你正在认真判断第一份工作的方向。"}
           </p>
-          <p className="goal-fit-share-device-hint">
-            {isCouponMode
-              ? "这张求职风险预演海报更适合在手机上截图或保存。你也可以先保存海报，再继续解锁完整报告。"
-              : "这张求职风险预演海报更适合在手机上截图或保存。你也可以先复制分享文案，或返回完整报告继续查看。"}
-          </p>
+          {isCouponMode ? <p className="goal-fit-share-device-hint">¥9.9 解锁完整报告</p> : null}
         </div>
 
         <article className="goal-fit-share-card" aria-label="第一份工作风险预演分享海报">
@@ -94,9 +90,8 @@ function GoalFitSharePage() {
         <div className="goal-fit-share-actions">
           {isCouponMode ? (
             <section className="goal-fit-share-coupon-panel">
-              <p className="goal-fit-eyebrow">保存 / 分享海报</p>
-              <h2>保存并分享后，可按 ¥9.9 解锁完整报告。</h2>
-              <p>海报不会展示你的具体测试分数，适合截图保存后发给同学或朋友。</p>
+              <p className="goal-fit-eyebrow">海报优惠</p>
+              <h2>¥9.9 解锁完整报告</h2>
             </section>
           ) : null}
 

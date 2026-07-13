@@ -257,10 +257,10 @@ assert(
 );
 [
   "保存这张求职风险预演海报",
-  "分享给同学或朋友，一起提前看看第一份工作的适应风险。",
+  "分享到朋友圈或微信群，领取 ¥10 优惠券。",
+  "¥9.9 解锁完整报告",
   "/images/goal-fit-share-poster.png",
   "goal-fit-share-poster-image",
-  "保存并分享后，可按 ¥9.9 解锁完整报告。",
   "保存图片并分享",
   "coupon=share_card",
   "复制链接，发给同学也测一下",
@@ -269,7 +269,14 @@ assert(
 ].forEach((text) => {
   assert(sharePageSource.includes(text), `GoalFitSharePage must contain copy: ${text}`);
 });
-["我已保存或分享，领取 ¥10 优惠券", "让同学也测一次", "领取优惠券，¥9.9 解锁完整报告", "保存分享图，领取优惠"].forEach((text) => {
+[
+  "我已保存或分享，领取 ¥10 优惠券",
+  "让同学也测一次",
+  "领取优惠券，¥9.9 解锁完整报告",
+  "保存分享图，领取优惠",
+  "这张求职风险预演海报更适合在手机上截图或保存。你也可以先保存海报，再继续解锁完整报告。",
+  "保存并分享后，可按 ¥9.9 解锁完整报告。"
+].forEach((text) => {
   assert(!sharePageSource.includes(text), `GoalFitSharePage must not keep confusing share CTA copy: ${text}`);
 });
 ["匹配度", "公司类型：", "岗位类型：", "最大风险", "我的测试结果", "我的匹配度"].forEach(
@@ -340,11 +347,16 @@ assert(
     freeResultPageSource.includes("主要风险") &&
     freeResultPageSource.includes("行动提醒") &&
     freeResultPageSource.includes("解锁完整报告") &&
-    freeResultPageSource.includes("完整报告解锁价 ¥19.9") &&
-    freeResultPageSource.includes("保存并分享本次测试海报，可以享受 ¥10 优惠，优惠后 ¥9.9 解锁完整报告。") &&
-    freeResultPageSource.includes("保存求职方向卡，也可以发给同学一起测。") &&
-    freeResultPageSource.includes("保存图片并分享，¥9.9 解锁") &&
-    freeResultPageSource.includes("不分享，直接 ¥19.9 解锁") &&
+    freeResultPageSource.includes("解锁完整报告：¥19.9") &&
+    freeResultPageSource.includes("完整报告包括") &&
+    freeResultPageSource.includes("目标岗位适配判断") &&
+    freeResultPageSource.includes("主要风险拆解") &&
+    freeResultPageSource.includes("公司类型适配建议") &&
+    freeResultPageSource.includes("求职方向调整提醒") &&
+    freeResultPageSource.includes("下一步行动建议") &&
+    freeResultPageSource.includes("保存并分享本次测试海报，可领取 ¥10 优惠券，优惠后仅需 ¥9.9。") &&
+    freeResultPageSource.includes("保存图片并分享，¥9.9 查看完整报告") &&
+    freeResultPageSource.includes("直接 ¥19.9 查看完整报告") &&
     freeResultPageSource.includes("/goal-fit-share-preview?session=") &&
     freeResultPageSource.includes("/goal-fit-share-preview?sample=high_fit&mode=coupon") &&
     freeResultPageSource.includes("/images/goal-fit-share-poster.png") &&
@@ -360,7 +372,8 @@ assert(
   "不展示你的具体分数、公司类型、岗位方向和风险点",
   "生成我的求职方向卡",
   "生成求职方向卡",
-  "领取 ¥10 优惠券，¥9.9 解锁完整报告"
+  "领取 ¥10 优惠券，¥9.9 解锁完整报告",
+  "保存图片并分享，¥9.9 解锁"
 ].forEach((text) => {
   assert(!freeResultPageSource.includes(text), `GoalFitFreeResultPage must not keep old hero copy: ${text}`);
 });
@@ -401,11 +414,11 @@ assert(
     unlockPageSource.includes("order?.wechatCodeUrl ?") &&
     unlockPageSource.includes("isMockOrder") &&
     unlockPageSource.includes("确认解锁完整报告") &&
-    unlockPageSource.includes("完整报告原价") &&
+    unlockPageSource.includes("完整报告 {formatYuan(displayedOriginalAmount)}") &&
     unlockPageSource.includes("已享 ¥10 优惠") &&
     unlockPageSource.includes("本次支付") &&
-    unlockPageSource.includes("完整报告解锁价 ¥19.9") &&
-    unlockPageSource.includes("想优惠后 ¥9.9？返回保存并分享海报") &&
+    unlockPageSource.includes("完整报告 ¥19.9") &&
+    unlockPageSource.includes("保存并分享海报，可 ¥9.9 查看完整报告") &&
     unlockPageSource.includes("返回保存并分享海报") &&
     unlockPageSource.includes("应付") &&
     unlockPageSource.includes("formatYuan(displayedPayAmount)") &&
