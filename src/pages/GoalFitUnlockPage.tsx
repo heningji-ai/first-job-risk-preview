@@ -302,6 +302,9 @@ function GoalFitUnlockPage() {
   );
   const displayedOriginalAmount = order?.originalAmountCents ?? 1990;
   const displayedPayAmount = order?.payAmountCents ?? (context.hasShareCardCoupon ? 990 : 1990);
+  const payAmountLabel = formatYuan(displayedPayAmount);
+  const isWaitingForJsapiPaymentParams = Boolean(isWechatInAppBrowser && context.wechatOpenidToken && !order?.jsapiPaymentParams);
+  const isWaitingForNativeCodeUrl = Boolean(!isWechatInAppBrowser && !isMockOrder && !order?.wechatCodeUrl);
 
   async function handleMarkPaid(): Promise<void> {
     if (!context.sessionId || !order?.orderId) return;
@@ -442,11 +445,11 @@ function GoalFitUnlockPage() {
             <div className="goal-fit-unlock-price-detail">
               <span>完整报告 {formatYuan(displayedOriginalAmount)}</span>
               {context.hasShareCardCoupon ? <span>已享 ¥10 优惠</span> : null}
-              <strong>{context.hasShareCardCoupon ? "本次支付" : "应付"} {formatYuan(displayedPayAmount)}</strong>
+              <strong>{context.hasShareCardCoupon ? "本次支付" : "应付"} {payAmountLabel}</strong>
             </div>
             <div className="goal-fit-unlock-price">
               <span>应付</span>
-              <strong>{formatYuan(displayedPayAmount)}</strong>
+              <strong>{payAmountLabel}</strong>
             </div>
             <div className="goal-fit-unlock-item-list">
               {unlockItems.map((item) => (
@@ -481,6 +484,15 @@ function GoalFitUnlockPage() {
                 </button>
               </div>
             ) : null}
+            {isWaitingForJsapiPaymentParams ? (
+              <div className="goal-fit-unlock-wechat-pay">
+                <strong>微信支付</strong>
+                <p>正在准备支付...</p>
+                <button className="primary-button" type="button" disabled>
+                  支付准备中
+                </button>
+              </div>
+            ) : null}
             {!context.hasShareCardCoupon ? (
               <div className="goal-fit-unlock-coupon-reminder">
                 <strong>完整报告 ¥19.9</strong>
@@ -494,20 +506,20 @@ function GoalFitUnlockPage() {
               <div className="goal-fit-unlock-wechat-pay">
                 <strong>微信支付</strong>
                 <p>当前在微信内打开，可直接唤起微信支付。</p>
-                <p className="goal-fit-unlock-pay-amount">实际支付金额：{formatYuan(displayedPayAmount)}</p>
+                <p className="goal-fit-unlock-pay-amount">实际支付金额：{payAmountLabel}</p>
                 <button
                   className="primary-button"
                   type="button"
                   disabled={isInvokingJsapiPay}
                   onClick={handleWechatJsapiPay}
                 >
-                  {isInvokingJsapiPay ? "正在确认支付" : "立即支付"}
+                  {isInvokingJsapiPay ? "正在确认支付" : `立即支付 ${payAmountLabel}`}
                 </button>
               </div>
             ) : order?.wechatCodeUrl ? (
               <div className="goal-fit-unlock-wechat-pay">
                 <strong>微信扫码支付</strong>
-                <p className="goal-fit-unlock-pay-amount">实际支付金额：{formatYuan(displayedPayAmount)}</p>
+                <p className="goal-fit-unlock-pay-amount">实际支付金额：{payAmountLabel}</p>
                 <p>请使用微信扫码完成支付，支付成功后页面会自动进入完整报告。</p>
                 {qrCodeDataUrl ? (
                   <img src={qrCodeDataUrl} alt="微信支付二维码" />
@@ -532,10 +544,12 @@ function GoalFitUnlockPage() {
               >
                 {isMarkingPaid ? "正在确认解锁状态" : "确认解锁完整报告"}
               </button>
-            ) : isWechatInAppBrowser && !context.wechatOpenidToken ? null : (
+            ) : isWechatInAppBrowser && !context.wechatOpenidToken ? null : isWaitingForJsapiPaymentParams ? null : isWaitingForNativeCodeUrl || isCreatingOrder ? (
               <button className="primary-button" type="button" disabled>
-                等待支付完成
+                支付准备中
               </button>
+            ) : (
+              <p className="goal-fit-unlock-note">正在准备支付...</p>
             )}
             <p className="goal-fit-unlock-note">解锁后可查看完整报告，并可在当前设备上再次打开。</p>
             <button className="secondary-button" type="button" onClick={() => navigateTo(freeResultPath)}>

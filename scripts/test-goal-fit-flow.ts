@@ -395,7 +395,10 @@ assert(
   "goalFitOrderStore must expose order and unlock API helpers"
 );
 assert(
-  unlockPageSource.includes("createGoalFitOrderFromApi") &&
+    unlockPageSource.includes("createGoalFitOrderFromApi") &&
+    unlockPageSource.includes("async function createOrder()") &&
+    unlockPageSource.includes("void createOrder()") &&
+    unlockPageSource.includes("setIsCreatingOrder(true)") &&
     unlockPageSource.includes("QRCode.toDataURL") &&
     unlockPageSource.includes("getGoalFitOrderFromApi") &&
     unlockPageSource.includes("markGoalFitApiOrderPaid") &&
@@ -406,7 +409,10 @@ assert(
     unlockPageSource.includes("/api/wechat/oauth/start?returnTo=") &&
     unlockPageSource.includes("WeixinJSBridge.invoke") &&
     unlockPageSource.includes("getBrandWCPayRequest") &&
+    unlockPageSource.includes("if (!order?.orderId || !order.jsapiPaymentParams) return") &&
     unlockPageSource.includes("jsapiPaymentParams") &&
+    unlockPageSource.includes("isWaitingForJsapiPaymentParams") &&
+    unlockPageSource.includes("isWaitingForNativeCodeUrl") &&
     unlockPageSource.includes('accessMode: context.hasShareCardCoupon ? "share_coupon" : "direct"') &&
     unlockPageSource.includes('couponCode: context.hasShareCardCoupon ? "share_card" : null') &&
     !unlockPageSource.includes("paymentMode: PAYMENT_MODE") &&
@@ -423,8 +429,12 @@ assert(
     unlockPageSource.includes("应付") &&
     unlockPageSource.includes("formatYuan(displayedPayAmount)") &&
     unlockPageSource.includes("实际支付金额：") &&
+    unlockPageSource.includes("正在准备支付...") &&
+    unlockPageSource.includes("支付准备中") &&
+    unlockPageSource.includes("`立即支付 ${payAmountLabel}`") &&
     unlockPageSource.includes("微信扫码支付") &&
     unlockPageSource.includes("我已支付，刷新状态") &&
+    !unlockPageSource.includes("等待支付完成") &&
     !unlockPageSource.includes("开发环境"),
   "GoalFitUnlockPage must create backend orders without frontend paymentMode, show QR only when code URL exists, and use neutral mock unlock copy"
 );
