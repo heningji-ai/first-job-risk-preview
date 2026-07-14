@@ -35,7 +35,7 @@ export const serverConfig = {
       "https://first-job-risk.jobeyes.com/api/wechat/oauth/callback"
     ),
     notifyUrl: getEnv("WECHAT_PAY_NOTIFY_URL"),
-    description: getEnv("WECHAT_PAY_DESCRIPTION", "第一份工作风险预演完整报告")
+    description: getEnv("WECHAT_PAY_DESCRIPTION", "第一份工作预演完整报告")
   }
 };
 
