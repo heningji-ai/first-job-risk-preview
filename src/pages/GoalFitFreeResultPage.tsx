@@ -214,7 +214,9 @@ function GoalFitFreeResultPage() {
   const { result, sessionId, isSample } = getResultFromUrl();
   const [isInvitePanelOpen, setIsInvitePanelOpen] = useState(false);
   const [referral, setReferral] = useState<GoalFitReferralResponse | null>(null);
-  const [inviteStatus, setInviteStatus] = useState<"idle" | "copying" | "copied" | "manual" | "confirm_failed" | "error">("idle");
+  const [inviteStatus, setInviteStatus] = useState<
+    "idle" | "copying" | "share_prompt" | "manual" | "confirm_failed" | "error"
+  >("idle");
   const [inviteMessage, setInviteMessage] = useState("");
 
   useEffect(() => {
@@ -275,8 +277,8 @@ function GoalFitFreeResultPage() {
         discountAmountCents: discount.discountAmountCents,
         payAmountCents: discount.payAmountCents
       });
-      setInviteStatus("copied");
-      setInviteMessage("专属邀请链接已复制，¥10优惠已生效。");
+      setInviteStatus("share_prompt");
+      setInviteMessage("专属邀请链接已复制。请分享给微信好友或朋友圈，然后继续查看你的优惠。");
     } catch {
       setInviteStatus("confirm_failed");
       setInviteMessage("链接已复制，但优惠确认失败。请不要重新生成链接，点击下方按钮重试确认。");
@@ -353,14 +355,19 @@ function GoalFitFreeResultPage() {
             </ul>
           </div>
 
-          <p className="goal-fit-free-price-line">完整报告 ¥19.9</p>
-
-          <button className="primary-button goal-fit-free-primary-cta" type="button" onClick={handleUnlock}>
-            ¥19.9 查看完整报告
-          </button>
-          <button className="secondary-button goal-fit-free-coupon-cta" type="button" onClick={handleOpenInvitePanel}>
-            复制邀请链接，立减 ¥10
-          </button>
+          <div className="goal-fit-free-cta-stack goal-fit-free-inline-actions">
+            <p className="goal-fit-free-price-line">完整报告 ¥19.9</p>
+            <button
+              className="primary-button goal-fit-free-primary-cta goal-fit-pay-primary"
+              type="button"
+              onClick={handleUnlock}
+            >
+              ¥19.9 查看完整报告
+            </button>
+            <button className="secondary-button goal-fit-free-coupon-cta" type="button" onClick={handleOpenInvitePanel}>
+              复制邀请链接，立减 ¥10
+            </button>
+          </div>
         </section>
 
         <section className="goal-fit-free-risk-card">
@@ -422,6 +429,15 @@ function GoalFitFreeResultPage() {
         </section>
       </section>
 
+      <nav className="goal-fit-free-sticky-actions" aria-label="完整报告操作">
+        <button className="primary-button goal-fit-pay-primary" type="button" onClick={handleUnlock}>
+          ¥19.9 查看完整报告
+        </button>
+        <button className="secondary-button" type="button" onClick={handleOpenInvitePanel}>
+          复制邀请链接，立减 ¥10
+        </button>
+      </nav>
+
       {isInvitePanelOpen ? (
         <section className="goal-fit-invite-overlay" role="dialog" aria-modal="true" aria-labelledby="goal-fit-invite-title">
           <div className="goal-fit-invite-panel">
@@ -433,9 +449,9 @@ function GoalFitFreeResultPage() {
               <textarea className="goal-fit-invite-manual-link" readOnly value={referral.shareUrl} />
             ) : null}
             <div className="goal-fit-invite-actions">
-              {inviteStatus === "copied" ? (
+              {inviteStatus === "share_prompt" ? (
                 <button className="primary-button" type="button" onClick={handleUnlock}>
-                  ¥9.9 查看完整报告
+                  继续，查看我的优惠
                 </button>
               ) : inviteStatus === "manual" || inviteStatus === "confirm_failed" ? (
                 <button

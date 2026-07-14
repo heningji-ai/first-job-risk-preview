@@ -774,6 +774,18 @@ function GoalFitResultPage() {
   const companyNarratives = buildCompanyNarrativeBlocks(result);
   const roleNarratives = buildRoleNarrativeBlocks(result);
   const actionAdvice = buildActionAdvice(result);
+  const primaryRiskTitle = result.riskInsights[0]?.title ?? "目标适配风险";
+  const firstRecommendationTitle = result.recommendations[0]?.title ?? "先做一次更具体的目标验证";
+  const personalizedOpening =
+    `你选择的是 ${result.targetCompanyLabel} × ${result.targetRoleLabel}。这份报告会直接判断：这条路对你当前是否值得优先投递，以及风险集中在哪里。`;
+  const companyPersonalizedLead =
+    `如果你进入 ${result.targetCompanyLabel}，最需要提前确认的不是公司名好不好听，而是它的用人节奏会不会放大你的短板。`;
+  const rolePersonalizedLead =
+    `对你来说，${result.targetRoleLabel} 的关键不是“想不想做”，而是你现在能不能拿出足够清楚的岗位证据和工作方式。`;
+  const riskPersonalizedLead =
+    `你当前最需要盯住的是「${primaryRiskTitle}」。先处理这个点，比继续泛泛扩大投递更重要。`;
+  const actionPersonalizedLead =
+    `接下来建议你先做「${firstRecommendationTitle}」。这一步会直接影响你后续简历、面试和投递反馈。`;
 
   return (
     <GoalFitPageFrame>
@@ -781,7 +793,7 @@ function GoalFitResultPage() {
         <header className="goal-fit-result-header goal-fit-report-cover">
           <p className="goal-fit-eyebrow">招聘端判断视角</p>
           <h1>第一份工作风险预演报告</h1>
-          <p>基于你的34题回答生成。本报告判断的是目标风险，不评价能力高低。</p>
+          <p>{personalizedOpening}</p>
           <div className="goal-fit-result-path">
             <span>公司类型：{result.targetCompanyLabel}</span>
             <span>岗位方向：{result.targetRoleLabel}</span>
@@ -796,6 +808,9 @@ function GoalFitResultPage() {
               <strong>{scores.overallScore}%</strong>
             </div>
             <div>
+              <p className="goal-fit-result-personal-lead">
+                你现在的匹配并不是一句“适合”或“不适合”能说完，真正要看的，是这条路最先卡在哪里。
+              </p>
               <h2>{getOverallScoreText(scores.overallScore)}</h2>
               <p>{getFirstScreenAdvice(scores.overallScore)}</p>
             </div>
@@ -806,6 +821,7 @@ function GoalFitResultPage() {
           <div className="goal-fit-result-group-heading">
             <p className="goal-fit-eyebrow">二、目标公司环境风险</p>
             <h2>这类公司怎么筛人、怎么用人，以及你进去后可能是什么体感。</h2>
+            <p className="goal-fit-result-personal-lead">{companyPersonalizedLead}</p>
           </div>
           <div className="goal-fit-result-narrative-grid">
             {companyNarratives.map((card) => (
@@ -818,6 +834,7 @@ function GoalFitResultPage() {
           <div className="goal-fit-result-group-heading">
             <p className="goal-fit-eyebrow">三、目标岗位工作方式风险</p>
             <h2>这类岗位真实需要什么，你做起来会遇到哪些工作方式考验。</h2>
+            <p className="goal-fit-result-personal-lead">{rolePersonalizedLead}</p>
           </div>
           <div className="goal-fit-result-narrative-grid">
             {roleNarratives.map((card) => (
@@ -828,6 +845,7 @@ function GoalFitResultPage() {
 
         <section className="goal-fit-result-screen goal-fit-report-section">
           <p className="goal-fit-eyebrow">四、最可能发生的不适应场景</p>
+          <p className="goal-fit-result-personal-lead">{riskPersonalizedLead}</p>
           <article className="goal-fit-result-note-card goal-fit-result-gap-advice">
             <h3>针对你的情况，我们建议：</h3>
             <p>{getFitGapAdvice(result)}</p>
@@ -840,6 +858,7 @@ function GoalFitResultPage() {
 
         <section className="goal-fit-result-screen goal-fit-report-section">
           <p className="goal-fit-eyebrow">五、建议求职行动</p>
+          <p className="goal-fit-result-personal-lead">{actionPersonalizedLead}</p>
           <div className="goal-fit-result-advice-report">
             <article className="goal-fit-result-action-card style">
               <h2>如果差距来自性格或做事风格</h2>

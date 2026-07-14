@@ -240,7 +240,9 @@ assert(
   "复制邀请链接，立减 ¥10",
   "分享测试，报告立减 ¥10",
   "专属邀请链接已复制",
-  "¥10优惠已生效",
+  "请分享给微信好友或朋友圈",
+  "继续，查看我的优惠",
+  "goal-fit-free-sticky-actions",
   "免费页先给你总判断",
   "/goal-fit-unlock-preview?session="
 ].forEach((text) => {
@@ -254,9 +256,10 @@ assert(
 
 [
   "第一份工作风险预演报告",
-  "基于你的34题回答生成",
+  "你选择的是 ${result.targetCompanyLabel} × ${result.targetRoleLabel}",
   "招聘端判断视角",
-  "本报告判断的是目标风险，不评价能力高低",
+  "goal-fit-result-personal-lead",
+  "你当前最需要盯住的是",
   "一、你的整体情况",
   "当前匹配度",
   "二、目标公司环境风险",

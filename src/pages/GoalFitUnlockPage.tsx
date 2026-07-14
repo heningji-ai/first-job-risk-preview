@@ -159,6 +159,7 @@ function GoalFitUnlockPage() {
   const [isCreatingOrder, setIsCreatingOrder] = useState(false);
   const [isMarkingPaid, setIsMarkingPaid] = useState(false);
   const [isInvokingJsapiPay, setIsInvokingJsapiPay] = useState(false);
+  const [hasAutoInvokedJsapiPay, setHasAutoInvokedJsapiPay] = useState(false);
   const [orderError, setOrderError] = useState("");
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState("");
   const [discountStatus, setDiscountStatus] = useState<GoalFitDiscountStatus | null>(null);
@@ -308,6 +309,21 @@ function GoalFitUnlockPage() {
       window.clearInterval(intervalId);
     };
   }, [context.isSample, context.sessionId, fullResultPath, isUnlocked, order?.orderId]);
+
+  useEffect(() => {
+    if (!context.wechatOpenidToken || !order?.orderId || !order.jsapiPaymentParams) return;
+    if (hasAutoInvokedJsapiPay || isInvokingJsapiPay || isUnlocked) return;
+
+    setHasAutoInvokedJsapiPay(true);
+    void handleWechatJsapiPay();
+  }, [
+    context.wechatOpenidToken,
+    hasAutoInvokedJsapiPay,
+    isInvokingJsapiPay,
+    isUnlocked,
+    order?.orderId,
+    order?.jsapiPaymentParams
+  ]);
 
   if (!context.result || !context.sessionId) return <MissingUnlockPage />;
 
@@ -465,16 +481,10 @@ function GoalFitUnlockPage() {
       <section className="goal-fit-panel goal-fit-unlock-frame">
         <header className="goal-fit-unlock-header">
           <p className="goal-fit-eyebrow">完整报告确认</p>
-          <h1>
-            {context.wechatOpenidToken
-              ? "正在准备支付"
-              : hasDiscount
-              ? "已获得 ¥10 邀请优惠"
-              : "解锁完整目标适配报告"}
-          </h1>
+          <h1>{hasDiscount ? "已获得 ¥10 邀请优惠" : "解锁完整目标适配报告"}</h1>
           <p>
             {hasDiscount
-              ? "优惠资格已由服务端确认，支付后即可查看完整报告。"
+              ? "优惠资格已由服务端确认，当前页面会直接准备支付。"
               : "免费判断已经帮你看到了总方向。完整报告会继续帮你判断这份选择是否值得继续投递。"}
           </p>
         </header>
@@ -490,7 +500,7 @@ function GoalFitUnlockPage() {
               {hasDiscount ? <span>邀请优惠 -¥10</span> : null}
               <strong>{hasDiscount ? "本次支付" : "应付"} {payAmountLabel}</strong>
             </div>
-            <div className="goal-fit-unlock-price">
+            <div className="goal-fit-unlock-price goal-fit-unlock-pay-hero">
               <span>{hasDiscount ? "本次支付" : "应付"}</span>
               <strong>{payAmountLabel}</strong>
             </div>
@@ -506,7 +516,6 @@ function GoalFitUnlockPage() {
               </div>
             ) : isWechatInAppBrowser && !context.wechatOpenidToken ? (
               <div className="goal-fit-unlock-wechat-pay">
-                <p>点击下方按钮后，将进入微信支付准备流程。</p>
                 <button className="primary-button goal-fit-pay-primary" type="button" onClick={handlePrimaryPay}>
                   {payAmountLabel} 支付后查看完整报告
                 </button>
@@ -522,7 +531,7 @@ function GoalFitUnlockPage() {
             ) : null}
             {order?.jsapiPaymentParams ? (
               <div className="goal-fit-unlock-wechat-pay">
-                <p className="goal-fit-unlock-pay-amount">实际支付金额：{payAmountLabel}</p>
+                {isInvokingJsapiPay ? <p className="goal-fit-unlock-pay-amount">正在唤起微信支付...</p> : null}
                 <button
                   className="primary-button goal-fit-pay-primary"
                   type="button"
@@ -567,16 +576,23 @@ function GoalFitUnlockPage() {
             ) : (
               <p className="goal-fit-unlock-note">正在准备支付...</p>
             )}
+
+            <div className="goal-fit-unlock-target-mini">
+              <strong>当前预演</strong>
+              <span>公司类型：{context.result.targetCompanyLabel}</span>
+              <span>岗位方向：{context.result.targetRoleLabel}</span>
+              <p>根据你的选择，报告将预演你在这类工作环境中可能遇到的问题。</p>
+            </div>
           </section>
 
           <aside className="goal-fit-unlock-summary-card">
             <p className="goal-fit-eyebrow">当前预演</p>
-            <p className="goal-fit-unlock-note">根据你的选择，预演你在职场可能遇到的问题。</p>
             <strong>你选择的是：</strong>
             <div className="goal-fit-result-path">
               <span>公司类型：{context.result.targetCompanyLabel}</span>
               <span>岗位方向：{context.result.targetRoleLabel}</span>
             </div>
+            <p className="goal-fit-unlock-note">根据你的选择，报告将预演你在这类工作环境中可能遇到的问题。</p>
             {isCreatingOrder ? <p className="goal-fit-unlock-note">正在创建订单...</p> : null}
             {order ? (
               <div className="goal-fit-unlock-order-summary">

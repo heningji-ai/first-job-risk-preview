@@ -1375,6 +1375,283 @@ p {
   width: 100%;
 }
 
+.goal-fit-free-cta-stack {
+  display: grid;
+  gap: 10px;
+  align-items: start;
+}
+
+.goal-fit-free-sticky-actions {
+  display: none;
+}
+
+.goal-fit-invite-message.share_prompt {
+  border-color: rgba(143, 47, 36, 0.2);
+  background: rgba(255, 244, 238, 0.86);
+  color: #7b3429;
+}
+
+.goal-fit-unlock-pay-hero {
+  padding: 14px 16px;
+  border: 1px solid rgba(143, 47, 36, 0.18);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(255, 247, 241, 0.96), rgba(255, 251, 244, 0.96));
+}
+
+.goal-fit-unlock-pay-hero strong {
+  color: #8f2f24;
+  font-size: 34px;
+}
+
+.goal-fit-unlock-target-mini {
+  display: grid;
+  gap: 6px;
+  padding: 12px 14px;
+  border: 1px solid rgba(207, 218, 197, 0.82);
+  border-radius: 16px;
+  background: rgba(255, 252, 244, 0.78);
+}
+
+.goal-fit-unlock-target-mini strong {
+  color: #253a33;
+}
+
+.goal-fit-unlock-target-mini span,
+.goal-fit-unlock-target-mini p {
+  margin: 0;
+  color: #5d6b62;
+  font-size: 13px;
+  line-height: 1.55;
+}
+
+.goal-fit-result-personal-lead {
+  margin: 0;
+  color: #2c3e35;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.68;
+}
+
+.goal-fit-report-cover {
+  padding-bottom: 18px;
+  border-bottom: 1px solid rgba(207, 218, 197, 0.72);
+}
+
+.goal-fit-result-frame {
+  gap: 8px;
+}
+
+.goal-fit-report-section {
+  padding: 20px 0;
+}
+
+.goal-fit-result-group-heading {
+  gap: 6px;
+}
+
+.goal-fit-result-overview {
+  gap: 14px;
+}
+
+.goal-fit-result-narrative-grid,
+.goal-fit-result-advice-report {
+  gap: 12px;
+}
+
+.goal-fit-result-narrative-card,
+.goal-fit-result-action-card,
+.goal-fit-result-note-card {
+  padding: 16px;
+}
+
+.goal-fit-result-action-card p,
+.goal-fit-result-narrative-card p {
+  line-height: 1.64;
+}
+
+@media (max-width: 700px) {
+  .goal-fit-result-shell {
+    padding-bottom: 92px;
+  }
+
+  .goal-fit-free-diagnosis-card {
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .goal-fit-free-diagnosis-core {
+    grid-template-columns: minmax(0, 1fr) minmax(92px, 0.32fr);
+    gap: 10px;
+  }
+
+  .goal-fit-free-headline {
+    gap: 6px;
+  }
+
+  .goal-fit-free-headline h1 {
+    font-size: 19px;
+    line-height: 1.32;
+  }
+
+  .goal-fit-free-headline p:last-child {
+    display: -webkit-box;
+    overflow: hidden;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  .goal-fit-free-score {
+    min-width: 92px;
+    padding: 10px;
+  }
+
+  .goal-fit-free-score strong {
+    font-size: 38px;
+  }
+
+  .goal-fit-free-risk-line,
+  .goal-fit-free-target,
+  .goal-fit-free-report-includes-compact {
+    font-size: 13px;
+  }
+
+  .goal-fit-free-report-includes-compact {
+    margin-top: 4px;
+    padding: 10px 12px;
+  }
+
+  .goal-fit-free-report-includes-compact ul {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 12px;
+    padding-left: 16px;
+  }
+
+  .goal-fit-free-inline-actions {
+    display: none;
+  }
+
+  .goal-fit-free-sticky-actions {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 40;
+    display: grid;
+    gap: 8px;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+    border-top: 1px solid rgba(190, 181, 148, 0.64);
+    background: rgba(255, 250, 240, 0.96);
+    box-shadow: 0 -12px 30px rgba(55, 48, 34, 0.12);
+    backdrop-filter: blur(12px);
+  }
+
+  .goal-fit-free-sticky-actions .primary-button,
+  .goal-fit-free-sticky-actions .secondary-button {
+    min-height: 44px;
+    width: 100%;
+  }
+
+  .goal-fit-invite-panel {
+    width: min(100% - 28px, 420px);
+    padding: 18px;
+  }
+
+  .goal-fit-unlock-frame {
+    gap: 12px;
+  }
+
+  .goal-fit-unlock-header {
+    gap: 6px;
+  }
+
+  .goal-fit-unlock-header h1 {
+    font-size: 24px;
+  }
+
+  .goal-fit-unlock-header p {
+    font-size: 14px;
+  }
+
+  .goal-fit-unlock-layout {
+    gap: 12px;
+  }
+
+  .goal-fit-unlock-main-card {
+    gap: 11px;
+    padding: 14px;
+  }
+
+  .goal-fit-unlock-price-detail {
+    gap: 4px;
+    padding: 10px 12px;
+  }
+
+  .goal-fit-unlock-pay-hero {
+    padding: 12px 14px;
+  }
+
+  .goal-fit-unlock-pay-hero strong {
+    font-size: 32px;
+  }
+
+  .goal-fit-pay-primary {
+    min-height: 48px;
+    background: #982f25;
+    border-color: #982f25;
+    box-shadow: 0 12px 24px rgba(152, 47, 37, 0.2);
+  }
+
+  .goal-fit-unlock-summary-card {
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .goal-fit-report-cover {
+    padding-bottom: 12px;
+  }
+
+  .goal-fit-report-section {
+    padding: 14px 0;
+  }
+
+  .goal-fit-result-overview {
+    gap: 10px;
+    padding: 12px;
+  }
+
+  .goal-fit-result-main-score {
+    min-height: 82px;
+  }
+
+  .goal-fit-result-main-score strong {
+    font-size: 38px;
+  }
+
+  .goal-fit-result-group-heading h2 {
+    font-size: 18px;
+    line-height: 1.42;
+  }
+
+  .goal-fit-result-personal-lead {
+    font-size: 14px;
+    line-height: 1.58;
+  }
+
+  .goal-fit-result-narrative-card,
+  .goal-fit-result-action-card,
+  .goal-fit-result-note-card {
+    gap: 7px;
+    padding: 13px;
+    border-radius: 15px;
+  }
+
+  .goal-fit-result-action-card p,
+  .goal-fit-result-narrative-card p {
+    line-height: 1.58;
+  }
+}
+
 .goal-fit-shell {
   width: min(100%, 1180px);
   margin: 0 auto;

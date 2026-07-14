@@ -367,8 +367,9 @@ assert(
     freeResultPageSource.includes("confirmGoalFitReferralCopied") &&
     freeResultPageSource.includes("getGoalFitDiscountStatus") &&
     freeResultPageSource.includes("confirm_failed") &&
-    freeResultPageSource.includes("专属邀请链接已复制，¥10优惠已生效") &&
-    freeResultPageSource.includes("¥9.9 查看完整报告") &&
+    freeResultPageSource.includes("专属邀请链接已复制。请分享给微信好友或朋友圈") &&
+    freeResultPageSource.includes("继续，查看我的优惠") &&
+    freeResultPageSource.includes("goal-fit-free-sticky-actions") &&
     freeResultPageSource.includes("/goal-fit-unlock-preview?session="),
   "GoalFitFreeResultPage must build a diagnosis-first free result and keep unlock/share CTA logic"
 );
@@ -461,12 +462,13 @@ assert(
     unlockPageSource.includes("本次支付") &&
     unlockPageSource.includes("完整报告 ¥19.9") &&
     unlockPageSource.includes("复制邀请链接，可优惠至 ¥9.9") &&
-    unlockPageSource.includes("根据你的选择，预演你在职场可能遇到的问题。") &&
+    unlockPageSource.includes("根据你的选择，报告将预演你在这类工作环境中可能遇到的问题。") &&
     unlockPageSource.includes("你选择的是：") &&
+    unlockPageSource.includes("goal-fit-unlock-target-mini") &&
+    unlockPageSource.includes("hasAutoInvokedJsapiPay") &&
     unlockPageSource.includes("goal-fit-pay-primary") &&
     unlockPageSource.includes("应付") &&
     unlockPageSource.includes("formatYuan(displayedPayAmount)") &&
-    unlockPageSource.includes("实际支付金额：") &&
     unlockPageSource.includes("正在准备支付...") &&
     unlockPageSource.includes("支付准备中") &&
     unlockPageSource.includes("${payAmountLabel} 支付后查看完整报告") &&
@@ -497,8 +499,9 @@ assert(
 );
 assert(
   resultPageSource.includes("第一份工作风险预演报告") &&
-    resultPageSource.includes("基于你的34题回答生成") &&
-    resultPageSource.includes("本报告判断的是目标风险，不评价能力高低") &&
+    resultPageSource.includes("你选择的是 ${result.targetCompanyLabel} × ${result.targetRoleLabel}") &&
+    resultPageSource.includes("goal-fit-result-personal-lead") &&
+    resultPageSource.includes("你当前最需要盯住的是") &&
     resultPageSource.includes("一、你的整体情况") &&
     resultPageSource.includes("二、目标公司环境风险") &&
     resultPageSource.includes("三、目标岗位工作方式风险") &&
