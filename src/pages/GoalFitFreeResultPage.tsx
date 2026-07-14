@@ -322,7 +322,7 @@ function GoalFitFreeResultPage() {
       <section className="goal-fit-panel goal-fit-free-result-frame">
         <section className="goal-fit-free-diagnosis-card">
           <header className="goal-fit-free-diagnosis-header">
-            <p className="goal-fit-free-page-title">第一份工作风险预演</p>
+            <p className="goal-fit-free-page-title">第一份工作预演</p>
             <span>基础判断</span>
           </header>
 
@@ -349,6 +349,7 @@ function GoalFitFreeResultPage() {
           </p>
 
           <div className="goal-fit-free-report-includes goal-fit-free-report-includes-compact">
+            <small>应届生求职场景预演｜基于你的公司类型与岗位方向生成</small>
             <p>完整报告将继续拆解：</p>
             <ul>
               <li>公司环境</li>

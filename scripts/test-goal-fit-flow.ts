@@ -207,11 +207,12 @@ assert(
 );
 
 [
-  "第一份工作风险预演",
+  "第一份工作预演",
+  "应届生求职场景预演",
   "别只看岗位名",
   "先看看你进去后会不会适应",
   "3–5分钟｜34题｜先看基础判断",
-  "开始风险预演",
+  "开始预演",
   "先看测完能得到什么",
   "测完你会得到一份求职风险预演",
   "公司环境风险",
@@ -328,7 +329,7 @@ assert(
   "这类公司怎么用人",
   "这类岗位真实要求什么",
   "你接下来该怎么调整",
-  "继续，开始风险预演",
+  "继续，开始预演",
   "开始 34 题判断"
 ].forEach((text) => {
   assert(pageSource.includes(text), `GoalFitTestPage must contain copy: ${text}`);
@@ -352,8 +353,9 @@ assert(
   "GoalFitTestPage must navigate to free result page after completion"
 );
 assert(
-  freeResultPageSource.includes("getGoalFitSession") &&
-    freeResultPageSource.includes("第一份工作风险预演") &&
+    freeResultPageSource.includes("getGoalFitSession") &&
+    freeResultPageSource.includes("第一份工作预演") &&
+    freeResultPageSource.includes("应届生求职场景预演") &&
     freeResultPageSource.includes("基础判断") &&
     freeResultPageSource.includes("综合匹配度") &&
     freeResultPageSource.includes("你的当前判断：") &&
@@ -510,7 +512,8 @@ assert(
   "GoalFitResultPage must check backend unlock status and only keep local compatibility outside production"
 );
 assert(
-    resultPageSource.includes("第一份工作风险预演报告") &&
+  resultPageSource.includes("第一份工作预演报告") &&
+    resultPageSource.includes("应届生求职场景预演｜基于你的公司类型与岗位方向生成") &&
     resultPageSource.includes("你选择的是 ${result.targetCompanyLabel} × ${result.targetRoleLabel}") &&
     resultPageSource.includes("goal-fit-result-personal-lead") &&
     resultPageSource.includes("你当前最需要盯住的是") &&
@@ -526,6 +529,8 @@ assert(
     resultPageSource.includes("599元人工人才重估服务") &&
     resultPageSource.includes("如果你在求职中还有其他问题，可以关注公众号：") &&
     resultPageSource.includes("猎头季哥人才重估实验室") &&
+    resultPageSource.includes("/images/wechat-qrcode-talent-revaluation-lab.png") &&
+    resultPageSource.includes("猎头季哥人才重估实验室公众号二维码") &&
     resultPageSource.includes("继续陪你看清方向、优化简历、准备面试，为顺利进入职场保驾护航。") &&
     !resultPageSource.includes('["总判断", "适配拆解", "建议行动"]') &&
     !resultPageSource.includes("你和目标公司类型之间的差距") &&
@@ -533,6 +538,13 @@ assert(
     !resultPageSource.includes("生成我的求职方向卡") &&
     !resultPageSource.includes("保存一张求职方向卡"),
   "GoalFitResultPage must use a continuous professional report structure and remove share-card entry"
+);
+assert(
+  !landingPageSource.includes("第一份工作风险预演") &&
+    !freeResultPageSource.includes("第一份工作风险预演") &&
+    !pageSource.includes("第一份工作风险预演") &&
+    !resultPageSource.includes("第一份工作风险预演"),
+  "Goal Fit user-facing pages must use 第一份工作预演 instead of 第一份工作风险预演"
 );
 assert(
   apiConfigSource.includes("VITE_PAYMENT_MODE") &&

@@ -52,7 +52,8 @@ function GoalFitLandingPage() {
       <section className="goal-fit-landing-hero" aria-labelledby="goal-fit-landing-title">
         <div className="goal-fit-landing-hero-copy">
           <p className="goal-fit-landing-trust">猎头季哥｜21年招聘经验｜招聘端判断</p>
-          <h1 id="goal-fit-landing-title">第一份工作风险预演</h1>
+          <h1 id="goal-fit-landing-title">第一份工作预演</h1>
+          <p className="goal-fit-landing-category">应届生求职场景预演</p>
           <p className="goal-fit-landing-subtitle">
             别只看岗位名，
             <br />
@@ -66,7 +67,7 @@ function GoalFitLandingPage() {
               type="button"
               onClick={() => navigateTo("/test-goal-fit-preview")}
             >
-              开始风险预演
+              开始预演
             </button>
             <button className="goal-fit-landing-text-link" type="button" onClick={scrollToPreview}>
               先看测完能得到什么 ↓
@@ -112,7 +113,7 @@ function GoalFitLandingPage() {
 
         <div className="goal-fit-landing-bottom-cta goal-fit-landing-compact-cta">
           <button className="primary-button" type="button" onClick={() => navigateTo("/test-goal-fit-preview")}>
-            开始风险预演
+            开始预演
           </button>
           <small>基于21年招聘经验，帮应届生提前看清第一份工作的适应风险。</small>
         </div>

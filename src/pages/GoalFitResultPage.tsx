@@ -796,7 +796,8 @@ function GoalFitResultPage() {
       <section className="goal-fit-panel goal-fit-result-frame">
         <header className="goal-fit-result-header goal-fit-report-cover">
           <p className="goal-fit-eyebrow">招聘端判断视角</p>
-          <h1>第一份工作风险预演报告</h1>
+          <h1>第一份工作预演报告</h1>
+          <p className="goal-fit-report-subtitle">应届生求职场景预演｜基于你的公司类型与岗位方向生成</p>
           <p>{personalizedOpening}</p>
           <div className="goal-fit-result-path">
             <span>公司类型：{result.targetCompanyLabel}</span>
@@ -899,6 +900,15 @@ function GoalFitResultPage() {
                 如果你在求职中还有其他问题，可以关注公众号：
                 <strong>猎头季哥人才重估实验室</strong>
               </p>
+              <img
+                className="goal-fit-official-qrcode"
+                src="/images/wechat-qrcode-talent-revaluation-lab.png"
+                alt="猎头季哥人才重估实验室公众号二维码"
+                loading="lazy"
+                onError={(event) => {
+                  event.currentTarget.style.display = "none";
+                }}
+              />
               <p>
                 继续陪你看清方向、优化简历、准备面试，为顺利进入职场保驾护航。
               </p>

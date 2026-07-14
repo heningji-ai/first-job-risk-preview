@@ -3897,11 +3897,18 @@ p {
 }
 
 .goal-fit-landing-caption,
+.goal-fit-landing-category,
 .goal-fit-landing-muted,
 .goal-fit-landing-bottom-cta small {
   color: #736e5b;
   font-size: 13px;
   line-height: 1.65;
+}
+
+.goal-fit-landing-category {
+  margin: -4px 0 0;
+  color: #52683d;
+  font-weight: 900;
 }
 
 .goal-fit-landing-hero-card {
@@ -4555,6 +4562,28 @@ p {
 .goal-fit-report-cover h1 {
   margin: 6px 0 10px;
   font-size: clamp(28px, 5vw, 42px);
+}
+
+.goal-fit-report-subtitle {
+  margin: -6px 0 6px;
+  color: #52683d;
+  font-size: 14px;
+  font-weight: 850;
+  line-height: 1.6;
+}
+
+.goal-fit-official-qrcode {
+  display: block;
+  width: min(170px, 48vw);
+  max-width: 180px;
+  min-width: 140px;
+  height: auto;
+  margin: 2px 0 6px;
+  border: 1px solid rgba(207, 218, 197, 0.86);
+  border-radius: 16px;
+  padding: 8px;
+  background: #fffaf0;
+  box-shadow: 0 10px 24px rgba(96, 79, 45, 0.08);
 }
 
 .goal-fit-report-section {

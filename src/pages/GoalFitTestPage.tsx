@@ -406,7 +406,7 @@ function GoalFitTestPage() {
                 onClick={handleConfirmTarget}
                 disabled={!targetRole}
               >
-                继续，开始风险预演
+                继续，开始预演
               </button>
             </div>
           </section>
@@ -495,7 +495,7 @@ function GoalFitTestPage() {
       <section className="goal-fit-question-task">
         <header className="goal-fit-task-header">
           <div className="goal-fit-task-title-row">
-            <h1>第一份工作风险预演</h1>
+            <h1>第一份工作预演</h1>
             <span>招聘端判断</span>
           </div>
           <p className="goal-fit-task-progress-copy">
