@@ -3,6 +3,11 @@ import type { ReactNode } from "react";
 import { buildGoalFitResult } from "../lib/goalFitResultBuilder";
 import { goalFitQuestionBank } from "../lib/goalFitQuestionBank";
 import { selectGoalFitQuestions } from "../lib/goalFitQuestionSelector";
+import {
+  markGoalFitReferralCompleted,
+  markGoalFitReferralStarted,
+  recordGoalFitReferralVisitFromUrl
+} from "../lib/goalFitReferralStore";
 import { navigateTo } from "../lib/router";
 import {
   clearGoalFitDraft,
@@ -135,6 +140,8 @@ function GoalFitTestPage() {
   const currentQuestionNote = currentQuestion ? questionNotes[currentQuestion.id] : undefined;
 
   useEffect(() => {
+    void recordGoalFitReferralVisitFromUrl();
+
     const draft = getGoalFitDraft();
     if (!draft) return;
 
@@ -183,6 +190,7 @@ function GoalFitTestPage() {
     setErrorMessage("");
     setCurrentIndex(0);
     setStep("questions");
+    void markGoalFitReferralStarted();
   }
 
   function handleSelectOption(optionId: string): void {
@@ -234,6 +242,7 @@ function GoalFitTestPage() {
 
       saveGoalFitSession(session);
       clearGoalFitDraft();
+      void markGoalFitReferralCompleted(session.id);
       setErrorMessage("");
       navigateTo(`/result-goal-fit-free-preview?session=${encodeURIComponent(session.id)}`);
     } catch {

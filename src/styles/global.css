@@ -4035,6 +4035,113 @@ p {
   color: #fffaf0;
 }
 
+.goal-fit-free-score-secondary {
+  align-self: flex-start;
+  min-width: 118px;
+  padding: 12px 14px;
+}
+
+.goal-fit-free-price-line {
+  margin: 12px 0 8px;
+  font-weight: 800;
+  color: #3d3325;
+}
+
+.goal-fit-free-report-includes-compact {
+  margin-top: 14px;
+  padding: 14px;
+  border: 1px solid rgba(207, 218, 197, 0.85);
+  border-radius: 16px;
+  background: rgba(255, 252, 244, 0.74);
+}
+
+.goal-fit-free-report-includes-compact p {
+  margin: 0 0 8px;
+  font-weight: 700;
+  color: #3d3325;
+}
+
+.goal-fit-free-report-includes-compact ul {
+  margin: 0;
+  padding-left: 18px;
+  color: #665f4d;
+}
+
+.goal-fit-invite-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 40;
+  display: grid;
+  place-items: end center;
+  padding: 18px;
+  background: rgba(30, 37, 30, 0.36);
+}
+
+.goal-fit-invite-panel {
+  width: min(100%, 520px);
+  padding: 22px;
+  border: 1px solid rgba(207, 218, 197, 0.95);
+  border-radius: 24px;
+  background: #fffaf0;
+  box-shadow: 0 22px 48px rgba(49, 55, 43, 0.2);
+}
+
+.goal-fit-invite-panel h2 {
+  margin: 4px 0 8px;
+  font-size: 22px;
+}
+
+.goal-fit-invite-panel p {
+  color: #665f4d;
+}
+
+.goal-fit-invite-message {
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(226, 233, 213, 0.76);
+}
+
+.goal-fit-invite-message.error,
+.goal-fit-invite-message.manual {
+  background: rgba(245, 226, 204, 0.78);
+}
+
+.goal-fit-invite-manual-link {
+  width: 100%;
+  min-height: 78px;
+  margin: 10px 0;
+  padding: 10px;
+  border: 1px solid rgba(171, 147, 84, 0.36);
+  border-radius: 14px;
+  background: #fffdf7;
+  color: #3d3325;
+}
+
+.goal-fit-invite-actions {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.goal-fit-report-cover {
+  border-bottom: 1px solid rgba(207, 218, 197, 0.9);
+  padding-bottom: 22px;
+}
+
+.goal-fit-report-cover h1 {
+  margin: 6px 0 10px;
+  font-size: clamp(28px, 5vw, 42px);
+}
+
+.goal-fit-report-section {
+  padding: 28px 0;
+  border-bottom: 1px solid rgba(207, 218, 197, 0.72);
+}
+
+.goal-fit-report-section:last-child {
+  border-bottom: 0;
+}
+
 .goal-fit-locked-actions {
   width: min(100%, 560px);
   grid-template-columns: repeat(2, minmax(0, 1fr));

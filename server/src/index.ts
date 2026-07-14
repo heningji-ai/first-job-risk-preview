@@ -4,13 +4,22 @@ import express from "express";
 import { serverConfig } from "./config.js";
 import { initializeDatabase } from "./db.js";
 import {
-  createOrder,
+  createOrReuseOrder,
   getOrder,
   getPaidOrderBySessionId,
-  isAccessMode,
-  isCouponCode,
   updateOrderStatus
 } from "./orders.js";
+import {
+  attachReferralVisitToOrder,
+  buildReferralResponse,
+  confirmReferralCopied,
+  createOrGetReferral,
+  getReferralDiscountStatus,
+  markReferralPaidForOrder,
+  markReferralVisitCompleted,
+  markReferralVisitStarted,
+  recordReferralVisit
+} from "./referrals.js";
 import {
   buildWechatOauthUrl,
   consumeWechatOpenidToken,
@@ -30,6 +39,14 @@ const app = express();
 const port = serverConfig.port;
 const nodeEnv = serverConfig.nodeEnv;
 const frontendOrigin = serverConfig.frontendOrigin;
+
+function getShareOrigin(): string {
+  return serverConfig.publicAppUrl || frontendOrigin || "http://127.0.0.1:5173";
+}
+
+function getString(value: unknown): string | null {
+  return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
+}
 
 app.use(
   cors({
@@ -61,6 +78,118 @@ app.use(express.json());
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
+});
+
+app.post("/api/referrals/create", (req, res) => {
+  const sessionId = getString((req.body as Record<string, unknown>).sessionId);
+  const visitorId = getString((req.body as Record<string, unknown>).visitorId);
+
+  if (!sessionId) {
+    res.status(400).json({ error: "sessionId is required" });
+    return;
+  }
+
+  const referral = createOrGetReferral({
+    sessionId,
+    visitorId
+  });
+
+  res.json(buildReferralResponse(referral, getShareOrigin()));
+});
+
+app.post("/api/referrals/create-or-copy", (req, res) => {
+  const sessionId = getString((req.body as Record<string, unknown>).sessionId);
+  const visitorId = getString((req.body as Record<string, unknown>).visitorId);
+
+  if (!sessionId) {
+    res.status(400).json({ error: "sessionId is required" });
+    return;
+  }
+
+  const referral = confirmReferralCopied({
+    sessionId,
+    visitorId
+  });
+
+  res.json(buildReferralResponse(referral, getShareOrigin()));
+});
+
+app.get("/api/referrals/discount-status", (req, res) => {
+  const sessionId = getString(req.query.sessionId);
+
+  if (!sessionId) {
+    res.status(400).json({ error: "sessionId is required" });
+    return;
+  }
+
+  res.json(getReferralDiscountStatus(sessionId));
+});
+
+app.post("/api/referrals/visit", (req, res) => {
+  const body = req.body as Record<string, unknown>;
+  const referralCode = getString(body.referralCode);
+  const visitorId = getString(body.visitorId);
+  const landingPath = getString(body.landingPath) ?? "/";
+
+  if (!referralCode || !visitorId) {
+    res.status(400).json({ error: "referralCode and visitorId are required" });
+    return;
+  }
+
+  const visit = recordReferralVisit({
+    referralCode,
+    visitorId,
+    landingPath
+  });
+
+  res.json({
+    ok: true,
+    recorded: Boolean(visit)
+  });
+});
+
+app.post("/api/referrals/start", (req, res) => {
+  const body = req.body as Record<string, unknown>;
+  const referralCode = getString(body.referralCode);
+  const visitorId = getString(body.visitorId);
+
+  if (!referralCode || !visitorId) {
+    res.status(400).json({ error: "referralCode and visitorId are required" });
+    return;
+  }
+
+  const visit = markReferralVisitStarted({
+    referralCode,
+    visitorId
+  });
+
+  res.json({
+    ok: true,
+    recorded: Boolean(visit)
+  });
+});
+
+app.post("/api/referrals/complete", (req, res) => {
+  const body = req.body as Record<string, unknown>;
+  const referralCode = getString(body.referralCode);
+  const visitorId = getString(body.visitorId);
+  const resultSessionId = getString(body.resultSessionId);
+
+  if (!referralCode || !visitorId || !resultSessionId) {
+    res.status(400).json({ error: "referralCode, visitorId and resultSessionId are required" });
+    return;
+  }
+
+  const visit = markReferralVisitCompleted({
+    referralCode,
+    visitorId,
+    resultSessionId
+  });
+
+  res.json({
+    ok: true,
+    recorded: Boolean(visit)
+  });
 });
 
 app.get("/api/wechat/oauth/start", (req, res) => {
@@ -96,7 +225,13 @@ app.get("/api/wechat/oauth/callback", async (req, res) => {
 });
 
 app.post("/api/orders/create", async (req, res) => {
-  const { sessionId, accessMode, couponCode, paymentMethod, wechatOpenidToken } = req.body as Record<string, unknown>;
+  const {
+    sessionId,
+    paymentMethod,
+    wechatOpenidToken,
+    sourceReferralCode,
+    visitorId
+  } = req.body as Record<string, unknown>;
   const serverPaymentMode = serverConfig.paymentMode;
 
   if (typeof sessionId !== "string" || sessionId.trim().length === 0) {
@@ -104,17 +239,9 @@ app.post("/api/orders/create", async (req, res) => {
     return;
   }
 
-  if (!isAccessMode(accessMode)) {
-    res.status(400).json({ error: "accessMode must be direct or share_coupon" });
-    return;
-  }
-
-  const normalizedCouponCode: CouponCode | null = isCouponCode(couponCode) ? couponCode : null;
-
-  if (accessMode === "share_coupon" && normalizedCouponCode !== "share_card") {
-    res.status(400).json({ error: "share_coupon requires share_card couponCode" });
-    return;
-  }
+  const discountStatus = getReferralDiscountStatus(sessionId.trim());
+  const effectiveAccessMode = discountStatus.discountGranted ? "share_coupon" : "direct";
+  const effectiveCouponCode: CouponCode | null = discountStatus.discountGranted ? "share_card" : null;
 
   if (serverPaymentMode !== "mock" && serverPaymentMode !== "native") {
     res.status(400).json({ error: "paymentMode is invalid" });
@@ -144,12 +271,24 @@ app.post("/api/orders/create", async (req, res) => {
     }
   }
 
-  const order = createOrder({
+  const sourceReferralCodeValue = getString(sourceReferralCode);
+  const visitorIdValue = getString(visitorId);
+  const order = createOrReuseOrder({
     sessionId: sessionId.trim(),
-    accessMode,
-    couponCode: normalizedCouponCode,
-    paymentMode: requestedPaymentMode
+    accessMode: effectiveAccessMode,
+    couponCode: effectiveCouponCode,
+    paymentMode: requestedPaymentMode,
+    sourceReferralCode: sourceReferralCodeValue,
+    referralVisitId: null
   });
+
+  if (sourceReferralCodeValue && visitorIdValue) {
+    attachReferralVisitToOrder({
+      referralCode: sourceReferralCodeValue,
+      visitorId: visitorIdValue,
+      orderId: order.id
+    });
+  }
 
   if (requestedPaymentMode === "jsapi") {
     try {
@@ -207,6 +346,8 @@ app.post("/api/orders/:orderId/mock-paid", (req, res) => {
     res.status(404).json({ error: "order not found" });
     return;
   }
+
+  markReferralPaidForOrder(order.id);
 
   res.json(order);
 });

@@ -8,7 +8,10 @@
   },
   "scripts": {
     "dev": "tsx src/index.ts",
-    "build": "tsc --noEmit"
+    "build": "tsc --noEmit",
+    "referral-stats": "tsx src/referralStats.ts",
+    "test-referral-discount": "tsx src/testReferralDiscount.ts",
+    "test-referral-stats": "tsx src/testReferralStats.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",

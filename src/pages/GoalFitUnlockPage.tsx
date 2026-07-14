@@ -12,6 +12,11 @@ import {
   type GoalFitOrder
 } from "../lib/goalFitOrderStore";
 import { selectGoalFitQuestions } from "../lib/goalFitQuestionSelector";
+import {
+  getGoalFitDiscountStatus,
+  getGoalFitReferralContext,
+  type GoalFitDiscountStatus
+} from "../lib/goalFitReferralStore";
 import { getGoalFitSession } from "../lib/goalFitSessionStore";
 import { isGoalFitReportUnlocked, markGoalFitReportUnlocked } from "../lib/goalFitUnlockStore";
 import { navigateTo } from "../lib/router";
@@ -22,7 +27,6 @@ type UnlockContext = {
   sessionId: string | null;
   isSample: boolean;
   isUnlocked: boolean;
-  hasShareCardCoupon: boolean;
   wechatOpenidToken: string | null;
 };
 
@@ -55,7 +59,6 @@ function getUnlockContextFromUrl(): UnlockContext {
   const params = new URLSearchParams(window.location.search);
   const sample = params.get("sample");
   const sessionId = params.get("session");
-  const hasShareCardCoupon = params.get("coupon") === "share_card";
   const wechatOpenidToken = params.get("wechatOpenidToken");
 
   if (sample === "high_fit") {
@@ -64,13 +67,12 @@ function getUnlockContextFromUrl(): UnlockContext {
       sessionId: "sample_high_fit",
       isSample: true,
       isUnlocked: false,
-      hasShareCardCoupon,
       wechatOpenidToken
     };
   }
 
   if (!sessionId) {
-    return { result: null, sessionId: null, isSample: false, isUnlocked: false, hasShareCardCoupon, wechatOpenidToken };
+    return { result: null, sessionId: null, isSample: false, isUnlocked: false, wechatOpenidToken };
   }
 
   return {
@@ -78,7 +80,6 @@ function getUnlockContextFromUrl(): UnlockContext {
     sessionId,
     isSample: false,
     isUnlocked: isGoalFitReportUnlocked(sessionId),
-    hasShareCardCoupon,
     wechatOpenidToken
   };
 }
@@ -104,6 +105,10 @@ function formatYuan(amountCents: number): string {
 
 function isWechatBrowser(): boolean {
   return /MicroMessenger/i.test(navigator.userAgent);
+}
+
+function isMobileBrowser(): boolean {
+  return /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
 }
 
 function getCurrentOauthReturnTo(): string {
@@ -156,14 +161,40 @@ function GoalFitUnlockPage() {
   const [isInvokingJsapiPay, setIsInvokingJsapiPay] = useState(false);
   const [orderError, setOrderError] = useState("");
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState("");
+  const [discountStatus, setDiscountStatus] = useState<GoalFitDiscountStatus | null>(null);
+  const [copiedPageLink, setCopiedPageLink] = useState(false);
   const isWechatInAppBrowser = isWechatBrowser();
+  const isMobileExternalBrowser = isMobileBrowser() && !isWechatInAppBrowser;
   const fullResultPath = buildFullResultPath(context);
   const freeResultPath = buildFreeResultPath(context);
   const shareCouponPath = buildShareCouponPath(context);
 
   useEffect(() => {
+    if (!context.sessionId) return;
+    let ignore = false;
+
+    async function loadDiscountStatus(): Promise<void> {
+      if (!context.sessionId || context.isSample) return;
+
+      try {
+        const status = await getGoalFitDiscountStatus(context.sessionId);
+        if (!ignore) setDiscountStatus(status);
+      } catch {
+        if (!ignore) setDiscountStatus(null);
+      }
+    }
+
+    void loadDiscountStatus();
+
+    return () => {
+      ignore = true;
+    };
+  }, [context.isSample, context.sessionId]);
+
+  useEffect(() => {
     if (!context.result || !context.sessionId || isUnlocked) return;
     if (isWechatInAppBrowser && !context.wechatOpenidToken) return;
+    if (isMobileExternalBrowser) return;
 
     let ignore = false;
 
@@ -176,10 +207,10 @@ function GoalFitUnlockPage() {
       try {
         const createdOrder = await createGoalFitOrderFromApi({
           sessionId: context.sessionId,
-          accessMode: context.hasShareCardCoupon ? "share_coupon" : "direct",
-          couponCode: context.hasShareCardCoupon ? "share_card" : null,
           paymentMethod: isWechatInAppBrowser ? "jsapi" : "native",
-          wechatOpenidToken: context.wechatOpenidToken ?? undefined
+          wechatOpenidToken: context.wechatOpenidToken ?? undefined,
+          sourceReferralCode: getGoalFitReferralContext()?.referralCode,
+          visitorId: getGoalFitReferralContext()?.visitorId
         });
 
         if (!ignore) setOrder(createdOrder);
@@ -196,11 +227,11 @@ function GoalFitUnlockPage() {
       ignore = true;
     };
   }, [
-    context.hasShareCardCoupon,
     context.result,
     context.sessionId,
     context.wechatOpenidToken,
     isWechatInAppBrowser,
+    isMobileExternalBrowser,
     isUnlocked
   ]);
 
@@ -286,7 +317,8 @@ function GoalFitUnlockPage() {
       (order.paymentMode === "mock" || order.paymentProvider === "mock")
   );
   const displayedOriginalAmount = order?.originalAmountCents ?? 1990;
-  const displayedPayAmount = order?.payAmountCents ?? (context.hasShareCardCoupon ? 990 : 1990);
+  const hasDiscount = Boolean(order ? order.discountAmountCents > 0 : discountStatus?.discountGranted);
+  const displayedPayAmount = order?.payAmountCents ?? discountStatus?.payAmountCents ?? 1990;
   const payAmountLabel = formatYuan(displayedPayAmount);
   const isWaitingForJsapiPaymentParams = Boolean(isWechatInAppBrowser && context.wechatOpenidToken && !order?.jsapiPaymentParams);
   const isWaitingForNativeCodeUrl = Boolean(!isWechatInAppBrowser && !isMockOrder && !order?.wechatCodeUrl);
@@ -338,6 +370,15 @@ function GoalFitUnlockPage() {
   function handleStartWechatOauth(): void {
     const returnTo = getCurrentOauthReturnTo();
     window.location.assign(buildApiUrl(`/api/wechat/oauth/start?returnTo=${encodeURIComponent(returnTo)}`));
+  }
+
+  async function handleCopyCurrentLink(): Promise<void> {
+    try {
+      await navigator.clipboard?.writeText(window.location.href);
+      setCopiedPageLink(true);
+    } catch {
+      setCopiedPageLink(false);
+    }
   }
 
   async function waitForPaidOrder(orderId: string): Promise<void> {
@@ -427,13 +468,13 @@ function GoalFitUnlockPage() {
           <h1>
             {context.wechatOpenidToken
               ? "正在准备支付"
-              : context.hasShareCardCoupon
-              ? "恭喜你获得 ¥10 优惠券"
+              : hasDiscount
+              ? "已获得 ¥10 邀请优惠"
               : "解锁完整目标适配报告"}
           </h1>
           <p>
-            {context.hasShareCardCoupon
-              ? "优惠后仅需 ¥9.9，即可查看完整报告。"
+            {hasDiscount
+              ? "优惠资格已由服务端确认，支付后即可查看完整报告。"
               : "免费判断已经帮你看到了总方向。完整报告会继续帮你判断这份选择是否值得继续投递。"}
           </p>
         </header>
@@ -445,15 +486,25 @@ function GoalFitUnlockPage() {
               <strong>完整目标适配报告</strong>
             </div>
             <div className="goal-fit-unlock-price-detail">
-              <span>完整报告原价 {formatYuan(displayedOriginalAmount)}</span>
-              <strong>{context.hasShareCardCoupon ? "本次支付" : "应付"} {payAmountLabel}</strong>
+              <span>{hasDiscount ? `完整报告原价 ${formatYuan(displayedOriginalAmount)}` : "完整报告 ¥19.9"}</span>
+              {hasDiscount ? <span>邀请优惠 -¥10</span> : null}
+              <strong>{hasDiscount ? "本次支付" : "应付"} {payAmountLabel}</strong>
             </div>
             <div className="goal-fit-unlock-price">
-              <span>{context.hasShareCardCoupon ? "本次支付" : "应付"}</span>
+              <span>{hasDiscount ? "本次支付" : "应付"}</span>
               <strong>{payAmountLabel}</strong>
             </div>
             {orderError ? <p className="goal-fit-unlock-error">{orderError}</p> : null}
-            {isWechatInAppBrowser && !context.wechatOpenidToken ? (
+            {isMobileExternalBrowser ? (
+              <div className="goal-fit-unlock-wechat-pay">
+                <strong>请使用微信打开当前页面完成支付。</strong>
+                <p>手机外部浏览器暂不生成二维码订单，避免出现本机无法扫码的支付体验。</p>
+                <button className="primary-button goal-fit-pay-primary" type="button" onClick={handleCopyCurrentLink}>
+                  复制当前页面链接
+                </button>
+                {copiedPageLink ? <p className="goal-fit-unlock-note">链接已复制，请发送到微信内打开。</p> : null}
+              </div>
+            ) : isWechatInAppBrowser && !context.wechatOpenidToken ? (
               <div className="goal-fit-unlock-wechat-pay">
                 <p>点击下方按钮后，将进入微信支付准备流程。</p>
                 <button className="primary-button goal-fit-pay-primary" type="button" onClick={handlePrimaryPay}>
@@ -533,12 +584,12 @@ function GoalFitUnlockPage() {
                 <span>订单号：{order.outTradeNo}</span>
               </div>
             ) : null}
-            {!context.hasShareCardCoupon ? (
+            {!hasDiscount ? (
               <div className="goal-fit-unlock-coupon-reminder">
                 <strong>完整报告 ¥19.9</strong>
-                <p>保存并分享海报，可 ¥9.9 查看完整报告。</p>
+                <p>复制邀请链接，可优惠至 ¥9.9。</p>
                 <button className="secondary-button" type="button" onClick={() => navigateTo(shareCouponPath)}>
-                  返回保存并分享海报
+                  复制邀请链接，可优惠至 ¥9.9
                 </button>
               </div>
             ) : null}

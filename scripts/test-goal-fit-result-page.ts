@@ -160,8 +160,8 @@ assert(
   "global.css must keep target selection panels equal height on desktop"
 );
 assert(
-  testPageSource.includes("GoalFitHeader") && resultPageSource.includes("GoalFitHeader"),
-  "GoalFit pages must reuse GoalFitHeader"
+  !testPageSource.includes("GoalFitHeader") && resultPageSource.includes("GoalFitHeader"),
+  "GoalFit result pages must reuse GoalFitHeader while the task flow keeps the large header removed"
 );
 assert(
   freeResultPageSource.includes("GoalFitHeader"),
@@ -192,15 +192,13 @@ assert(
 [
   "解锁完整目标适配报告",
   "免费判断已经帮你看到了总方向",
-  "完整报告会继续拆解",
-  "公司差距",
-  "岗位差距",
-  "建议行动",
+  "已获得 ¥10 邀请优惠",
+  "邀请优惠 -¥10",
+  "本次支付",
+  "请使用微信打开当前页面完成支付。",
+  "复制当前页面链接",
   "¥19.9",
-  "标准价：¥19.9",
-  "求职方向卡优惠：-¥10",
-  "应付：¥9.9",
-  "¥9.9 解锁完整报告",
+  "支付准备中",
   "确认解锁完整报告",
   "返回免费判断",
   "没有找到你的测试结果",
@@ -212,49 +210,39 @@ assert(
   assert(unlockPageSource.includes(text), `GoalFitUnlockPage must contain copy: ${text}`);
 });
 assert(
-  unlockPageSource.includes("markGoalFitOrderPaid") &&
-    unlockPageSource.includes("markGoalFitOrderPaidWithCoupon") &&
+  unlockPageSource.includes("getGoalFitDiscountStatus") &&
+    unlockPageSource.includes("getGoalFitReferralContext") &&
     unlockPageSource.includes("markGoalFitReportUnlocked") &&
     unlockPageSource.includes("isGoalFitReportUnlocked") &&
-    unlockPageSource.includes('params.get("coupon") === "share_card"') &&
+    !unlockPageSource.includes('params.get("coupon") === "share_card"') &&
     unlockPageSource.includes("/result-goal-fit-preview?session=") &&
-    unlockPageSource.includes("&section=breakdown") &&
-    unlockPageSource.includes("/result-goal-fit-preview?sample=high_fit&section=breakdown") &&
     unlockPageSource.includes("/result-goal-fit-free-preview?session=") &&
     unlockPageSource.includes("/result-goal-fit-free-preview?sample=high_fit"),
   "GoalFitUnlockPage must bridge order, unlock store, free page and full report routes"
 );
-["模拟支付", "测试支付", "微信支付", "立即购买", "免费咨询", "企业微信", "猎头季哥建议："].forEach((text) => {
+["模拟支付", "测试支付", "立即购买", "免费咨询", "企业微信", "猎头季哥建议："].forEach((text) => {
   assert(!unlockPageSource.includes(text), `GoalFitUnlockPage must not contain forbidden copy: ${text}`);
 });
 
 [
-  "你的第一份工作目标判断已生成",
-  "我们先给你一个总判断",
-  "总判断",
-  "适配拆解",
-  "建议行动",
-  "先看总体判断",
-  "综合匹配度",
-  "中等偏上",
-  "这个方向可以尝试",
-  "你当前最需要优先确认的是",
-  "针对你的情况，我们建议：",
-  "完整报告已生成",
-  "公司类型适配拆解",
-  "岗位类型适配拆解",
-  "建议行动",
-  "材料调整方向",
-  "面试表达提醒",
-  "待解锁",
-  "解锁完整目标适配报告 ¥19.9",
-  "保存 / 分享求职方向卡，可领取 ¥10 优惠券，优惠后 ¥9.9 解锁完整报告。",
-  "生成求职方向卡，领取优惠",
+  "第一份工作风险预演",
+  "基础判断",
+  "当前建议：",
+  "当前匹配度",
+  "最大风险：",
+  "完整报告将继续拆解：",
+  "目标公司环境风险",
+  "目标岗位工作方式风险",
+  "最可能发生的不适应场景",
+  "当前求职行动建议",
+  "完整报告 ¥19.9",
+  "¥19.9 查看完整报告",
+  "复制邀请链接，立减 ¥10",
+  "分享测试，报告立减 ¥10",
+  "专属邀请链接已复制",
+  "¥10优惠已生效",
   "免费页先给你总判断",
-  "/goal-fit-unlock-preview?session=",
-  "/goal-fit-unlock-preview?sample=high_fit",
-  "/goal-fit-share-preview?session=",
-  "/goal-fit-share-preview?sample=high_fit&mode=coupon"
+  "/goal-fit-unlock-preview?session="
 ].forEach((text) => {
   assert(freeResultPageSource.includes(text), `GoalFitFreeResultPage must contain copy: ${text}`);
 });
@@ -265,31 +253,24 @@ assert(
 );
 
 [
-  "目标适配报告",
-  "根据你的测试结果，你选择的公司类型、岗位类型与你当前状态的适配程度如下。",
-  "总判断",
-  "适配拆解",
-  "建议行动",
-  "先看总判断",
-  "当前匹配度是",
-  "针对你的情况，我们建议：",
-  "完整报告已解锁",
-  "目标组合",
-  "综合匹配度",
-  "你已经看过总判断，下面直接看公司类型和岗位类型与你之间的具体差距。",
-  "你和目标公司类型之间的差距",
+  "第一份工作风险预演报告",
+  "基于你的34题回答生成",
+  "招聘端判断视角",
+  "本报告判断的是目标风险，不评价能力高低",
+  "一、你的整体情况",
+  "当前匹配度",
+  "二、目标公司环境风险",
   "这类公司的用人风格",
   "你目前更像哪种状态",
   "如果你进入这类公司，可能会是什么体感",
   "这类公司的入门门槛，和你现在的准备",
-  "你和目标岗位类型之间的差距",
+  "三、目标岗位工作方式风险",
   "这类岗位更希望的做事风格",
   "这个岗位真正考验什么能力",
   "你目前和岗位要求之间的差距",
   "如果你真的做这个岗位，可能会有什么感受",
-  "看具体差距",
-  "最后看建议行动",
-  "先看总判断",
+  "四、最可能发生的不适应场景",
+  "五、建议求职行动",
   "猎头季哥人才重估实验室",
   "你最需要优先处理的问题",
   "你接下来要补什么",
@@ -307,15 +288,11 @@ assert(
   "面试表达",
   "如果差距来自性格或做事风格",
   "继续获得求职方向帮助",
-  "这里会继续分享更真实的招聘判断",
-  "保存一张求职方向卡",
-  "生成我的求职方向卡",
-  "/goal-fit-share-preview?session=",
-  "/goal-fit-share-preview?sample=high_fit"
+  "599元人工人才重估服务"
 ].forEach((text) => {
   assert(resultPageSource.includes(text), `GoalFitResultPage must contain copy: ${text}`);
 });
-["相关匹配度", "准备度：", "适应度：", "你现在最该补的不是兴趣，而是证据", "最后看风险行动", "风险行动建议", "这里不是评价你优秀不优秀", "当前报告只看你选择的目标组合和当前准备状态之间的匹配度，不是能力评价。", "接下来，我们看具体公司类型和岗位类型与你之间的差距。", "免费咨询", "企业微信", "保证入职", "立即购买", "猎头季哥建议："].forEach((text) => {
+["相关匹配度", "准备度：", "适应度：", "你现在最该补的不是兴趣，而是证据", "最后看风险行动", "风险行动建议", "这里不是评价你优秀不优秀", "当前报告只看你选择的目标组合和当前准备状态之间的匹配度，不是能力评价。", "接下来，我们看具体公司类型和岗位类型与你之间的差距。", "免费咨询", "企业微信", "保证入职", "立即购买", "猎头季哥建议：", "保存一张求职方向卡", "生成我的求职方向卡", "/goal-fit-share-preview?session=", "/goal-fit-share-preview?sample=high_fit", "你和目标公司类型之间的差距", "你和目标岗位类型之间的差距"].forEach((text) => {
   assert(!resultPageSource.includes(text), `GoalFitResultPage must not contain deprecated score or role evidence copy: ${text}`);
 });
 assert(!resultPageSource.includes("<h3>简历怎么改</h3>"), "GoalFitResultPage must not render resume advice as an independent title");
@@ -350,52 +327,24 @@ assert(
   "GoalFitResultPage must not use old advice title"
 );
 assert(
-  resultPageSource.includes("currentResultScreen") &&
-    resultPageSource.includes("setCurrentResultScreen") &&
-    resultPageSource.includes("getInitialResultScreen") &&
-    resultPageSource.includes('params.get("section") === "breakdown"') &&
-    resultPageSource.includes("goal-fit-result-breakdown-summary"),
-  "GoalFitResultPage must use screen state and default section=breakdown to the breakdown screen"
+  !resultPageSource.includes("goal-fit-result-breakdown-summary") &&
+    !resultPageSource.includes("goal-fit-result-share-entry"),
+  "GoalFitResultPage must remove old section jump summary and share-card entry"
 );
 assert(
-  resultPageSource.includes("buildSharePagePath") &&
-    resultPageSource.includes('params.get("section") === "action"') &&
-    resultPageSource.includes("goal-fit-result-share-entry"),
-  "GoalFitResultPage must use section=action and expose the share-card entry on the action screen"
+  !resultPageSource.includes("buildSharePagePath") &&
+    !resultPageSource.includes('params.get("section") === "action"'),
+  "GoalFitResultPage must not expose the old share-card action screen"
 );
 ["优惠券", "领取优惠", "¥9.9 解锁"].forEach((text) => {
   assert(!resultPageSource.includes(text), `GoalFitResultPage action share entry must not contain coupon copy: ${text}`);
 });
 
 [
-  "生成我的求职方向卡",
-  "生成求职方向卡，领取优惠",
-  "这张卡不会展示你的具体分数、公司类型、岗位方向和风险点",
-  "保存或分享后，可领取 ¥10 优惠券，¥9.9 解锁完整报告。",
-  "我开始对未来的职场有一点信心了。",
-  "不是因为我已经知道自己一定适合什么",
-  "公司、岗位和我之间，到底要怎么判断",
-  "第一份工作不用一次决定一生",
-  "但至少可以少一点盲选",
-  "专为应届生量身定做的职场适应度测试",
-  "猎头季哥｜21年招聘经验",
-  "也可以做一次测试，领取 ¥10 优惠券。",
-  "这张求职方向卡更适合在手机上截图或保存。",
-  "你也可以先复制分享文案，或领取优惠后继续解锁完整报告。",
-  "保存 / 分享后领取",
-  "¥10 优惠券",
-  "完整报告标准价 ¥19.9。",
-  "优惠后 ¥9.9 解锁完整报告。",
-  "你可以先保存截图，也可以复制文案后再决定是否发布。",
-  "我已保存或分享，领取 ¥10 优惠券",
-  "复制分享文案",
-  "返回完整报告",
-  "返回免费判断",
-  "让同学也测一次",
-  "/result-goal-fit-preview?session=",
-  "/result-goal-fit-preview?sample=high_fit&section=action",
-  "/goal-fit-unlock-preview?session=",
-  "/goal-fit-unlock-preview?sample=high_fit&coupon=share_card",
+  "正在打开邀请优惠",
+  "邀请优惠已经合并到免费结果页",
+  "前往领取优惠",
+  "invite=1",
   "/result-goal-fit-free-preview?session=",
   "/result-goal-fit-free-preview?sample=high_fit",
   "/goal-fit-preview"
@@ -423,12 +372,10 @@ assert(
   }
 );
 assert(
-  stylesSource.includes(".goal-fit-share-card") &&
-    stylesSource.includes(".goal-fit-share-actions") &&
-    stylesSource.includes(".goal-fit-share-coupon-panel") &&
-    stylesSource.includes(".goal-fit-share-device-hint") &&
-    stylesSource.includes(".goal-fit-result-share-entry"),
-  "global.css must include share page and action-screen share entry styles"
+  stylesSource.includes(".goal-fit-invite-overlay") &&
+    stylesSource.includes(".goal-fit-invite-panel") &&
+    stylesSource.includes(".goal-fit-invite-actions"),
+  "global.css must include invite coupon panel styles"
 );
 
 const userVisibleSources = [
@@ -513,11 +460,8 @@ const forbiddenVisibleTexts = [
   "debug",
   "sample",
   "session",
-  "mode",
-  "coupon",
   "模拟支付",
   "测试支付",
-  "微信支付",
   "测试版",
   "A 档",
   "B 档",

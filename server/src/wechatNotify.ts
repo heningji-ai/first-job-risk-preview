@@ -1,6 +1,7 @@
 import { serverConfig } from "./config.js";
 import { decryptWechatResource, readWechatPayPublicKey, verifyWechatSignature } from "./crypto.js";
 import { getOrderByOutTradeNo, markOrderPaidByOutTradeNo } from "./orders.js";
+import { markReferralPaidForOrder } from "./referrals.js";
 import type { WechatNotifyPayload, WechatTransaction } from "./types.js";
 import { getWechatPlatformCertificate } from "./wechatPlatformCerts.js";
 
@@ -106,9 +107,13 @@ export async function handleWechatNotify(rawBody: Buffer, headers: WechatNotifyH
     throw new Error("WeChat transaction amount does not match order amount.");
   }
 
-  markOrderPaidByOutTradeNo({
+  const paidOrder = markOrderPaidByOutTradeNo({
     outTradeNo: order.outTradeNo,
     transactionId: transaction.transaction_id ?? "",
     paidAt: transaction.success_time ?? new Date().toISOString()
   });
+
+  if (paidOrder) {
+    markReferralPaidForOrder(paidOrder.id);
+  }
 }

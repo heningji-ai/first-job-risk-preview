@@ -252,12 +252,6 @@ function getReportContextFromUrl(): ReportContext {
   };
 }
 
-function getInitialResultScreen(): number {
-  const params = new URLSearchParams(window.location.search);
-  if (params.get("section") === "action") return 2;
-  return params.get("section") === "breakdown" ? 1 : 0;
-}
-
 function GoalFitPageFrame({ children }: { children: ReactNode }) {
   return (
     <main className="goal-fit-shell goal-fit-result-shell">
@@ -724,14 +718,12 @@ function LockedReportPage({ sessionId }: { sessionId: string }) {
 }
 
 function GoalFitResultPage() {
-  const [currentResultScreen, setCurrentResultScreen] = useState(() => getInitialResultScreen());
   const reportContext = getReportContextFromUrl();
   const [apiUnlocked, setApiUnlocked] = useState<boolean | null>(reportContext.isSample ? true : null);
   const [unlockCheckComplete, setUnlockCheckComplete] = useState(
     reportContext.isSample || (!IS_PRODUCTION && reportContext.isUnlocked)
   );
   const result = reportContext.result;
-  const openedAtBreakdown = new URLSearchParams(window.location.search).get("section") === "breakdown";
 
   useEffect(() => {
     if (reportContext.isSample || !reportContext.sessionId) return;
@@ -786,174 +778,108 @@ function GoalFitResultPage() {
   return (
     <GoalFitPageFrame>
       <section className="goal-fit-panel goal-fit-result-frame">
-        <header className="goal-fit-result-header">
-          <h1>目标适配报告</h1>
-          <p>
-            根据你的测试结果，你选择的公司类型、岗位类型与你当前状态的适配程度如下。
-          </p>
-          <ScreenDots currentScreen={currentResultScreen} onChange={setCurrentResultScreen} />
+        <header className="goal-fit-result-header goal-fit-report-cover">
+          <p className="goal-fit-eyebrow">招聘端判断视角</p>
+          <h1>第一份工作风险预演报告</h1>
+          <p>基于你的34题回答生成。本报告判断的是目标风险，不评价能力高低。</p>
+          <div className="goal-fit-result-path">
+            <span>公司类型：{result.targetCompanyLabel}</span>
+            <span>岗位方向：{result.targetRoleLabel}</span>
+          </div>
         </header>
 
-        {currentResultScreen === 0 ? (
-          <section className="goal-fit-result-screen">
-            <p className="goal-fit-eyebrow">你的整体情况</p>
-            <div className="goal-fit-result-split">
-              <div className="goal-fit-result-primary">
-                <div className="goal-fit-result-overview goal-fit-result-judgement">
-                  <div className="goal-fit-result-main-score">
-                    <span>当前匹配度</span>
-                    <strong>{scores.overallScore}%</strong>
-                  </div>
-                  <div>
-                    <h2>
-                      你选择的「{result.targetCompanyLabel}」类型公司 ×「{result.targetRoleLabel}」
-                      岗位，当前匹配度是 {scores.overallScore}%
-                    </h2>
-                    <p>{getOverallScoreText(scores.overallScore)}</p>
-                  </div>
-                </div>
-                <article className="goal-fit-result-human-card">
-                  <h3>针对你的情况，我们建议：</h3>
-                  <p>{getFirstScreenAdvice(scores.overallScore)}</p>
-                </article>
-              </div>
-              <aside className="goal-fit-result-side-card">
-                <p className="goal-fit-eyebrow">当前预演</p>
-                <div className="goal-fit-result-path">
-                  <span>公司类型：{result.targetCompanyLabel}</span>
-                  <span>岗位类型：{result.targetRoleLabel}</span>
-                </div>
-              </aside>
+        <section className="goal-fit-result-screen goal-fit-report-section">
+          <p className="goal-fit-eyebrow">一、你的整体情况</p>
+          <div className="goal-fit-result-overview goal-fit-result-judgement">
+            <div className="goal-fit-result-main-score">
+              <span>当前匹配度</span>
+              <strong>{scores.overallScore}%</strong>
             </div>
-            <div className="goal-fit-result-actions">
-              <button
-                className="primary-button"
-                type="button"
-                onClick={() => setCurrentResultScreen(1)}
-              >
-                看工作适配拆解
-              </button>
+            <div>
+              <h2>{getOverallScoreText(scores.overallScore)}</h2>
+              <p>{getFirstScreenAdvice(scores.overallScore)}</p>
             </div>
-          </section>
-        ) : null}
+          </div>
+        </section>
 
-        {currentResultScreen === 1 ? (
-          <section className="goal-fit-result-screen">
-            <p className="goal-fit-eyebrow">工作适配拆解</p>
-            {openedAtBreakdown ? (
-              <div className="goal-fit-result-breakdown-summary">
-                <span>完整报告已解锁</span>
-                <strong>目标组合：{result.targetCompanyLabel} × {result.targetRoleLabel}</strong>
-                <p>综合匹配度：{scores.overallScore}%｜{getOverallScoreText(scores.overallScore)}</p>
-                <small>你已经看过整体情况，下面直接看公司类型和岗位类型与你之间的具体差距。</small>
-              </div>
-            ) : null}
-            <div className="goal-fit-result-narrative-groups">
-              <section className="goal-fit-result-narrative-section">
-                <div className="goal-fit-result-group-heading">
-                  <h2>你和目标公司类型之间的差距</h2>
-                  <p>
-                    这部分不是看你喜不喜欢这类公司，而是看：这类公司通常怎么筛人、怎么用人，以及你进去之后会被放大，还是被消耗。
-                  </p>
-                </div>
-                <div className="goal-fit-result-narrative-grid">
-                  {companyNarratives.map((card) => (
-                    <NarrativeCard card={card} key={card.title} />
-                  ))}
-                </div>
-              </section>
+        <section className="goal-fit-result-screen goal-fit-report-section">
+          <div className="goal-fit-result-group-heading">
+            <p className="goal-fit-eyebrow">二、目标公司环境风险</p>
+            <h2>这类公司怎么筛人、怎么用人，以及你进去后可能是什么体感。</h2>
+          </div>
+          <div className="goal-fit-result-narrative-grid">
+            {companyNarratives.map((card) => (
+              <NarrativeCard card={card} key={card.title} />
+            ))}
+          </div>
+        </section>
 
-              <section className="goal-fit-result-narrative-section">
-                <div className="goal-fit-result-group-heading">
-                  <h2>你和目标岗位类型之间的差距</h2>
-                  <p>
-                    这里看的不是岗位名称好不好听，而是这类岗位真实需要什么、你离它有多远、做起来会有什么体感，以及你要补什么证据。
-                  </p>
-                </div>
-                <div className="goal-fit-result-narrative-grid">
-                  {roleNarratives.map((card) => (
-                    <NarrativeCard card={card} key={card.title} />
-                  ))}
-                </div>
-              </section>
+        <section className="goal-fit-result-screen goal-fit-report-section">
+          <div className="goal-fit-result-group-heading">
+            <p className="goal-fit-eyebrow">三、目标岗位工作方式风险</p>
+            <h2>这类岗位真实需要什么，你做起来会遇到哪些工作方式考验。</h2>
+          </div>
+          <div className="goal-fit-result-narrative-grid">
+            {roleNarratives.map((card) => (
+              <NarrativeCard card={card} key={card.title} />
+            ))}
+          </div>
+        </section>
 
-              <article className="goal-fit-result-note-card goal-fit-result-gap-advice">
-                <h3>针对你的情况，我们建议：</h3>
-                <p>{getFitGapAdvice(result)}</p>
-              </article>
-            </div>
-            <div className="goal-fit-result-actions">
-              <button
-                className="secondary-button"
-                type="button"
-                onClick={() => setCurrentResultScreen(0)}
-              >
-                返回整体情况
-              </button>
-              <button
-                className="primary-button"
-                type="button"
-                onClick={() => setCurrentResultScreen(2)}
-              >
-                看建议求职行动
-              </button>
-            </div>
-          </section>
-        ) : null}
+        <section className="goal-fit-result-screen goal-fit-report-section">
+          <p className="goal-fit-eyebrow">四、最可能发生的不适应场景</p>
+          <article className="goal-fit-result-note-card goal-fit-result-gap-advice">
+            <h3>针对你的情况，我们建议：</h3>
+            <p>{getFitGapAdvice(result)}</p>
+          </article>
+          <article className="goal-fit-result-action-card featured">
+            <h2>你最需要优先处理的问题</h2>
+            <p>{actionAdvice.priorityProblem}</p>
+          </article>
+        </section>
 
-        {currentResultScreen === 2 ? (
-          <section className="goal-fit-result-screen">
-            <p className="goal-fit-eyebrow">建议求职行动</p>
-            <div className="goal-fit-result-advice-report">
-              <article className="goal-fit-result-action-card featured">
-                <h2>你最需要优先处理的问题</h2>
-                <p>{actionAdvice.priorityProblem}</p>
-              </article>
+        <section className="goal-fit-result-screen goal-fit-report-section">
+          <p className="goal-fit-eyebrow">五、建议求职行动</p>
+          <div className="goal-fit-result-advice-report">
+            <article className="goal-fit-result-action-card style">
+              <h2>如果差距来自性格或做事风格</h2>
+              {actionAdvice.styleGuidance.split("\n\n").map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </article>
 
-              <article className="goal-fit-result-action-card style">
-                <h2>如果差距来自性格或做事风格</h2>
-                {actionAdvice.styleGuidance.split("\n\n").map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
-              </article>
+            <article className="goal-fit-result-action-card emphasis">
+              <h2>你接下来要补什么</h2>
+              {actionAdvice.nextStep.split("\n\n").map((paragraph) => (
+                <p key={paragraph}>{paragraph}</p>
+              ))}
+            </article>
 
-              <article className="goal-fit-result-action-card emphasis">
-                <h2>你接下来要补什么</h2>
-                {actionAdvice.nextStep.split("\n\n").map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
-                ))}
-              </article>
+            <article className="goal-fit-result-action-card goal-fit-result-cta wide">
+              <h2>继续获得求职方向帮助</h2>
+              <p>
+                如果你在求职中还有其他问题，可以关注公众号：
+                <strong>猎头季哥人才重估实验室</strong>
+              </p>
+              <p>
+                继续陪你看清方向、优化简历、准备面试，为顺利进入职场保驾护航。
+              </p>
+              <p>
+                自动报告基于测试答案生成；599元人工人才重估服务会结合你的简历、经历和求职目标进行一对一判断。
+              </p>
+            </article>
+          </div>
 
-              <article className="goal-fit-result-action-card goal-fit-result-cta wide">
-                <h2>继续获得求职方向帮助</h2>
-                <p>
-                  如果你在求职中还有其他问题，可以关注公众号：
-                  <strong>猎头季哥人才重估实验室</strong>
-                </p>
-                <p>
-                  继续陪你看清方向、优化简历、准备面试，为顺利进入职场保驾护航。
-                </p>
-              </article>
-            </div>
-
-            <div className="goal-fit-result-actions">
-              <button
-                className="secondary-button"
-                type="button"
-                onClick={() => setCurrentResultScreen(1)}
-              >
-                返回上一屏
-              </button>
-              <button
-                className="primary-button"
-                type="button"
-                onClick={() => navigateTo("/test-goal-fit-preview")}
-              >
-                重新测试
-              </button>
-            </div>
-          </section>
-        ) : null}
+          <div className="goal-fit-result-actions">
+            <button
+              className="primary-button"
+              type="button"
+              onClick={() => navigateTo("/test-goal-fit-preview")}
+            >
+              重新测试
+            </button>
+          </div>
+        </section>
       </section>
     </GoalFitPageFrame>
   );

@@ -1,8 +1,15 @@
+import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import GoalFitHeader from "../components/GoalFitHeader";
 import { buildGoalFitResult } from "../lib/goalFitResultBuilder";
 import { goalFitQuestionBank } from "../lib/goalFitQuestionBank";
 import { selectGoalFitQuestions } from "../lib/goalFitQuestionSelector";
+import {
+  confirmGoalFitReferralCopied,
+  createGoalFitReferralLink,
+  getGoalFitDiscountStatus,
+  type GoalFitReferralResponse
+} from "../lib/goalFitReferralStore";
 import { getGoalFitSession } from "../lib/goalFitSessionStore";
 import { navigateTo } from "../lib/router";
 import type { CompanyType, GoalFitAnswerMap, GoalFitResult, RoleType } from "../lib/goalFitTypes";
@@ -155,6 +162,39 @@ function getActionReminder(result: GoalFitResult, riskTitle: string): string {
   return "先确认这个方向最影响反馈的一项，再决定是否扩大投递。";
 }
 
+function getAdviceLabel(score: number): string {
+  if (score >= 80) return "建议优先尝试";
+  if (score >= 65) return "可以尝试，但需确认风险";
+  return "当前不建议优先投递";
+}
+
+async function copyTextToClipboard(text: string): Promise<boolean> {
+  try {
+    if (navigator.clipboard?.writeText) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // Fallback below.
+  }
+
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "true");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  try {
+    return document.execCommand("copy");
+  } catch {
+    return false;
+  } finally {
+    document.body.removeChild(textarea);
+  }
+}
+
 function MissingFreeResultPage() {
   return (
     <GoalFitPageFrame>
@@ -172,6 +212,15 @@ function MissingFreeResultPage() {
 
 function GoalFitFreeResultPage() {
   const { result, sessionId, isSample } = getResultFromUrl();
+  const [isInvitePanelOpen, setIsInvitePanelOpen] = useState(false);
+  const [referral, setReferral] = useState<GoalFitReferralResponse | null>(null);
+  const [inviteStatus, setInviteStatus] = useState<"idle" | "copying" | "copied" | "manual" | "confirm_failed" | "error">("idle");
+  const [inviteMessage, setInviteMessage] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("invite") === "1") setIsInvitePanelOpen(true);
+  }, []);
 
   if (!result) return <MissingFreeResultPage />;
 
@@ -191,15 +240,77 @@ function GoalFitFreeResultPage() {
     navigateTo(`/goal-fit-unlock-preview?session=${encodeURIComponent(sessionId)}`);
   }
 
-  function handleShareCoupon(): void {
+  function handleOpenInvitePanel(): void {
+    setInviteStatus("idle");
+    setInviteMessage("");
+    setIsInvitePanelOpen(true);
+  }
+
+  async function handleConfirmReferralCopied(): Promise<void> {
     if (isSample) {
-      navigateTo("/goal-fit-share-preview?sample=high_fit&mode=coupon");
+      setInviteStatus("error");
+      setInviteMessage("示例结果不能领取专属优惠，请完成一次正式测试。");
       return;
     }
 
     if (!sessionId) return;
 
-    navigateTo(`/goal-fit-share-preview?session=${encodeURIComponent(sessionId)}&mode=coupon`);
+    setInviteStatus("copying");
+    setInviteMessage("");
+
+    try {
+      const confirmed = await confirmGoalFitReferralCopied(sessionId);
+      const discount = await getGoalFitDiscountStatus(sessionId);
+
+      if (!discount.discountGranted) {
+        setReferral(confirmed);
+        setInviteStatus("confirm_failed");
+        setInviteMessage("链接已复制，但服务端还没有确认优惠。请点击下方按钮重试。");
+        return;
+      }
+
+      setReferral({
+        ...confirmed,
+        discountGranted: true,
+        discountAmountCents: discount.discountAmountCents,
+        payAmountCents: discount.payAmountCents
+      });
+      setInviteStatus("copied");
+      setInviteMessage("专属邀请链接已复制，¥10优惠已生效。");
+    } catch {
+      setInviteStatus("confirm_failed");
+      setInviteMessage("链接已复制，但优惠确认失败。请不要重新生成链接，点击下方按钮重试确认。");
+    }
+  }
+
+  async function handleCopyReferralLink(): Promise<void> {
+    if (isSample) {
+      setInviteStatus("error");
+      setInviteMessage("示例结果不能领取专属优惠，请完成一次正式测试。");
+      return;
+    }
+
+    if (!sessionId) return;
+
+    setInviteStatus("copying");
+    setInviteMessage("");
+
+    try {
+      const nextReferral = await createGoalFitReferralLink(sessionId);
+      setReferral(nextReferral);
+      const copied = await copyTextToClipboard(nextReferral.shareUrl);
+
+      if (!copied) {
+        setInviteStatus("manual");
+        setInviteMessage("复制没有成功。你可以手动选择链接复制，复制成功后再点击按钮确认。");
+        return;
+      }
+
+      await handleConfirmReferralCopied();
+    } catch {
+      setInviteStatus("error");
+      setInviteMessage("专属链接暂时生成失败，请稍后再试。");
+    }
   }
 
   return (
@@ -212,14 +323,14 @@ function GoalFitFreeResultPage() {
           </header>
 
           <div className="goal-fit-free-diagnosis-core">
-            <div className="goal-fit-free-score">
-              <span>综合匹配度</span>
-              <strong>{result.scores.overallScore}%</strong>
-            </div>
             <div className="goal-fit-free-headline">
-              <p>这个方向可以先投吗？</p>
+              <p>当前建议：{getAdviceLabel(result.scores.overallScore)}</p>
               <h1>{judgement.title}</h1>
               <p>{judgement.summary}</p>
+            </div>
+            <div className="goal-fit-free-score goal-fit-free-score-secondary">
+              <span>当前匹配度</span>
+              <strong>{result.scores.overallScore}%</strong>
             </div>
           </div>
 
@@ -232,11 +343,23 @@ function GoalFitFreeResultPage() {
             当前预演：{result.targetCompanyLabel} × {result.targetRoleLabel}
           </p>
 
+          <div className="goal-fit-free-report-includes goal-fit-free-report-includes-compact">
+            <p>完整报告将继续拆解：</p>
+            <ul>
+              <li>目标公司环境风险</li>
+              <li>目标岗位工作方式风险</li>
+              <li>最可能发生的不适应场景</li>
+              <li>当前求职行动建议</li>
+            </ul>
+          </div>
+
+          <p className="goal-fit-free-price-line">完整报告 ¥19.9</p>
+
           <button className="primary-button goal-fit-free-primary-cta" type="button" onClick={handleUnlock}>
             ¥19.9 查看完整报告
           </button>
-          <button className="secondary-button goal-fit-free-coupon-cta" type="button" onClick={handleShareCoupon}>
-            复制链接分享好友，领取 ¥10 优惠券
+          <button className="secondary-button goal-fit-free-coupon-cta" type="button" onClick={handleOpenInvitePanel}>
+            复制邀请链接，立减 ¥10
           </button>
         </section>
 
@@ -255,30 +378,6 @@ function GoalFitFreeResultPage() {
         <section className="goal-fit-free-advice-card">
           <h2>行动提醒</h2>
           <p>{actionReminder}</p>
-        </section>
-
-        <section className="goal-fit-free-share-discount-card goal-fit-free-share-discount-card-primary">
-          <div className="goal-fit-free-share-discount-copy">
-            <p className="goal-fit-eyebrow">完整报告解锁</p>
-            <h2>完整报告 ¥19.9</h2>
-            <p>第一份工作风险预演：综合匹配度 {result.scores.overallScore}%</p>
-            <h3>这个方向可以投递吗？</h3>
-            <p>完整报告将继续帮你拆解：</p>
-            <div className="goal-fit-free-report-includes">
-              <ul>
-                <li>你预期公司的环境</li>
-                <li>你和目标岗位的差距</li>
-                <li>当前投递风险</li>
-                <li>下一步调整方向</li>
-              </ul>
-            </div>
-            <button className="primary-button" type="button" onClick={handleUnlock}>
-              ¥19.9 查看完整报告
-            </button>
-            <button className="secondary-button" type="button" onClick={handleShareCoupon}>
-              复制链接分享好友，领取 ¥10 优惠券
-            </button>
-          </div>
         </section>
 
         <section className="goal-fit-free-lock-card">
@@ -322,6 +421,47 @@ function GoalFitFreeResultPage() {
           <small>免费页先给你总判断，完整报告会继续给你拆解和行动。</small>
         </section>
       </section>
+
+      {isInvitePanelOpen ? (
+        <section className="goal-fit-invite-overlay" role="dialog" aria-modal="true" aria-labelledby="goal-fit-invite-title">
+          <div className="goal-fit-invite-panel">
+            <p className="goal-fit-eyebrow">邀请优惠</p>
+            <h2 id="goal-fit-invite-title">分享测试，报告立减 ¥10</h2>
+            <p>生成你的专属测试链接，完整报告由 ¥19.9 优惠至 ¥9.9。</p>
+            {inviteMessage ? <p className={`goal-fit-invite-message ${inviteStatus}`}>{inviteMessage}</p> : null}
+            {referral?.shareUrl && inviteStatus === "manual" ? (
+              <textarea className="goal-fit-invite-manual-link" readOnly value={referral.shareUrl} />
+            ) : null}
+            <div className="goal-fit-invite-actions">
+              {inviteStatus === "copied" ? (
+                <button className="primary-button" type="button" onClick={handleUnlock}>
+                  ¥9.9 查看完整报告
+                </button>
+              ) : inviteStatus === "manual" || inviteStatus === "confirm_failed" ? (
+                <button
+                  className="primary-button"
+                  type="button"
+                  onClick={handleConfirmReferralCopied}
+                >
+                  我已复制，确认领取 ¥10 优惠
+                </button>
+              ) : (
+                <button
+                  className="primary-button"
+                  type="button"
+                  disabled={inviteStatus === "copying"}
+                  onClick={handleCopyReferralLink}
+                >
+                  {inviteStatus === "copying" ? "正在复制..." : "复制邀请链接，立减 ¥10"}
+                </button>
+              )}
+              <button className="secondary-button" type="button" onClick={() => setIsInvitePanelOpen(false)}>
+                暂不领取
+              </button>
+            </div>
+          </div>
+        </section>
+      ) : null}
     </GoalFitPageFrame>
   );
 }

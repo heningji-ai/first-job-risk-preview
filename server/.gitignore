@@ -6,3 +6,7 @@ data/
 certs/
 apiclient_key.pem
 apiclient_cert.pem
+*.sqlite-wal
+*.sqlite-shm
+*.db-wal
+*.db-shm

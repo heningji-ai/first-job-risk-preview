@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import GoalFitHeader from "../components/GoalFitHeader";
+import { recordGoalFitReferralVisitFromUrl } from "../lib/goalFitReferralStore";
 import { navigateTo } from "../lib/router";
 
 const previewItems = [
@@ -16,6 +18,10 @@ function scrollToPreview() {
 }
 
 function GoalFitLandingPage() {
+  useEffect(() => {
+    void recordGoalFitReferralVisitFromUrl();
+  }, []);
+
   return (
     <main className="goal-fit-shell goal-fit-landing-shell">
       <GoalFitHeader />

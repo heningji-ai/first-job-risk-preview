@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
 import { calculateOrderAmount } from "./coupons.js";
-import { db } from "./db.js";
+import { db, runImmediateTransaction } from "./db.js";
 import type {
   AccessMode,
   CouponCode,
@@ -26,6 +26,8 @@ const orderColumns = `
   wechatPrepayId,
   wechatCodeUrl,
   wechatTransactionId,
+  sourceReferralCode,
+  referralVisitId,
   createdAt,
   updatedAt,
   paidAt
@@ -62,6 +64,8 @@ export function createOrder(input: CreateOrderInput): OrderRecord {
     wechatPrepayId: null,
     wechatCodeUrl: null,
     wechatTransactionId: null,
+    sourceReferralCode: input.sourceReferralCode ?? null,
+    referralVisitId: input.referralVisitId ?? null,
     createdAt: now,
     updatedAt: now,
     paidAt: null
@@ -86,6 +90,8 @@ export function createOrder(input: CreateOrderInput): OrderRecord {
         @wechatPrepayId,
         @wechatCodeUrl,
         @wechatTransactionId,
+        @sourceReferralCode,
+        @referralVisitId,
         @createdAt,
         @updatedAt,
         @paidAt
@@ -98,6 +104,44 @@ export function createOrder(input: CreateOrderInput): OrderRecord {
 
 export function getOrder(orderId: string): OrderRecord | null {
   return toOrderRecord(db.prepare(`SELECT ${orderColumns} FROM orders WHERE id = ?`).get(orderId));
+}
+
+export function getReusablePendingOrder(input: CreateOrderInput): OrderRecord | null {
+  const amount = calculateOrderAmount(input.accessMode, input.couponCode);
+
+  return toOrderRecord(
+    db
+      .prepare(
+        `
+          SELECT ${orderColumns}
+          FROM orders
+          WHERE sessionId = @sessionId
+            AND status = 'pending'
+            AND accessMode = @accessMode
+            AND paymentMode = @paymentMode
+            AND payAmountCents = @payAmountCents
+            AND COALESCE(couponCode, '') = COALESCE(@couponCode, '')
+          ORDER BY createdAt DESC
+          LIMIT 1
+        `
+      )
+      .get({
+        sessionId: input.sessionId,
+        accessMode: input.accessMode,
+        paymentMode: input.paymentMode,
+        payAmountCents: amount.payAmountCents,
+        couponCode: amount.couponCode
+      })
+  );
+}
+
+export function createOrReuseOrder(input: CreateOrderInput): OrderRecord {
+  return runImmediateTransaction(() => {
+    const existing = getReusablePendingOrder(input);
+    if (existing) return existing;
+
+    return createOrder(input);
+  });
 }
 
 export function getOrderByOutTradeNo(outTradeNo: string): OrderRecord | null {
@@ -216,14 +260,6 @@ export function getPaidOrderBySessionId(sessionId: string): OrderRecord | null {
       )
       .get(sessionId)
   );
-}
-
-export function isAccessMode(value: unknown): value is AccessMode {
-  return value === "direct" || value === "share_coupon";
-}
-
-export function isCouponCode(value: unknown): value is CouponCode {
-  return value === "share_card";
 }
 
 export function isPaymentMode(value: unknown): value is PaymentMode {

@@ -45,10 +45,10 @@ export type GoalFitOrder = {
 
 export type CreateGoalFitOrderRequest = {
   sessionId: string;
-  accessMode: GoalFitAccessMode;
-  couponCode: "share_card" | null;
   paymentMethod?: "native" | "jsapi";
   wechatOpenidToken?: string;
+  sourceReferralCode?: string;
+  visitorId?: string;
 };
 
 export type GoalFitUnlockStatus = {

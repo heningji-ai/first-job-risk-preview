@@ -11,12 +11,14 @@ function getDefaultPaymentMode(nodeEnv: string): PaymentModeConfig {
 }
 
 const nodeEnv = getEnv("NODE_ENV", "development");
+const defaultPublicAppUrl = nodeEnv === "production" ? "https://first-job-risk.jobeyes.com" : "http://127.0.0.1:5173";
 const wechatPayPublicKeyPath = getEnv("WECHAT_PAY_PUBLIC_KEY_PATH");
 
 export const serverConfig = {
   port: Number(getEnv("PORT", "3001")),
   nodeEnv,
-  frontendOrigin: getEnv("FRONTEND_ORIGIN", "http://127.0.0.1:5173"),
+  frontendOrigin: getEnv("FRONTEND_ORIGIN", defaultPublicAppUrl),
+  publicAppUrl: getEnv("PUBLIC_APP_URL", getEnv("FRONTEND_ORIGIN", defaultPublicAppUrl)),
   paymentMode: getEnv("PAYMENT_MODE", getDefaultPaymentMode(nodeEnv)) as PaymentModeConfig,
   wechatPay: {
     mchId: getEnv("WECHAT_PAY_MCH_ID"),

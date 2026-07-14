@@ -26,6 +26,8 @@ const sharePagePath = path.join(projectRoot, "src", "pages", "GoalFitSharePage.t
 const unlockPagePath = path.join(projectRoot, "src", "pages", "GoalFitUnlockPage.tsx");
 const resultPagePath = path.join(projectRoot, "src", "pages", "GoalFitResultPage.tsx");
 const orderStorePath = path.join(projectRoot, "src", "lib", "goalFitOrderStore.ts");
+const referralStorePath = path.join(projectRoot, "src", "lib", "goalFitReferralStore.ts");
+const visitorStorePath = path.join(projectRoot, "src", "lib", "goalFitVisitorStore.ts");
 const apiConfigPath = path.join(projectRoot, "src", "config", "api.ts");
 const serverPackagePath = path.join(projectRoot, "server", "package.json");
 const serverConfigPath = path.join(projectRoot, "server", "src", "config.ts");
@@ -37,6 +39,7 @@ const serverWechatNotifyPath = path.join(projectRoot, "server", "src", "wechatNo
 const serverWechatPlatformCertsPath = path.join(projectRoot, "server", "src", "wechatPlatformCerts.ts");
 const serverCryptoPath = path.join(projectRoot, "server", "src", "crypto.ts");
 const serverIndexPath = path.join(projectRoot, "server", "src", "index.ts");
+const serverReferralsPath = path.join(projectRoot, "server", "src", "referrals.ts");
 const serverGitignorePath = path.join(projectRoot, "server", ".gitignore");
 const headerPath = path.join(projectRoot, "src", "components", "GoalFitHeader.tsx");
 const stylesPath = path.join(projectRoot, "src", "styles", "global.css");
@@ -142,6 +145,8 @@ const sharePageSource = fs.readFileSync(sharePagePath, "utf8");
 const unlockPageSource = fs.readFileSync(unlockPagePath, "utf8");
 const resultPageSource = fs.readFileSync(resultPagePath, "utf8");
 const orderStoreSource = fs.readFileSync(orderStorePath, "utf8");
+const referralStoreSource = fs.readFileSync(referralStorePath, "utf8");
+const visitorStoreSource = fs.readFileSync(visitorStorePath, "utf8");
 const apiConfigSource = fs.readFileSync(apiConfigPath, "utf8");
 const serverPackageSource = fs.readFileSync(serverPackagePath, "utf8");
 const serverConfigSource = fs.readFileSync(serverConfigPath, "utf8");
@@ -153,6 +158,7 @@ const serverWechatNotifySource = fs.readFileSync(serverWechatNotifyPath, "utf8")
 const serverWechatPlatformCertsSource = fs.readFileSync(serverWechatPlatformCertsPath, "utf8");
 const serverCryptoSource = fs.readFileSync(serverCryptoPath, "utf8");
 const serverIndexSource = fs.readFileSync(serverIndexPath, "utf8");
+const serverReferralsSource = fs.readFileSync(serverReferralsPath, "utf8");
 const serverGitignoreSource = fs.readFileSync(serverGitignorePath, "utf8");
 const headerSource = fs.readFileSync(headerPath, "utf8");
 const stylesSource = fs.readFileSync(stylesPath, "utf8");
@@ -256,17 +262,17 @@ assert(
   "App.tsx must route /goal-fit-share-preview to GoalFitSharePage"
 );
 [
-  "请确认你已经把测试链接分享给同学",
-  "分享后可领取 ¥10 优惠券，¥9.9 查看完整报告。",
-  "我已分享，领取优惠券",
-  "¥9.9 查看完整报告",
-  "coupon=share_card",
-  "返回完整报告",
-  "返回结果页"
+  "正在打开邀请优惠",
+  "邀请优惠已经合并到免费结果页",
+  "invite=1",
+  "前往领取优惠"
 ].forEach((text) => {
   assert(sharePageSource.includes(text), `GoalFitSharePage must contain copy: ${text}`);
 });
 [
+  "请确认你已经把测试链接分享给同学",
+  "我已分享，领取优惠券",
+  "coupon=share_card",
   "我已保存或分享，领取 ¥10 优惠券",
   "让同学也测一次",
   "领取优惠券，¥9.9 解锁完整报告",
@@ -342,24 +348,27 @@ assert(
   freeResultPageSource.includes("getGoalFitSession") &&
     freeResultPageSource.includes("第一份工作风险预演") &&
     freeResultPageSource.includes("基础判断") &&
-    freeResultPageSource.includes("综合匹配度") &&
-    freeResultPageSource.includes("这个方向可以先投吗？") &&
+    freeResultPageSource.includes("当前匹配度") &&
+    freeResultPageSource.includes("当前建议：") &&
+    freeResultPageSource.includes("getAdviceLabel") &&
     freeResultPageSource.includes("最大风险：") &&
     freeResultPageSource.includes("当前预演：") &&
     freeResultPageSource.includes("主要风险") &&
     freeResultPageSource.includes("行动提醒") &&
-    freeResultPageSource.includes("完整报告解锁") &&
     freeResultPageSource.includes("完整报告 ¥19.9") &&
-    freeResultPageSource.includes("这个方向可以投递吗？") &&
-    freeResultPageSource.includes("你预期公司的环境") &&
-    freeResultPageSource.includes("你和目标岗位的差距") &&
-    freeResultPageSource.includes("当前投递风险") &&
-    freeResultPageSource.includes("下一步调整方向") &&
+    freeResultPageSource.includes("目标公司环境风险") &&
+    freeResultPageSource.includes("目标岗位工作方式风险") &&
+    freeResultPageSource.includes("最可能发生的不适应场景") &&
+    freeResultPageSource.includes("当前求职行动建议") &&
     freeResultPageSource.includes("¥19.9 查看完整报告") &&
     freeResultPageSource.includes("goal-fit-free-coupon-cta") &&
-    freeResultPageSource.includes("复制链接分享好友，领取 ¥10 优惠券") &&
-    freeResultPageSource.includes("/goal-fit-share-preview?session=") &&
-    freeResultPageSource.includes("/goal-fit-share-preview?sample=high_fit&mode=coupon") &&
+    freeResultPageSource.includes("复制邀请链接，立减 ¥10") &&
+    freeResultPageSource.includes("createGoalFitReferralLink") &&
+    freeResultPageSource.includes("confirmGoalFitReferralCopied") &&
+    freeResultPageSource.includes("getGoalFitDiscountStatus") &&
+    freeResultPageSource.includes("confirm_failed") &&
+    freeResultPageSource.includes("专属邀请链接已复制，¥10优惠已生效") &&
+    freeResultPageSource.includes("¥9.9 查看完整报告") &&
     freeResultPageSource.includes("/goal-fit-unlock-preview?session="),
   "GoalFitFreeResultPage must build a diagnosis-first free result and keep unlock/share CTA logic"
 );
@@ -377,7 +386,8 @@ assert(
   "保存图片并分享，¥9.9 查看完整报告",
   "生成我的求职方向卡",
   "保存求职方向卡",
-  "分享海报"
+  "分享海报",
+  "复制链接分享好友，领取 ¥10 优惠券"
 ].forEach((text) => {
   assert(!freeResultPageSource.includes(text), `GoalFitFreeResultPage must not keep old hero copy: ${text}`);
 });
@@ -397,6 +407,19 @@ assert(
     orderStoreSource.includes("getGoalFitUnlockStatusFromApi") &&
     orderStoreSource.includes("/api/unlock/status?sessionId="),
   "goalFitOrderStore must expose order and unlock API helpers"
+);
+assert(
+  referralStoreSource.includes("/api/referrals/create") &&
+    referralStoreSource.includes("/api/referrals/create-or-copy") &&
+    referralStoreSource.includes("/api/referrals/visit") &&
+    referralStoreSource.includes("/api/referrals/start") &&
+    referralStoreSource.includes("/api/referrals/complete") &&
+    referralStoreSource.includes("/api/referrals/discount-status") &&
+    referralStoreSource.includes("recordGoalFitReferralVisitFromUrl") &&
+    referralStoreSource.includes("getGoalFitReferralContext") &&
+    visitorStoreSource.includes("first_job_goal_fit_visitor_id_v1") &&
+    visitorStoreSource.includes("randomUUID"),
+  "Goal Fit referral client must create visitor ids, record ref visits, and separate copy confirmation from discount status"
 );
 assert(
     unlockPageSource.includes("createGoalFitOrderFromApi") &&
@@ -419,22 +442,25 @@ assert(
     unlockPageSource.includes("jsapiPaymentParams") &&
     unlockPageSource.includes("isWaitingForJsapiPaymentParams") &&
     unlockPageSource.includes("isWaitingForNativeCodeUrl") &&
-    unlockPageSource.includes('accessMode: context.hasShareCardCoupon ? "share_coupon" : "direct"') &&
-    unlockPageSource.includes('couponCode: context.hasShareCardCoupon ? "share_card" : null') &&
+    !unlockPageSource.includes('accessMode: "direct"') &&
+    !unlockPageSource.includes("couponCode: null") &&
+    unlockPageSource.includes("getGoalFitDiscountStatus") &&
+    unlockPageSource.includes("sourceReferralCode: getGoalFitReferralContext()?.referralCode") &&
+    unlockPageSource.includes("visitorId: getGoalFitReferralContext()?.visitorId") &&
+    unlockPageSource.includes("isMobileExternalBrowser") &&
+    unlockPageSource.includes("请使用微信打开当前页面完成支付。") &&
     !unlockPageSource.includes("paymentMode: PAYMENT_MODE") &&
     !unlockPageSource.includes("PAYMENT_MODE") &&
     unlockPageSource.includes("order?.wechatCodeUrl ?") &&
     unlockPageSource.includes("isMockOrder") &&
     unlockPageSource.includes("确认解锁完整报告") &&
     unlockPageSource.includes("context.wechatOpenidToken") &&
-    unlockPageSource.includes('"正在准备支付"') &&
-    unlockPageSource.includes("恭喜你获得 ¥10 优惠券") &&
-    unlockPageSource.includes("优惠后仅需 ¥9.9") &&
-    unlockPageSource.includes("完整报告原价 {formatYuan(displayedOriginalAmount)}") &&
+    unlockPageSource.includes("正在准备支付") &&
+    unlockPageSource.includes("已获得 ¥10 邀请优惠") &&
+    unlockPageSource.includes("完整报告原价 ${formatYuan(displayedOriginalAmount)}") &&
     unlockPageSource.includes("本次支付") &&
     unlockPageSource.includes("完整报告 ¥19.9") &&
-    unlockPageSource.includes("保存并分享海报，可 ¥9.9 查看完整报告") &&
-    unlockPageSource.includes("返回保存并分享海报") &&
+    unlockPageSource.includes("复制邀请链接，可优惠至 ¥9.9") &&
     unlockPageSource.includes("根据你的选择，预演你在职场可能遇到的问题。") &&
     unlockPageSource.includes("你选择的是：") &&
     unlockPageSource.includes("goal-fit-pay-primary") &&
@@ -443,7 +469,7 @@ assert(
     unlockPageSource.includes("实际支付金额：") &&
     unlockPageSource.includes("正在准备支付...") &&
     unlockPageSource.includes("支付准备中") &&
-    unlockPageSource.includes("`${payAmountLabel} 支付后查看完整报告`") &&
+    unlockPageSource.includes("${payAmountLabel} 支付后查看完整报告") &&
     unlockPageSource.includes("微信扫码支付") &&
     unlockPageSource.includes("我已支付，刷新状态") &&
     !unlockPageSource.includes("微信内支付") &&
@@ -470,19 +496,24 @@ assert(
   "GoalFitResultPage must check backend unlock status and only keep local compatibility outside production"
 );
 assert(
-  resultPageSource.includes('["你的整体情况", "工作适配拆解", "建议求职行动"]') &&
-    resultPageSource.includes('return params.get("section") === "breakdown" ? 1 : 0') &&
-    resultPageSource.includes("你的整体情况") &&
-    resultPageSource.includes("看工作适配拆解") &&
-    resultPageSource.includes("返回整体情况") &&
-    resultPageSource.includes("看建议求职行动") &&
+  resultPageSource.includes("第一份工作风险预演报告") &&
+    resultPageSource.includes("基于你的34题回答生成") &&
+    resultPageSource.includes("本报告判断的是目标风险，不评价能力高低") &&
+    resultPageSource.includes("一、你的整体情况") &&
+    resultPageSource.includes("二、目标公司环境风险") &&
+    resultPageSource.includes("三、目标岗位工作方式风险") &&
+    resultPageSource.includes("四、最可能发生的不适应场景") &&
+    resultPageSource.includes("五、建议求职行动") &&
+    resultPageSource.includes("599元人工人才重估服务") &&
     resultPageSource.includes("如果你在求职中还有其他问题，可以关注公众号：") &&
     resultPageSource.includes("猎头季哥人才重估实验室") &&
     resultPageSource.includes("继续陪你看清方向、优化简历、准备面试，为顺利进入职场保驾护航。") &&
     !resultPageSource.includes('["总判断", "适配拆解", "建议行动"]') &&
+    !resultPageSource.includes("你和目标公司类型之间的差距") &&
+    !resultPageSource.includes("你和目标岗位类型之间的差距") &&
     !resultPageSource.includes("生成我的求职方向卡") &&
     !resultPageSource.includes("保存一张求职方向卡"),
-  "GoalFitResultPage must use the new report navigation, start from overall view by default, and remove share-card entry"
+  "GoalFitResultPage must use a continuous professional report structure and remove share-card entry"
 );
 assert(
   apiConfigSource.includes("VITE_PAYMENT_MODE") &&
@@ -502,6 +533,8 @@ assert(
     serverConfigSource.includes("WECHAT_PAY_JSAPI_APP_ID") &&
     serverConfigSource.includes("WECHAT_PAY_JSAPI_APP_SECRET") &&
     serverConfigSource.includes("WECHAT_PAY_JSAPI_OAUTH_CALLBACK_URL") &&
+    serverConfigSource.includes("PUBLIC_APP_URL") &&
+    serverConfigSource.includes("https://first-job-risk.jobeyes.com") &&
     serverConfigSource.includes("publicKeyId") &&
     serverConfigSource.includes("publicKeyPath") &&
     serverConfigSource.includes("jsapiAppId") &&
@@ -514,8 +547,15 @@ assert(
     serverDbSource.includes("wechatTransactionId") &&
     serverDbSource.includes("ALTER TABLE orders ADD COLUMN wechatTransactionId") &&
     serverDbSource.includes("CREATE TABLE IF NOT EXISTS wechat_oauth_states") &&
-    serverDbSource.includes("CREATE TABLE IF NOT EXISTS wechat_openid_tokens"),
-  "server db must keep node:sqlite and persist WeChat transaction ids plus OAuth state/token tables"
+    serverDbSource.includes("CREATE TABLE IF NOT EXISTS wechat_openid_tokens") &&
+    serverDbSource.includes("CREATE TABLE IF NOT EXISTS goal_fit_referrals") &&
+    serverDbSource.includes("CREATE TABLE IF NOT EXISTS goal_fit_referral_visits") &&
+    serverDbSource.includes("GOAL_FIT_DB_PATH") &&
+    serverDbSource.includes("BEGIN IMMEDIATE") &&
+    serverDbSource.includes("UNIQUE (referralId, visitorId)") &&
+    serverDbSource.includes("ALTER TABLE orders ADD COLUMN sourceReferralCode") &&
+    serverDbSource.includes("ALTER TABLE orders ADD COLUMN referralVisitId"),
+  "server db must keep node:sqlite and persist WeChat transaction ids, OAuth state/token tables, and referral attribution tables"
 );
 assert(
   serverWechatPaySource.includes("createWechatNativeOrder") &&
@@ -587,6 +627,16 @@ assert(
 assert(
   serverIndexSource.indexOf('/api/wechat/notify", express.raw') < serverIndexSource.indexOf("app.use(express.json())") &&
     serverIndexSource.includes("handleWechatNotify") &&
+    serverIndexSource.includes("/api/referrals/create") &&
+    serverIndexSource.includes("/api/referrals/create-or-copy") &&
+    serverIndexSource.includes("/api/referrals/visit") &&
+    serverIndexSource.includes("/api/referrals/start") &&
+    serverIndexSource.includes("/api/referrals/complete") &&
+    serverIndexSource.includes("/api/referrals/discount-status") &&
+    serverIndexSource.includes("getReferralDiscountStatus(sessionId.trim())") &&
+    serverIndexSource.includes("effectiveAccessMode") &&
+    serverIndexSource.includes("effectiveCouponCode") &&
+    serverIndexSource.includes("attachReferralVisitToOrder") &&
     serverIndexSource.includes("/api/wechat/oauth/start") &&
     serverIndexSource.includes("/api/wechat/oauth/callback") &&
     serverIndexSource.includes("normalizeOauthReturnTo") &&
@@ -597,7 +647,27 @@ assert(
     serverIndexSource.includes("const serverPaymentMode = serverConfig.paymentMode") &&
     !serverIndexSource.includes("req.body as Record<string, unknown>).paymentMode") &&
     serverIndexSource.includes("mock payment is not available in production"),
-  "server index must register raw notify route before express.json, support OAuth/JSAPI, ignore request paymentMode, and keep production mock blocked"
+  "server index must register raw notify route before express.json, support referrals/OAuth/JSAPI, ignore request paymentMode, and keep production mock blocked"
+);
+assert(
+  serverReferralsSource.includes("createOrGetReferral") &&
+    serverReferralsSource.includes("confirmReferralCopied") &&
+    serverReferralsSource.includes("runImmediateTransaction") &&
+    serverReferralsSource.includes("discountGrantedAt") &&
+    serverReferralsSource.includes("discountUsedOrderId") &&
+    serverReferralsSource.includes("recordReferralVisit") &&
+    serverReferralsSource.includes("markReferralVisitStarted") &&
+    serverReferralsSource.includes("markReferralVisitCompleted") &&
+    serverReferralsSource.includes("markReferralPaidForOrder") &&
+    serverReferralsSource.includes("sourceVisitorId") &&
+    serverReferralsSource.includes("referral.sourceVisitorId === params.visitorId"),
+  "server referrals helper must separate inviter discount from visitor attribution and avoid counting obvious self-visits"
+);
+assert(
+  serverPackageSource.includes('"referral-stats"') &&
+    serverPackageSource.includes("src/referralStats.ts") &&
+    serverPackageSource.includes('"test-referral-discount"'),
+  "server package must expose local referral stats and referral discount test commands"
 );
 [".env", "*.db", "*.sqlite", "certs/", "apiclient_key.pem", "apiclient_cert.pem"].forEach((text) => {
   assert(serverGitignoreSource.includes(text), `server .gitignore must contain ${text}`);

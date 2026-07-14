@@ -23,6 +23,8 @@ export type OrderRecord = {
   wechatPrepayId: string | null;
   wechatCodeUrl: string | null;
   wechatTransactionId: string | null;
+  sourceReferralCode: string | null;
+  referralVisitId: string | null;
   createdAt: string;
   updatedAt: string;
   paidAt: string | null;
@@ -33,6 +35,8 @@ export type CreateOrderInput = {
   accessMode: AccessMode;
   couponCode: CouponCode | null;
   paymentMode: PaymentMode;
+  sourceReferralCode?: string | null;
+  referralVisitId?: string | null;
 };
 
 export type AmountCalculation = {
