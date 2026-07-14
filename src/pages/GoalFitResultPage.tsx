@@ -786,6 +786,10 @@ function GoalFitResultPage() {
     `你当前最需要盯住的是「${primaryRiskTitle}」。先处理这个点，比继续泛泛扩大投递更重要。`;
   const actionPersonalizedLead =
     `接下来建议你先做「${firstRecommendationTitle}」。这一步会直接影响你后续简历、面试和投递反馈。`;
+  const fitBreakdownLead =
+    `对你来说，${result.targetCompanyLabel} × ${result.targetRoleLabel} 的关键不是能不能投，而是这类公司环境和这类岗位要求会在哪些地方同时考验你。`;
+  const actionSectionLead =
+    `如果你真的继续投这个方向，下一步最需要先确认「${primaryRiskTitle}」，再决定要扩大投递还是先补齐材料和表达。`;
 
   return (
     <GoalFitPageFrame>
@@ -800,8 +804,11 @@ function GoalFitResultPage() {
           </div>
         </header>
 
-        <section className="goal-fit-result-screen goal-fit-report-section">
+        <section className="goal-fit-result-screen goal-fit-report-section goal-fit-report-section-compact">
           <p className="goal-fit-eyebrow">一、你的整体情况</p>
+          <p className="goal-fit-report-conclusion">
+            对你来说，你选择的 {result.targetCompanyLabel} × {result.targetRoleLabel}，核心风险不是能不能投，而是进去后是否能稳定适应这类工作环境。
+          </p>
           <div className="goal-fit-result-overview goal-fit-result-judgement">
             <div className="goal-fit-result-main-score">
               <span>当前匹配度</span>
@@ -817,50 +824,61 @@ function GoalFitResultPage() {
           </div>
         </section>
 
-        <section className="goal-fit-result-screen goal-fit-report-section">
+        <section className="goal-fit-result-screen goal-fit-report-section goal-fit-report-section-compact">
           <div className="goal-fit-result-group-heading">
-            <p className="goal-fit-eyebrow">二、目标公司环境风险</p>
-            <h2>这类公司怎么筛人、怎么用人，以及你进去后可能是什么体感。</h2>
-            <p className="goal-fit-result-personal-lead">{companyPersonalizedLead}</p>
+            <p className="goal-fit-eyebrow">二、工作适配拆解</p>
+            <h2>公司环境和岗位要求，分别会怎样考验你。</h2>
+            <p className="goal-fit-report-conclusion">{fitBreakdownLead}</p>
           </div>
-          <div className="goal-fit-result-narrative-grid">
-            {companyNarratives.map((card) => (
-              <NarrativeCard card={card} key={card.title} />
-            ))}
+
+          <div className="goal-fit-report-subsection">
+            <div className="goal-fit-report-subsection-heading">
+              <span>01</span>
+              <div>
+                <h3>目标公司的环境和风险</h3>
+                <p>{companyPersonalizedLead}</p>
+              </div>
+            </div>
+            <div className="goal-fit-result-narrative-grid goal-fit-report-row-grid">
+              {companyNarratives.map((card) => (
+                <NarrativeCard card={card} key={card.title} />
+              ))}
+            </div>
+          </div>
+
+          <div className="goal-fit-report-subsection">
+            <div className="goal-fit-report-subsection-heading">
+              <span>02</span>
+              <div>
+                <h3>目标岗位的真实要求</h3>
+                <p>{rolePersonalizedLead}</p>
+              </div>
+            </div>
+            <div className="goal-fit-result-narrative-grid goal-fit-report-row-grid">
+              {roleNarratives.map((card) => (
+                <NarrativeCard card={card} key={card.title} />
+              ))}
+            </div>
           </div>
         </section>
 
-        <section className="goal-fit-result-screen goal-fit-report-section">
-          <div className="goal-fit-result-group-heading">
-            <p className="goal-fit-eyebrow">三、目标岗位工作方式风险</p>
-            <h2>这类岗位真实需要什么，你做起来会遇到哪些工作方式考验。</h2>
-            <p className="goal-fit-result-personal-lead">{rolePersonalizedLead}</p>
-          </div>
-          <div className="goal-fit-result-narrative-grid">
-            {roleNarratives.map((card) => (
-              <NarrativeCard card={card} key={card.title} />
-            ))}
-          </div>
-        </section>
+        <section className="goal-fit-result-screen goal-fit-report-section goal-fit-report-section-compact">
+          <p className="goal-fit-eyebrow">三、建议求职行动</p>
+          <p className="goal-fit-report-conclusion">{actionSectionLead}</p>
+          <div className="goal-fit-result-advice-report goal-fit-report-action-grid">
+            <article className="goal-fit-result-note-card goal-fit-result-gap-advice goal-fit-report-action-summary">
+              <span>原因拆解</span>
+              <h3>针对你的情况，我们建议：</h3>
+              <p>{getFitGapAdvice(result)}</p>
+            </article>
+            <article className="goal-fit-result-action-card featured goal-fit-report-action-summary">
+              <span>关键风险</span>
+              <h2>你最需要优先处理的问题</h2>
+              <p>{actionAdvice.priorityProblem}</p>
+            </article>
 
-        <section className="goal-fit-result-screen goal-fit-report-section">
-          <p className="goal-fit-eyebrow">四、最可能发生的不适应场景</p>
-          <p className="goal-fit-result-personal-lead">{riskPersonalizedLead}</p>
-          <article className="goal-fit-result-note-card goal-fit-result-gap-advice">
-            <h3>针对你的情况，我们建议：</h3>
-            <p>{getFitGapAdvice(result)}</p>
-          </article>
-          <article className="goal-fit-result-action-card featured">
-            <h2>你最需要优先处理的问题</h2>
-            <p>{actionAdvice.priorityProblem}</p>
-          </article>
-        </section>
-
-        <section className="goal-fit-result-screen goal-fit-report-section">
-          <p className="goal-fit-eyebrow">五、建议求职行动</p>
-          <p className="goal-fit-result-personal-lead">{actionPersonalizedLead}</p>
-          <div className="goal-fit-result-advice-report">
             <article className="goal-fit-result-action-card style">
+              <span>建议行动 01</span>
               <h2>如果差距来自性格或做事风格</h2>
               {actionAdvice.styleGuidance.split("\n\n").map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>
@@ -868,6 +886,7 @@ function GoalFitResultPage() {
             </article>
 
             <article className="goal-fit-result-action-card emphasis">
+              <span>建议行动 02</span>
               <h2>你接下来要补什么</h2>
               {actionAdvice.nextStep.split("\n\n").map((paragraph) => (
                 <p key={paragraph}>{paragraph}</p>

@@ -336,6 +336,7 @@ function GoalFitUnlockPage() {
   const hasDiscount = Boolean(order ? order.discountAmountCents > 0 : discountStatus?.discountGranted);
   const displayedPayAmount = order?.payAmountCents ?? discountStatus?.payAmountCents ?? 1990;
   const payAmountLabel = formatYuan(displayedPayAmount);
+  const primaryPayLabel = hasDiscount ? `${payAmountLabel} 支付后查看完整报告` : `${payAmountLabel} 查看完整报告`;
   const isWaitingForJsapiPaymentParams = Boolean(isWechatInAppBrowser && context.wechatOpenidToken && !order?.jsapiPaymentParams);
   const isWaitingForNativeCodeUrl = Boolean(!isWechatInAppBrowser && !isMockOrder && !order?.wechatCodeUrl);
 
@@ -481,23 +482,23 @@ function GoalFitUnlockPage() {
       <section className="goal-fit-panel goal-fit-unlock-frame">
         <header className="goal-fit-unlock-header">
           <p className="goal-fit-eyebrow">完整报告确认</p>
-          <h1>{hasDiscount ? "已获得 ¥10 邀请优惠" : "解锁完整目标适配报告"}</h1>
+          <h1>{hasDiscount ? "已获得 ¥10 邀请优惠" : "完整报告 ¥19.9"}</h1>
           <p>
             {hasDiscount
-              ? "优惠资格已由服务端确认，当前页面会直接准备支付。"
-              : "免费判断已经帮你看到了总方向。完整报告会继续帮你判断这份选择是否值得继续投递。"}
+              ? "确认优惠金额后即可付款查看完整报告。"
+              : "确认标准价后即可付款查看完整报告。"}
           </p>
         </header>
 
         <div className="goal-fit-unlock-layout">
           <section className="goal-fit-unlock-main-card">
             <div className="goal-fit-unlock-product">
-              <span>产品名称</span>
-              <strong>完整目标适配报告</strong>
+              <span>{hasDiscount ? "邀请优惠" : "标准解锁"}</span>
+              <strong>{hasDiscount ? "已获得 ¥10 邀请优惠" : "完整报告 ¥19.9"}</strong>
             </div>
-            <div className="goal-fit-unlock-price-detail">
-              <span>{hasDiscount ? `完整报告原价 ${formatYuan(displayedOriginalAmount)}` : "完整报告 ¥19.9"}</span>
-              {hasDiscount ? <span>邀请优惠 -¥10</span> : null}
+            <div className="goal-fit-unlock-price-detail goal-fit-unlock-price-decision">
+              <span>{hasDiscount ? `原价 ${formatYuan(displayedOriginalAmount)}` : "完整报告 ¥19.9"}</span>
+              {hasDiscount ? <span>优惠 -¥10</span> : null}
               <strong>{hasDiscount ? "本次支付" : "应付"} {payAmountLabel}</strong>
             </div>
             <div className="goal-fit-unlock-price goal-fit-unlock-pay-hero">
@@ -517,7 +518,7 @@ function GoalFitUnlockPage() {
             ) : isWechatInAppBrowser && !context.wechatOpenidToken ? (
               <div className="goal-fit-unlock-wechat-pay">
                 <button className="primary-button goal-fit-pay-primary" type="button" onClick={handlePrimaryPay}>
-                  {payAmountLabel} 支付后查看完整报告
+                  {primaryPayLabel}
                 </button>
               </div>
             ) : null}
@@ -538,7 +539,7 @@ function GoalFitUnlockPage() {
                   disabled={isInvokingJsapiPay}
                   onClick={handlePrimaryPay}
                 >
-                  {isInvokingJsapiPay ? "正在确认支付" : `${payAmountLabel} 支付后查看完整报告`}
+                  {isInvokingJsapiPay ? "正在确认支付" : primaryPayLabel}
                 </button>
               </div>
             ) : order?.wechatCodeUrl ? (

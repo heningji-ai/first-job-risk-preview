@@ -213,6 +213,11 @@ assert(
   "3–5分钟｜34题｜先看基础判断",
   "开始风险预演",
   "先看测完能得到什么",
+  "测完你会得到一份求职风险预演",
+  "公司环境风险",
+  "岗位适配差距",
+  "投递反馈风险",
+  "下一步调整方向",
   "测完先给你 4 个求职判断",
   "这个方向值不值得先投",
   "你和目标岗位差在哪里",
@@ -248,6 +253,8 @@ assert(
 assert(
   !landingPageSource.includes("const worryCards") &&
     landingPageSource.includes("goal-fit-landing-text-link") &&
+    landingPageSource.includes("goal-fit-landing-mini-report") &&
+    landingPageSource.includes("miniReportItems") &&
     landingPageSource.includes("goal-fit-landing-judgement-list"),
   "GoalFitLandingPage must use the mobile-first two-screen landing structure"
 );
@@ -348,18 +355,20 @@ assert(
   freeResultPageSource.includes("getGoalFitSession") &&
     freeResultPageSource.includes("第一份工作风险预演") &&
     freeResultPageSource.includes("基础判断") &&
-    freeResultPageSource.includes("当前匹配度") &&
-    freeResultPageSource.includes("当前建议：") &&
+    freeResultPageSource.includes("综合匹配度") &&
+    freeResultPageSource.includes("你的当前判断：") &&
+    freeResultPageSource.includes("这个方向可以继续投递，但需要重点注意") &&
     freeResultPageSource.includes("getAdviceLabel") &&
     freeResultPageSource.includes("最大风险：") &&
+    freeResultPageSource.includes("你当前最容易卡在：") &&
     freeResultPageSource.includes("当前预演：") &&
     freeResultPageSource.includes("主要风险") &&
     freeResultPageSource.includes("行动提醒") &&
     freeResultPageSource.includes("完整报告 ¥19.9") &&
-    freeResultPageSource.includes("目标公司环境风险") &&
-    freeResultPageSource.includes("目标岗位工作方式风险") &&
-    freeResultPageSource.includes("最可能发生的不适应场景") &&
-    freeResultPageSource.includes("当前求职行动建议") &&
+    freeResultPageSource.includes("公司环境") &&
+    freeResultPageSource.includes("岗位差距") &&
+    freeResultPageSource.includes("投递风险") &&
+    freeResultPageSource.includes("调整方向") &&
     freeResultPageSource.includes("¥19.9 查看完整报告") &&
     freeResultPageSource.includes("goal-fit-free-coupon-cta") &&
     freeResultPageSource.includes("复制邀请链接，立减 ¥10") &&
@@ -458,7 +467,8 @@ assert(
     unlockPageSource.includes("context.wechatOpenidToken") &&
     unlockPageSource.includes("正在准备支付") &&
     unlockPageSource.includes("已获得 ¥10 邀请优惠") &&
-    unlockPageSource.includes("完整报告原价 ${formatYuan(displayedOriginalAmount)}") &&
+    unlockPageSource.includes("原价 ${formatYuan(displayedOriginalAmount)}") &&
+    unlockPageSource.includes("优惠 -¥10") &&
     unlockPageSource.includes("本次支付") &&
     unlockPageSource.includes("完整报告 ¥19.9") &&
     unlockPageSource.includes("复制邀请链接，可优惠至 ¥9.9") &&
@@ -471,7 +481,9 @@ assert(
     unlockPageSource.includes("formatYuan(displayedPayAmount)") &&
     unlockPageSource.includes("正在准备支付...") &&
     unlockPageSource.includes("支付准备中") &&
+    unlockPageSource.includes("primaryPayLabel") &&
     unlockPageSource.includes("${payAmountLabel} 支付后查看完整报告") &&
+    unlockPageSource.includes("${payAmountLabel} 查看完整报告") &&
     unlockPageSource.includes("微信扫码支付") &&
     unlockPageSource.includes("我已支付，刷新状态") &&
     !unlockPageSource.includes("微信内支付") &&
@@ -498,15 +510,19 @@ assert(
   "GoalFitResultPage must check backend unlock status and only keep local compatibility outside production"
 );
 assert(
-  resultPageSource.includes("第一份工作风险预演报告") &&
+    resultPageSource.includes("第一份工作风险预演报告") &&
     resultPageSource.includes("你选择的是 ${result.targetCompanyLabel} × ${result.targetRoleLabel}") &&
     resultPageSource.includes("goal-fit-result-personal-lead") &&
     resultPageSource.includes("你当前最需要盯住的是") &&
+    resultPageSource.includes("对你来说，你选择的") &&
+    resultPageSource.includes("fitBreakdownLead") &&
+    resultPageSource.includes("actionSectionLead") &&
+    resultPageSource.includes("goal-fit-report-conclusion") &&
     resultPageSource.includes("一、你的整体情况") &&
-    resultPageSource.includes("二、目标公司环境风险") &&
-    resultPageSource.includes("三、目标岗位工作方式风险") &&
-    resultPageSource.includes("四、最可能发生的不适应场景") &&
-    resultPageSource.includes("五、建议求职行动") &&
+    resultPageSource.includes("二、工作适配拆解") &&
+    resultPageSource.includes("目标公司的环境和风险") &&
+    resultPageSource.includes("目标岗位的真实要求") &&
+    resultPageSource.includes("三、建议求职行动") &&
     resultPageSource.includes("599元人工人才重估服务") &&
     resultPageSource.includes("如果你在求职中还有其他问题，可以关注公众号：") &&
     resultPageSource.includes("猎头季哥人才重估实验室") &&

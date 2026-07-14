@@ -230,6 +230,8 @@ function GoalFitFreeResultPage() {
   const primaryRisk = getPrimaryRisk(result);
   const riskPoints = getRiskPoints(result, primaryRisk);
   const actionReminder = getActionReminder(result, primaryRisk.title);
+  const judgementSentence = `这个方向可以继续投递，但需要重点注意「${primaryRisk.title}」。`;
+  const riskSentence = `你当前最容易卡在：${primaryRisk.title}。`;
 
   function handleUnlock(): void {
     if (isSample) {
@@ -324,21 +326,22 @@ function GoalFitFreeResultPage() {
             <span>基础判断</span>
           </header>
 
-          <div className="goal-fit-free-diagnosis-core">
-            <div className="goal-fit-free-headline">
-              <p>当前建议：{getAdviceLabel(result.scores.overallScore)}</p>
-              <h1>{judgement.title}</h1>
+          <div className="goal-fit-free-diagnosis-core goal-fit-free-diagnosis-core-v110">
+            <div className="goal-fit-free-headline goal-fit-free-judgement-stack">
+              <p className="goal-fit-free-current-label">你的当前判断：</p>
+              <h1>{judgementSentence}</h1>
               <p>{judgement.summary}</p>
             </div>
             <div className="goal-fit-free-score goal-fit-free-score-secondary">
-              <span>当前匹配度</span>
+              <span>综合匹配度</span>
               <strong>{result.scores.overallScore}%</strong>
+              <small>{getAdviceLabel(result.scores.overallScore)}</small>
             </div>
           </div>
 
-          <p className="goal-fit-free-risk-line">
+          <p className="goal-fit-free-risk-line goal-fit-free-risk-sentence">
             <span>最大风险：</span>
-            <strong>{primaryRisk.title}</strong>
+            <strong>{riskSentence}</strong>
           </p>
 
           <p className="goal-fit-free-target">
@@ -348,10 +351,10 @@ function GoalFitFreeResultPage() {
           <div className="goal-fit-free-report-includes goal-fit-free-report-includes-compact">
             <p>完整报告将继续拆解：</p>
             <ul>
-              <li>目标公司环境风险</li>
-              <li>目标岗位工作方式风险</li>
-              <li>最可能发生的不适应场景</li>
-              <li>当前求职行动建议</li>
+              <li>公司环境</li>
+              <li>岗位差距</li>
+              <li>投递风险</li>
+              <li>调整方向</li>
             </ul>
           </div>
 

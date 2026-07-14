@@ -10,6 +10,29 @@ const previewItems = [
   "完整报告继续拆公司、岗位和调整方向"
 ];
 
+const miniReportItems = [
+  {
+    index: "01",
+    title: "公司环境风险",
+    description: "看这类公司怎么筛人、怎么用人"
+  },
+  {
+    index: "02",
+    title: "岗位适配差距",
+    description: "看目标岗位真正考验什么"
+  },
+  {
+    index: "03",
+    title: "投递反馈风险",
+    description: "看哪些问题会影响简历和面试反馈"
+  },
+  {
+    index: "04",
+    title: "下一步调整方向",
+    description: "看你现在最该先补哪一块"
+  }
+];
+
 function scrollToPreview() {
   document.getElementById("goal-fit-what-you-see")?.scrollIntoView({
     behavior: "smooth",
@@ -51,9 +74,24 @@ function GoalFitLandingPage() {
           </div>
         </div>
 
-        <figure className="goal-fit-landing-hero-card" aria-hidden="true">
-          <img src="/images/goal-fit-start-hero.png" alt="" />
-        </figure>
+        <aside className="goal-fit-landing-mini-report" aria-label="求职风险预演报告预览">
+          <div className="goal-fit-mini-report-head">
+            <span>报告预览</span>
+            <strong>测完你会得到一份求职风险预演</strong>
+          </div>
+          <div className="goal-fit-mini-report-grid">
+            {miniReportItems.map((item) => (
+              <article className="goal-fit-mini-report-item" key={item.index}>
+                <span>{item.index}</span>
+                <div>
+                  <strong>{item.title}</strong>
+                  <p>{item.description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+          <p className="goal-fit-mini-report-note">不评价你适不适合某种人生，只预演这条求职目标的现实摩擦。</p>
+        </aside>
       </section>
 
       <section
