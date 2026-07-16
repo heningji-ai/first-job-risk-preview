@@ -2,9 +2,11 @@ import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
 import {
+  createAdminChannelProfile,
   getAdminAnalyticsChannels,
   getAdminAnalyticsFunnel,
   getAdminAnalyticsSummary,
+  getAdminChannels,
   getAdminRecentOrders,
   getAdminReferralRows,
   getAttributionForOrder,
@@ -56,6 +58,10 @@ function getShareOrigin(): string {
   return serverConfig.publicAppUrl || frontendOrigin || "http://127.0.0.1:5173";
 }
 
+function getAdminPromotionOrigin(): string {
+  return process.env.PUBLIC_APP_URL || "https://first-job-risk.jobeyes.com";
+}
+
 function getString(value: unknown): string | null {
   return typeof value === "string" && value.trim().length > 0 ? value.trim() : null;
 }
@@ -100,6 +106,7 @@ function getIp(req: express.Request): string | null {
 
 function getAnalyticsQuery(req: express.Request) {
   return {
+    range: getString(req.query.range),
     from: getString(req.query.from),
     to: getString(req.query.to),
     source: getString(req.query.source),
@@ -194,6 +201,35 @@ app.get("/api/admin/analytics/channels", (req, res) => {
 app.get("/api/admin/orders", (req, res) => {
   if (!requireAdmin(req, res)) return;
   res.json({ orders: getAdminRecentOrders(getAnalyticsQuery(req)) });
+});
+
+app.get("/api/admin/channels", (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  res.json({ channels: getAdminChannels(getAdminPromotionOrigin()) });
+});
+
+app.post("/api/admin/channels", (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  try {
+    const body = req.body as Record<string, unknown>;
+    const channel = createAdminChannelProfile(
+      {
+        displayName: getString(body.displayName) ?? "",
+        source: getString(body.source) ?? "",
+        channel: getString(body.channel) ?? "",
+        campaign: getString(body.campaign) ?? "",
+        commissionType: body.commissionType === "percent" ? "percent" : "fixed",
+        commissionValue: typeof body.commissionValue === "number" ? body.commissionValue : Number(body.commissionValue ?? 0),
+        enabled: body.enabled !== false
+      },
+      getAdminPromotionOrigin()
+    );
+    res.status(201).json({ channel });
+  } catch (error) {
+    console.error("[admin-channels]", error instanceof Error ? error.message : error);
+    res.status(400).json({ error: "channel creation failed" });
+  }
 });
 
 app.get("/api/admin/referrals", (req, res) => {

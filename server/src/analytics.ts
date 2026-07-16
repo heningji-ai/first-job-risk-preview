@@ -1,4 +1,4 @@
-import crypto from "node:crypto";
+﻿import crypto from "node:crypto";
 import { nanoid } from "nanoid";
 import { db, runImmediateTransaction } from "./db.js";
 import type { OrderRecord } from "./types.js";
@@ -41,11 +41,22 @@ export type AnalyticsEventInput = {
 };
 
 type AnalyticsQuery = {
+  range?: string | null;
   from?: string | null;
   to?: string | null;
   source?: string | null;
   channel?: string | null;
   campaign?: string | null;
+};
+
+export type AdminChannelProfileInput = {
+  displayName: string;
+  source: string;
+  channel: string;
+  campaign: string;
+  commissionType: "fixed" | "percent";
+  commissionValue: number;
+  enabled: boolean;
 };
 
 function nowIso(): string {
@@ -71,6 +82,44 @@ function normalizeCampaign(value: unknown): string {
 function nullable(value: unknown): string | null {
   const normalized = clean(value);
   return normalized || null;
+}
+
+function startOfLocalDay(date: Date): Date {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function addDays(date: Date, days: number): Date {
+  const next = new Date(date);
+  next.setDate(next.getDate() + days);
+  return next;
+}
+
+function normalizeAnalyticsQuery(query: AnalyticsQuery): AnalyticsQuery {
+  const range = clean(query.range);
+  if (range === "all") return { ...query, from: null, to: null };
+  if (range === "custom") return query;
+
+  const today = startOfLocalDay(new Date());
+  if (range === "today") {
+    return { ...query, from: today.toISOString(), to: addDays(today, 1).toISOString() };
+  }
+  if (range === "yesterday") {
+    return { ...query, from: addDays(today, -1).toISOString(), to: today.toISOString() };
+  }
+  if (range === "7d" || range === "30d") {
+    const days = range === "30d" ? 30 : 7;
+    return { ...query, from: addDays(today, -(days - 1)).toISOString(), to: addDays(today, 1).toISOString() };
+  }
+
+  return query;
+}
+
+function buildPromotionUrl(publicAppUrl: string, source: string, channel: string, campaign: string): string {
+  const url = new URL("/goal-fit-preview", publicAppUrl || "https://first-job-risk.jobeyes.com");
+  url.searchParams.set("source", source);
+  url.searchParams.set("channel", channel);
+  url.searchParams.set("campaign", campaign);
+  return url.toString();
 }
 
 function hashSensitive(value?: string | null): string | null {
@@ -469,27 +518,28 @@ export function createCommissionRecordForOrder(order: OrderRecord): void {
 }
 
 function buildWhere(query: AnalyticsQuery, alias = "created_at"): { sql: string; params: Record<string, string> } {
+  const normalizedQuery = normalizeAnalyticsQuery(query);
   const params: Record<string, string> = {};
   const conditions: string[] = [];
-  if (query.from) {
+  if (normalizedQuery.from) {
     conditions.push(`${alias} >= @from`);
-    params.from = query.from;
+    params.from = normalizedQuery.from;
   }
-  if (query.to) {
+  if (normalizedQuery.to) {
     conditions.push(`${alias} <= @to`);
-    params.to = query.to;
+    params.to = normalizedQuery.to;
   }
-  if (query.source) {
+  if (normalizedQuery.source) {
     conditions.push("source = @source");
-    params.source = query.source;
+    params.source = normalizedQuery.source;
   }
-  if (query.channel) {
+  if (normalizedQuery.channel) {
     conditions.push("channel = @channel");
-    params.channel = query.channel;
+    params.channel = normalizedQuery.channel;
   }
-  if (query.campaign) {
+  if (normalizedQuery.campaign) {
     conditions.push("campaign = @campaign");
-    params.campaign = query.campaign;
+    params.campaign = normalizedQuery.campaign;
   }
 
   return {
@@ -499,27 +549,28 @@ function buildWhere(query: AnalyticsQuery, alias = "created_at"): { sql: string;
 }
 
 function buildOrderWhere(query: AnalyticsQuery, dateAlias = "paidAt"): { sql: string; params: Record<string, string> } {
+  const normalizedQuery = normalizeAnalyticsQuery(query);
   const params: Record<string, string> = {};
   const conditions: string[] = [];
-  if (query.from) {
+  if (normalizedQuery.from) {
     conditions.push(`${dateAlias} >= @from`);
-    params.from = query.from;
+    params.from = normalizedQuery.from;
   }
-  if (query.to) {
+  if (normalizedQuery.to) {
     conditions.push(`${dateAlias} <= @to`);
-    params.to = query.to;
+    params.to = normalizedQuery.to;
   }
-  if (query.source) {
+  if (normalizedQuery.source) {
     conditions.push("COALESCE(analyticsSource, 'direct') = @source");
-    params.source = query.source;
+    params.source = normalizedQuery.source;
   }
-  if (query.channel) {
+  if (normalizedQuery.channel) {
     conditions.push("COALESCE(analyticsChannel, 'organic') = @channel");
-    params.channel = query.channel;
+    params.channel = normalizedQuery.channel;
   }
-  if (query.campaign) {
+  if (normalizedQuery.campaign) {
     conditions.push("COALESCE(analyticsCampaign, 'none') = @campaign");
-    params.campaign = query.campaign;
+    params.campaign = normalizedQuery.campaign;
   }
 
   return {
@@ -593,18 +644,27 @@ export function getAdminAnalyticsSummary(query: AnalyticsQuery) {
 
 export function getAdminAnalyticsFunnel(query: AnalyticsQuery) {
   const summary = getAdminAnalyticsSummary(query);
-  return [
+  const steps = [
     { key: "landing_view", label: "访问首页", count: summary.visits },
     { key: "test_start", label: "开始测试", count: summary.testStarts },
     { key: "test_complete", label: "完成测试", count: summary.testCompletes },
     { key: "free_result_view", label: "免费结果", count: summary.freeResults },
     { key: "pay_cta_click", label: "点击付费", count: summary.payClicks },
-    { key: "referral_link_copied", label: "复制邀请", count: summary.referralLinkCopies },
-    { key: "payment_paid", label: "付款成功", count: summary.paidOrders },
+    { key: "referral_link_copied", label: "复制邀请链接", count: summary.referralLinkCopies },
+    { key: "payment_paid", label: "支付成功", count: summary.paidOrders },
     { key: "full_report_view", label: "查看完整报告", count: summary.fullReportViews }
   ];
-}
+  const visitCount = steps[0]?.count ?? 0;
 
+  return steps.map((step, index) => {
+    const previousCount = index === 0 ? 0 : (steps[index - 1]?.count ?? 0);
+    return {
+      ...step,
+      previousConversionRate: index === 0 || previousCount === 0 ? null : step.count / previousCount,
+      visitConversionRate: visitCount === 0 ? null : step.count / visitCount
+    };
+  });
+}
 export function getAdminAnalyticsChannels(query: AnalyticsQuery) {
   const where = buildOrderWhere(query, "orders.paidAt");
   return db
@@ -620,7 +680,10 @@ export function getAdminAnalyticsChannels(query: AnalyticsQuery) {
         FROM orders
         LEFT JOIN channel_commission_records records ON records.order_id = orders.id
         ${where.sql ? where.sql.replace("WHERE", "WHERE orders.status = 'paid' AND") : "WHERE orders.status = 'paid'"}
-        GROUP BY source, channel, campaign
+        GROUP BY
+          COALESCE(orders.analyticsSource, 'direct'),
+          COALESCE(orders.analyticsChannel, 'organic'),
+          COALESCE(orders.analyticsCampaign, 'none')
         ORDER BY revenueCents DESC, paidOrders DESC
         LIMIT 100
       `
@@ -638,6 +701,9 @@ export function getAdminRecentOrders(query: AnalyticsQuery) {
           outTradeNo,
           sessionId,
           status,
+          accessMode,
+          originalAmountCents,
+          discountAmountCents,
           payAmountCents,
           paymentMode,
           COALESCE(analyticsSource, 'direct') AS source,
@@ -648,10 +714,220 @@ export function getAdminRecentOrders(query: AnalyticsQuery) {
         FROM orders
         ${where.sql}
         ORDER BY createdAt DESC
-        LIMIT 100
+        LIMIT 50
       `
     )
     .all(where.params);
+}
+
+export function getAdminChannels(publicAppUrl: string) {
+  const rows = db
+    .prepare(
+      `
+        SELECT
+          id,
+          display_name AS displayName,
+          source,
+          channel,
+          campaign,
+          commission_type AS commissionType,
+          commission_value AS commissionValue,
+          enabled,
+          created_at AS createdAt,
+          updated_at AS updatedAt
+        FROM channel_profiles
+        ORDER BY created_at DESC
+        LIMIT 200
+      `
+    )
+    .all() as Array<{
+    id: number;
+    displayName: string;
+    source: string;
+    channel: string;
+    campaign: string;
+    commissionType: "fixed" | "percent";
+    commissionValue: number;
+    enabled: number;
+    createdAt: string;
+    updatedAt: string;
+  }>;
+
+  return rows.map((row) => ({
+    ...row,
+    enabled: Boolean(row.enabled),
+    promoUrl: buildPromotionUrl(publicAppUrl, row.source, row.channel, row.campaign)
+  }));
+}
+
+export function createAdminChannelProfile(input: AdminChannelProfileInput, publicAppUrl: string) {
+  const displayName = clean(input.displayName);
+  const source = clean(input.source);
+  const channel = clean(input.channel);
+  const campaign = clean(input.campaign);
+  const commissionType = input.commissionType === "percent" ? "percent" : "fixed";
+  const commissionValue = Number.isFinite(input.commissionValue) ? input.commissionValue : 0;
+  const enabled = input.enabled ? 1 : 0;
+
+  if (!displayName || !source || !channel || !campaign) {
+    throw new Error("displayName, source, channel and campaign are required");
+  }
+
+  const now = nowIso();
+
+  runImmediateTransaction(() => {
+    db.prepare(
+      `
+        INSERT INTO channel_profiles (
+          display_name,
+          source,
+          channel,
+          campaign,
+          commission_type,
+          commission_value,
+          enabled,
+          created_at,
+          updated_at
+        ) VALUES (
+          @displayName,
+          @source,
+          @channel,
+          @campaign,
+          @commissionType,
+          @commissionValue,
+          @enabled,
+          @now,
+          @now
+        )
+        ON CONFLICT(source, channel, campaign) DO UPDATE SET
+          display_name = excluded.display_name,
+          commission_type = excluded.commission_type,
+          commission_value = excluded.commission_value,
+          enabled = excluded.enabled,
+          updated_at = excluded.updated_at
+      `
+    ).run({
+      displayName,
+      source,
+      channel,
+      campaign,
+      commissionType,
+      commissionValue,
+      enabled,
+      now
+    });
+
+    const existingRule = db
+      .prepare(
+        `
+          SELECT id
+          FROM channel_commission_rules
+          WHERE source = @source
+            AND channel = @channel
+            AND campaign = @campaign
+            AND effective_to IS NULL
+          ORDER BY id DESC
+          LIMIT 1
+        `
+      )
+      .get({ source, channel, campaign }) as { id: number } | undefined;
+
+    if (existingRule) {
+      db.prepare(
+        `
+          UPDATE channel_commission_rules
+          SET commission_type = @commissionType,
+              commission_value = @commissionValue,
+              enabled = @enabled,
+              updated_at = @now
+          WHERE id = @id
+        `
+      ).run({
+        id: existingRule.id,
+        commissionType,
+        commissionValue,
+        enabled,
+        now
+      });
+    } else {
+      db.prepare(
+        `
+          INSERT INTO channel_commission_rules (
+            source,
+            channel,
+            campaign,
+            commission_type,
+            commission_value,
+            effective_from,
+            effective_to,
+            enabled,
+            created_at,
+            updated_at
+          ) VALUES (
+            @source,
+            @channel,
+            @campaign,
+            @commissionType,
+            @commissionValue,
+            @now,
+            NULL,
+            @enabled,
+            @now,
+            @now
+          )
+        `
+      ).run({
+        source,
+        channel,
+        campaign,
+        commissionType,
+        commissionValue,
+        enabled,
+        now
+      });
+    }
+  });
+
+  const profile = db
+    .prepare(
+      `
+        SELECT
+          id,
+          display_name AS displayName,
+          source,
+          channel,
+          campaign,
+          commission_type AS commissionType,
+          commission_value AS commissionValue,
+          enabled,
+          created_at AS createdAt,
+          updated_at AS updatedAt
+        FROM channel_profiles
+        WHERE source = @source AND channel = @channel AND campaign = @campaign
+      `
+    )
+    .get({ source, channel, campaign }) as
+    | {
+        id: number;
+        displayName: string;
+        source: string;
+        channel: string;
+        campaign: string;
+        commissionType: "fixed" | "percent";
+        commissionValue: number;
+        enabled: number;
+        createdAt: string;
+        updatedAt: string;
+      }
+    | undefined;
+
+  if (!profile) throw new Error("channel profile was not created");
+
+  return {
+    ...profile,
+    enabled: Boolean(profile.enabled),
+    promoUrl: buildPromotionUrl(publicAppUrl, source, channel, campaign)
+  };
 }
 
 export function getAdminReferralRows() {

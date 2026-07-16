@@ -239,6 +239,23 @@ export function initializeDatabase(): void {
 
     CREATE INDEX IF NOT EXISTS idx_channel_commission_records_channel
       ON channel_commission_records (source, channel, campaign);
+
+    CREATE TABLE IF NOT EXISTS channel_profiles (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      display_name TEXT NOT NULL,
+      source TEXT NOT NULL,
+      channel TEXT NOT NULL,
+      campaign TEXT NOT NULL,
+      commission_type TEXT NOT NULL,
+      commission_value REAL NOT NULL,
+      enabled INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      UNIQUE (source, channel, campaign)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_channel_profiles_lookup
+      ON channel_profiles (source, channel, campaign, enabled);
   `);
 
   const columns = db.prepare("PRAGMA table_info(orders)").all() as Array<{ name: string }>;

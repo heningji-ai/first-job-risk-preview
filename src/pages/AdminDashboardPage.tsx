@@ -1,6 +1,9 @@
-import { useEffect, useMemo, useState } from "react";
+﻿import { useEffect, useMemo, useState } from "react";
+import type { FormEvent } from "react";
 import { buildApiUrl } from "../config/api";
 import { navigateTo } from "../lib/router";
+
+type RangeKey = "today" | "yesterday" | "7d" | "30d" | "all" | "custom";
 
 type Summary = {
   visits: number;
@@ -21,6 +24,8 @@ type FunnelStep = {
   key: string;
   label: string;
   count: number;
+  previousConversionRate: number | null;
+  visitConversionRate: number | null;
 };
 
 type ChannelRow = {
@@ -32,11 +37,28 @@ type ChannelRow = {
   commissionCents: number;
 };
 
+type ChannelProfile = {
+  id: number;
+  displayName: string;
+  source: string;
+  channel: string;
+  campaign: string;
+  commissionType: "fixed" | "percent";
+  commissionValue: number;
+  enabled: boolean;
+  promoUrl: string;
+  createdAt: string;
+  updatedAt: string;
+};
+
 type OrderRow = {
   id: string;
   outTradeNo: string;
   sessionId: string;
   status: string;
+  accessMode: string;
+  originalAmountCents: number;
+  discountAmountCents: number;
   payAmountCents: number;
   paymentMode: string;
   source: string;
@@ -46,22 +68,75 @@ type OrderRow = {
   paidAt: string | null;
 };
 
+const rangeOptions: Array<{ key: RangeKey; label: string }> = [
+  { key: "today", label: "今日" },
+  { key: "yesterday", label: "昨日" },
+  { key: "7d", label: "近7天" },
+  { key: "30d", label: "近30天" },
+  { key: "all", label: "全部" },
+  { key: "custom", label: "自定义日期" }
+];
+
+const sourceHints = [
+  ["xhs", "小红书"],
+  ["douyin", "抖音"],
+  ["shipinhao", "视频号"],
+  ["gzh", "公众号"],
+  ["pyq", "朋友圈"],
+  ["wechat", "微信好友/微信群"],
+  ["zhihu", "知乎"],
+  ["bilibili", "B站"],
+  ["kol", "外部渠道"]
+];
+
 function formatYuan(cents: number): string {
   return `¥${(cents / 100).toFixed(1)}`;
 }
 
-function buildQuery(filters: Record<string, string>): string {
-  const params = new URLSearchParams();
-  Object.entries(filters).forEach(([key, value]) => {
-    if (value.trim()) params.set(key, value.trim());
-  });
-  const query = params.toString();
-  return query ? `?${query}` : "";
+function formatRate(value: number | null): string {
+  if (value === null || !Number.isFinite(value)) return "-";
+  return `${(value * 100).toFixed(1)}%`;
 }
 
-async function fetchAdminJson<T>(path: string): Promise<T> {
+function formatOrderStatus(status: string): string {
+  const map: Record<string, string> = {
+    pending: "待支付",
+    paid: "已支付",
+    failed: "支付失败",
+    closed: "已关闭",
+    unknown: "未知"
+  };
+  return map[status] ?? map.unknown;
+}
+
+function buildQuery(filters: {
+  range: RangeKey;
+  from: string;
+  to: string;
+  source: string;
+  channel: string;
+  campaign: string;
+}): string {
+  const params = new URLSearchParams();
+  params.set("range", filters.range);
+  if (filters.range === "custom") {
+    if (filters.from.trim()) params.set("from", filters.from.trim());
+    if (filters.to.trim()) params.set("to", filters.to.trim());
+  }
+  (["source", "channel", "campaign"] as const).forEach((key) => {
+    if (filters[key].trim()) params.set(key, filters[key].trim());
+  });
+  return `?${params.toString()}`;
+}
+
+async function fetchAdminJson<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(buildApiUrl(path), {
-    credentials: "include"
+    ...init,
+    credentials: "include",
+    headers: {
+      "Content-Type": "application/json",
+      ...(init?.headers ?? {})
+    }
   });
 
   if (response.status === 401) {
@@ -74,46 +149,85 @@ async function fetchAdminJson<T>(path: string): Promise<T> {
 }
 
 function AdminDashboardPage() {
-  const [filters, setFilters] = useState({ from: "", to: "", source: "", channel: "", campaign: "" });
+  const [filters, setFilters] = useState({ range: "7d" as RangeKey, from: "", to: "", source: "", channel: "", campaign: "" });
   const [summary, setSummary] = useState<Summary | null>(null);
   const [funnel, setFunnel] = useState<FunnelStep[]>([]);
   const [channels, setChannels] = useState<ChannelRow[]>([]);
+  const [channelProfiles, setChannelProfiles] = useState<ChannelProfile[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [selectedPromoUrl, setSelectedPromoUrl] = useState("");
+  const [promoQr, setPromoQr] = useState("");
+  const [channelForm, setChannelForm] = useState({
+    displayName: "",
+    source: "",
+    channel: "",
+    campaign: "",
+    commissionType: "fixed" as "fixed" | "percent",
+    commissionValue: "0",
+    enabled: true
+  });
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const query = useMemo(() => buildQuery(filters), [filters]);
 
-  useEffect(() => {
-    let ignore = false;
+  async function loadDashboard(): Promise<void> {
+    setError("");
 
-    async function loadDashboard(): Promise<void> {
-      setError("");
+    try {
+      const [nextSummary, nextFunnel, nextChannels, nextOrders, nextChannelProfiles] = await Promise.all([
+        fetchAdminJson<Summary>(`/api/admin/analytics/summary${query}`),
+        fetchAdminJson<{ steps: FunnelStep[] }>(`/api/admin/analytics/funnel${query}`),
+        fetchAdminJson<{ channels: ChannelRow[] }>(`/api/admin/analytics/channels${query}`),
+        fetchAdminJson<{ orders: OrderRow[] }>(`/api/admin/orders${query}`),
+        fetchAdminJson<{ channels: ChannelProfile[] }>("/api/admin/channels")
+      ]);
 
-      try {
-        const [nextSummary, nextFunnel, nextChannels, nextOrders] = await Promise.all([
-          fetchAdminJson<Summary>(`/api/admin/analytics/summary${query}`),
-          fetchAdminJson<{ steps: FunnelStep[] }>(`/api/admin/analytics/funnel${query}`),
-          fetchAdminJson<{ channels: ChannelRow[] }>(`/api/admin/analytics/channels${query}`),
-          fetchAdminJson<{ orders: OrderRow[] }>(`/api/admin/orders${query}`)
-        ]);
-
-        if (ignore) return;
-        setSummary(nextSummary);
-        setFunnel(nextFunnel.steps);
-        setChannels(nextChannels.channels);
-        setOrders(nextOrders.orders);
-      } catch (loadError) {
-        if (!ignore && loadError instanceof Error && loadError.message !== "admin login required") {
-          setError("后台数据暂时无法加载。");
-        }
+      setSummary(nextSummary);
+      setFunnel(nextFunnel.steps);
+      setChannels(nextChannels.channels);
+      setOrders(nextOrders.orders);
+      setChannelProfiles(nextChannelProfiles.channels);
+      if (!selectedPromoUrl && nextChannelProfiles.channels[0]?.promoUrl) {
+        setSelectedPromoUrl(nextChannelProfiles.channels[0].promoUrl);
+      }
+    } catch (loadError) {
+      if (loadError instanceof Error && loadError.message !== "admin login required") {
+        setError("后台数据暂时无法加载。");
       }
     }
+  }
 
+  useEffect(() => {
     void loadDashboard();
-
-    return () => {
-      ignore = true;
-    };
   }, [query]);
+
+  useEffect(() => {
+    let canceled = false;
+    async function renderQr(): Promise<void> {
+      if (!selectedPromoUrl) {
+        setPromoQr("");
+        return;
+      }
+      try {
+        const QRCode = await import("qrcode");
+        const dataUrl = await QRCode.toDataURL(selectedPromoUrl, {
+          width: 192,
+          margin: 1,
+          color: {
+            dark: "#29382f",
+            light: "#fffaf0"
+          }
+        });
+        if (!canceled) setPromoQr(dataUrl);
+      } catch {
+        if (!canceled) setPromoQr("");
+      }
+    }
+    void renderQr();
+    return () => {
+      canceled = true;
+    };
+  }, [selectedPromoUrl]);
 
   async function handleLogout(): Promise<void> {
     await fetch(buildApiUrl("/api/admin/logout"), {
@@ -123,17 +237,48 @@ function AdminDashboardPage() {
     navigateTo("/admin/login");
   }
 
+  async function handleCreateChannel(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
+    setError("");
+    setNotice("");
+
+    try {
+      const result = await fetchAdminJson<{ channel: ChannelProfile }>("/api/admin/channels", {
+        method: "POST",
+        body: JSON.stringify({
+          ...channelForm,
+          commissionValue: Number(channelForm.commissionValue || 0)
+        })
+      });
+      setNotice("渠道已保存，推广链接已生成。");
+      setSelectedPromoUrl(result.channel.promoUrl);
+      setChannelForm((current) => ({ ...current, displayName: "", campaign: "" }));
+      await loadDashboard();
+    } catch {
+      setError("渠道创建失败，请检查 source/channel/campaign 是否填写完整。");
+    }
+  }
+
+  async function copyPromoUrl(url: string): Promise<void> {
+    try {
+      await navigator.clipboard.writeText(url);
+      setNotice("推广链接已复制。");
+    } catch {
+      setNotice("当前浏览器不支持自动复制，请手动复制推广链接。");
+    }
+  }
+
   const metricCards = summary
     ? [
-        ["访问人数", summary.visits],
-        ["开始测试人数", summary.testStarts],
-        ["完成测试人数", summary.testCompletes],
-        ["查看免费结果", summary.freeResults],
-        ["点击付费人数", summary.payClicks],
-        ["邀请链接复制数", summary.referralLinkCopies],
-        ["邀请二维码展示数", summary.referralQrShown],
-        ["支付成功人数", summary.paidOrders],
-        ["渠道收入", formatYuan(summary.revenueCents)],
+        ["访问首页", summary.visits],
+        ["开始测试", summary.testStarts],
+        ["完成测试", summary.testCompletes],
+        ["免费结果", summary.freeResults],
+        ["点击付费", summary.payClicks],
+        ["复制邀请", summary.referralLinkCopies],
+        ["支付成功", summary.paidOrders],
+        ["完整报告", summary.fullReportViews],
+        ["收入", formatYuan(summary.revenueCents)],
         ["预估佣金", formatYuan(summary.commissionCents)]
       ]
     : [];
@@ -150,20 +295,43 @@ function AdminDashboardPage() {
         </button>
       </header>
 
-      <section className="admin-filter-card">
-        {(["from", "to", "source", "channel", "campaign"] as const).map((key) => (
-          <label key={key}>
-            {key}
-            <input
-              value={filters[key]}
-              placeholder={key === "from" || key === "to" ? "2026-07-01" : key}
-              onChange={(event) => setFilters((current) => ({ ...current, [key]: event.target.value }))}
-            />
-          </label>
-        ))}
+      <section className="admin-filter-card" aria-label="时间和渠道筛选">
+        <div className="admin-range-tabs">
+          {rangeOptions.map((option) => (
+            <button
+              key={option.key}
+              className={filters.range === option.key ? "admin-range-tab active" : "admin-range-tab"}
+              type="button"
+              onClick={() => setFilters((current) => ({ ...current, range: option.key }))}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
+        {filters.range === "custom" ? (
+          <div className="admin-date-row">
+            <label>
+              from
+              <input value={filters.from} placeholder="2026-07-01" onChange={(event) => setFilters((current) => ({ ...current, from: event.target.value }))} />
+            </label>
+            <label>
+              to
+              <input value={filters.to} placeholder="2026-07-16" onChange={(event) => setFilters((current) => ({ ...current, to: event.target.value }))} />
+            </label>
+          </div>
+        ) : null}
+        <div className="admin-date-row">
+          {(["source", "channel", "campaign"] as const).map((key) => (
+            <label key={key}>
+              {key}
+              <input value={filters[key]} placeholder={key} onChange={(event) => setFilters((current) => ({ ...current, [key]: event.target.value }))} />
+            </label>
+          ))}
+        </div>
       </section>
 
       {error ? <p className="admin-error">{error}</p> : null}
+      {notice ? <p className="admin-notice">{notice}</p> : null}
 
       <section className="admin-metric-grid">
         {metricCards.map(([label, value]) => (
@@ -174,6 +342,94 @@ function AdminDashboardPage() {
         ))}
       </section>
 
+      <section className="admin-panel admin-channel-manager">
+        <div className="admin-section-heading">
+          <div>
+            <h2>渠道管理</h2>
+            <p>新增渠道后会生成推广链接和二维码；渠道参数仅用于统计和佣金，不参与价格或优惠资格判断。</p>
+          </div>
+        </div>
+
+        <div className="admin-source-hints">
+          <strong>常用 source：</strong>
+          {sourceHints.map(([key, label]) => (
+            <span key={key}>{key} {label}</span>
+          ))}
+        </div>
+
+        <form className="admin-channel-form" onSubmit={handleCreateChannel}>
+          <label>
+            渠道名称
+            <input value={channelForm.displayName} onChange={(event) => setChannelForm((current) => ({ ...current, displayName: event.target.value }))} />
+          </label>
+          <label>
+            source
+            <input value={channelForm.source} placeholder="xhs" onChange={(event) => setChannelForm((current) => ({ ...current, source: event.target.value }))} />
+          </label>
+          <label>
+            channel
+            <input value={channelForm.channel} placeholder="kol-a" onChange={(event) => setChannelForm((current) => ({ ...current, channel: event.target.value }))} />
+          </label>
+          <label>
+            campaign
+            <input value={channelForm.campaign} placeholder="summer-2026" onChange={(event) => setChannelForm((current) => ({ ...current, campaign: event.target.value }))} />
+          </label>
+          <label>
+            佣金类型
+            <select value={channelForm.commissionType} onChange={(event) => setChannelForm((current) => ({ ...current, commissionType: event.target.value as "fixed" | "percent" }))}>
+              <option value="fixed">fixed 固定金额</option>
+              <option value="percent">percent 百分比</option>
+            </select>
+          </label>
+          <label>
+            佣金值
+            <input type="number" min="0" step="0.01" value={channelForm.commissionValue} onChange={(event) => setChannelForm((current) => ({ ...current, commissionValue: event.target.value }))} />
+          </label>
+          <label className="admin-checkbox-row">
+            <input type="checkbox" checked={channelForm.enabled} onChange={(event) => setChannelForm((current) => ({ ...current, enabled: event.target.checked }))} />
+            启用
+          </label>
+          <button className="primary-button" type="submit">新增 / 更新渠道</button>
+        </form>
+
+        <div className="admin-channel-layout">
+          <div className="admin-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>渠道名称</th>
+                  <th>source/channel/campaign</th>
+                  <th>佣金</th>
+                  <th>状态</th>
+                  <th>推广链接</th>
+                </tr>
+              </thead>
+              <tbody>
+                {channelProfiles.map((row) => (
+                  <tr key={row.id}>
+                    <td>{row.displayName}</td>
+                    <td>{`${row.source}/${row.channel}/${row.campaign}`}</td>
+                    <td>{row.commissionType === "percent" ? `${row.commissionValue}%` : formatYuan(row.commissionValue)}</td>
+                    <td>{row.enabled ? "启用" : "停用"}</td>
+                    <td>
+                      <div className="admin-link-actions">
+                        <button type="button" onClick={() => setSelectedPromoUrl(row.promoUrl)}>二维码</button>
+                        <button type="button" onClick={() => void copyPromoUrl(row.promoUrl)}>复制</button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <aside className="admin-qr-card">
+            <h3>推广链接二维码</h3>
+            {promoQr ? <img src={promoQr} alt="渠道推广链接二维码" /> : <p>选择一个渠道后生成二维码。</p>}
+            {selectedPromoUrl ? <code>{selectedPromoUrl}</code> : null}
+          </aside>
+        </div>
+      </section>
+
       <section className="admin-grid-two">
         <article className="admin-panel">
           <h2>产品漏斗</h2>
@@ -182,6 +438,7 @@ function AdminDashboardPage() {
               <li key={step.key}>
                 <span>{step.label}</span>
                 <strong>{step.count}</strong>
+                <small>上一步 {formatRate(step.previousConversionRate)} · 访问 {formatRate(step.visitConversionRate)}</small>
               </li>
             ))}
           </ol>
@@ -189,6 +446,7 @@ function AdminDashboardPage() {
 
         <article className="admin-panel">
           <h2>渠道排行</h2>
+          <p className="admin-help-text">direct = 直接访问，未识别到来源平台；organic = 自然来源，未指定渠道；none = 未指定推广活动。</p>
           <div className="admin-table-wrap">
             <table>
               <thead>
@@ -220,14 +478,16 @@ function AdminDashboardPage() {
 
       <section className="admin-panel">
         <h2>最近订单</h2>
+        <p className="admin-help-text">待支付表示用户已创建订单但尚未支付成功，不代表已经查看完整报告。默认显示最近 50 条。</p>
         <div className="admin-table-wrap">
           <table>
             <thead>
               <tr>
                 <th>订单号</th>
                 <th>金额</th>
+                <th>优惠</th>
                 <th>状态</th>
-                <th>渠道</th>
+                <th>source/channel/campaign</th>
                 <th>创建时间</th>
                 <th>支付时间</th>
               </tr>
@@ -237,7 +497,8 @@ function AdminDashboardPage() {
                 <tr key={order.id}>
                   <td>{order.outTradeNo}</td>
                   <td>{formatYuan(order.payAmountCents)}</td>
-                  <td>{order.status}</td>
+                  <td>{order.discountAmountCents > 0 ? `优惠 ${formatYuan(order.discountAmountCents)}` : "标准价"}</td>
+                  <td>{formatOrderStatus(order.status)}</td>
                   <td>{`${order.source}/${order.channel}/${order.campaign}`}</td>
                   <td>{order.createdAt}</td>
                   <td>{order.paidAt ?? "-"}</td>
