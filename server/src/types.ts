@@ -25,6 +25,11 @@ export type OrderRecord = {
   wechatTransactionId: string | null;
   sourceReferralCode: string | null;
   referralVisitId: string | null;
+  analyticsVisitorId: string | null;
+  analyticsSource: string | null;
+  analyticsChannel: string | null;
+  analyticsCampaign: string | null;
+  analyticsReferralCode: string | null;
   createdAt: string;
   updatedAt: string;
   paidAt: string | null;
@@ -37,6 +42,11 @@ export type CreateOrderInput = {
   paymentMode: PaymentMode;
   sourceReferralCode?: string | null;
   referralVisitId?: string | null;
+  analyticsVisitorId?: string | null;
+  analyticsSource?: string | null;
+  analyticsChannel?: string | null;
+  analyticsCampaign?: string | null;
+  analyticsReferralCode?: string | null;
 };
 
 export type AmountCalculation = {

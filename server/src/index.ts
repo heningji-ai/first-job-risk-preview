@@ -1,6 +1,18 @@
 import cors from "cors";
 import dotenv from "dotenv";
 import express from "express";
+import {
+  getAdminAnalyticsChannels,
+  getAdminAnalyticsFunnel,
+  getAdminAnalyticsSummary,
+  getAdminRecentOrders,
+  getAdminReferralRows,
+  getAttributionForOrder,
+  recordAnalyticsEvents,
+  recordAnalyticsVisit,
+  recordOrderPaidAnalytics
+} from "./analytics.js";
+import { loginAdmin, logoutAdmin, requireAdmin } from "./adminAuth.js";
 import { serverConfig } from "./config.js";
 import { initializeDatabase } from "./db.js";
 import {
@@ -78,6 +90,115 @@ app.use(express.json());
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
+});
+
+function getIp(req: express.Request): string | null {
+  const forwarded = req.headers["x-forwarded-for"];
+  if (typeof forwarded === "string") return forwarded.split(",")[0]?.trim() ?? null;
+  return req.socket.remoteAddress ?? null;
+}
+
+function getAnalyticsQuery(req: express.Request) {
+  return {
+    from: getString(req.query.from),
+    to: getString(req.query.to),
+    source: getString(req.query.source),
+    channel: getString(req.query.channel),
+    campaign: getString(req.query.campaign)
+  };
+}
+
+function getSafeOrderAttribution(params: {
+  visitorId?: string | null;
+  sessionId?: string | null;
+  fallbackReferralCode?: string | null;
+}) {
+  try {
+    return getAttributionForOrder(params);
+  } catch (error) {
+    console.error("[analytics-order-attribution]", error instanceof Error ? error.message : error);
+    return {
+      visitorId: params.visitorId ?? "unknown",
+      source: "direct",
+      channel: "organic",
+      campaign: "none",
+      referralCode: params.fallbackReferralCode ?? null
+    };
+  }
+}
+
+app.post("/api/analytics/visit", (req, res) => {
+  try {
+    const body = req.body as Record<string, unknown>;
+    const attribution = recordAnalyticsVisit({
+      visitorId: getString(body.visitorId) ?? "",
+      sessionId: getString(body.sessionId),
+      source: getString(body.source),
+      channel: getString(body.channel),
+      campaign: getString(body.campaign),
+      referralCode: getString(body.referralCode),
+      landingPath: getString(body.landingPath),
+      landingUrl: getString(body.landingUrl),
+      referrer: getString(body.referrer),
+      userAgent: req.headers["user-agent"] ?? null,
+      ip: getIp(req)
+    });
+
+    res.json({
+      ok: true,
+      visitorId: attribution.visitorId,
+      attribution
+    });
+  } catch (error) {
+    console.error("[analytics-visit]", error instanceof Error ? error.message : error);
+    res.status(400).json({ error: "analytics visit failed" });
+  }
+});
+
+app.post("/api/analytics/events", (req, res) => {
+  const body = req.body as Record<string, unknown>;
+  const events = Array.isArray(body.events) ? body.events : [];
+  const result = recordAnalyticsEvents(events as Parameters<typeof recordAnalyticsEvents>[0]);
+  res.json({ ok: true, ...result });
+});
+
+app.post("/api/admin/login", (req, res) => {
+  const body = req.body as Record<string, unknown>;
+  loginAdmin(req, res, getString(body.username) ?? "", getString(body.password) ?? "");
+});
+
+app.post("/api/admin/logout", (_req, res) => {
+  logoutAdmin(res);
+});
+
+app.get("/api/admin/me", (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  res.json({ ok: true, username: serverConfig.admin.username });
+});
+
+app.get("/api/admin/analytics/summary", (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  res.json(getAdminAnalyticsSummary(getAnalyticsQuery(req)));
+});
+
+app.get("/api/admin/analytics/funnel", (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  res.json({ steps: getAdminAnalyticsFunnel(getAnalyticsQuery(req)) });
+});
+
+app.get("/api/admin/analytics/channels", (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  res.json({ channels: getAdminAnalyticsChannels(getAnalyticsQuery(req)) });
+});
+
+app.get("/api/admin/orders", (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  res.json({ orders: getAdminRecentOrders(getAnalyticsQuery(req)) });
+});
+
+app.get("/api/admin/referrals", (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  res.json({ referrals: getAdminReferralRows() });
 });
 
 app.post("/api/referrals/create", (req, res) => {
@@ -273,13 +394,23 @@ app.post("/api/orders/create", async (req, res) => {
 
   const sourceReferralCodeValue = getString(sourceReferralCode);
   const visitorIdValue = getString(visitorId);
+  const orderAttribution = getSafeOrderAttribution({
+    visitorId: visitorIdValue,
+    sessionId: sessionId.trim(),
+    fallbackReferralCode: sourceReferralCodeValue
+  });
   const order = createOrReuseOrder({
     sessionId: sessionId.trim(),
     accessMode: effectiveAccessMode,
     couponCode: effectiveCouponCode,
     paymentMode: requestedPaymentMode,
     sourceReferralCode: sourceReferralCodeValue,
-    referralVisitId: null
+    referralVisitId: null,
+    analyticsVisitorId: orderAttribution.visitorId,
+    analyticsSource: orderAttribution.source,
+    analyticsChannel: orderAttribution.channel,
+    analyticsCampaign: orderAttribution.campaign,
+    analyticsReferralCode: orderAttribution.referralCode
   });
 
   if (sourceReferralCodeValue && visitorIdValue) {
@@ -348,6 +479,7 @@ app.post("/api/orders/:orderId/mock-paid", (req, res) => {
   }
 
   markReferralPaidForOrder(order.id);
+  recordOrderPaidAnalytics(order);
 
   res.json(order);
 });

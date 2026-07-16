@@ -1,4 +1,5 @@
 import { serverConfig } from "./config.js";
+import { recordOrderPaidAnalytics } from "./analytics.js";
 import { decryptWechatResource, readWechatPayPublicKey, verifyWechatSignature } from "./crypto.js";
 import { getOrderByOutTradeNo, markOrderPaidByOutTradeNo } from "./orders.js";
 import { markReferralPaidForOrder } from "./referrals.js";
@@ -115,5 +116,6 @@ export async function handleWechatNotify(rawBody: Buffer, headers: WechatNotifyH
 
   if (paidOrder) {
     markReferralPaidForOrder(paidOrder.id);
+    recordOrderPaidAnalytics(paidOrder);
   }
 }

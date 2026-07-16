@@ -11,7 +11,9 @@
     "build": "tsc --noEmit",
     "referral-stats": "tsx src/referralStats.ts",
     "test-referral-discount": "tsx src/testReferralDiscount.ts",
-    "test-referral-stats": "tsx src/testReferralStats.ts"
+    "test-referral-stats": "tsx src/testReferralStats.ts",
+    "test-analytics": "tsx src/testAnalytics.ts",
+    "test-admin-analytics": "tsx src/testAdminAnalytics.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",

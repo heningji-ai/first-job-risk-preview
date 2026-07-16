@@ -377,8 +377,17 @@ assert(
     freeResultPageSource.includes("createGoalFitReferralLink") &&
     freeResultPageSource.includes("confirmGoalFitReferralCopied") &&
     freeResultPageSource.includes("getGoalFitDiscountStatus") &&
+    freeResultPageSource.includes('await import("qrcode")') &&
+    freeResultPageSource.includes("QRCode.toDataURL") &&
+    freeResultPageSource.includes("你的专属邀请已生成") &&
+    freeResultPageSource.includes("截图二维码") &&
+    freeResultPageSource.includes("分享给微信好友、微信群或朋友圈") &&
+    freeResultPageSource.includes("你可以复制链接，也可以截图二维码发给同学") &&
+    freeResultPageSource.includes("goal-fit-invite-qrcode") &&
+    freeResultPageSource.includes("二维码暂时生成失败，但不影响复制链接和领取优惠") &&
     freeResultPageSource.includes("confirm_failed") &&
     freeResultPageSource.includes("专属邀请链接已复制。请分享给微信好友或朋友圈") &&
+    freeResultPageSource.includes("复制邀请链接") &&
     freeResultPageSource.includes("继续，查看我的优惠") &&
     freeResultPageSource.includes("goal-fit-free-sticky-actions") &&
     freeResultPageSource.includes("/goal-fit-unlock-preview?session="),
@@ -457,8 +466,9 @@ assert(
     !unlockPageSource.includes('accessMode: "direct"') &&
     !unlockPageSource.includes("couponCode: null") &&
     unlockPageSource.includes("getGoalFitDiscountStatus") &&
-    unlockPageSource.includes("sourceReferralCode: getGoalFitReferralContext()?.referralCode") &&
-    unlockPageSource.includes("visitorId: getGoalFitReferralContext()?.visitorId") &&
+    unlockPageSource.includes("const referralContext = getGoalFitReferralContext()") &&
+    unlockPageSource.includes("sourceReferralCode: referralContext?.referralCode") &&
+    unlockPageSource.includes("visitorId: referralContext?.visitorId ?? getGoalFitVisitorId()") &&
     unlockPageSource.includes("isMobileExternalBrowser") &&
     unlockPageSource.includes("请使用微信打开当前页面完成支付。") &&
     !unlockPageSource.includes("paymentMode: PAYMENT_MODE") &&
@@ -497,7 +507,9 @@ assert(
 assert(
   stylesSource.includes(".goal-fit-free-coupon-cta") &&
     stylesSource.includes(".goal-fit-pay-primary") &&
-    stylesSource.includes("background: #8f2f24;"),
+    stylesSource.includes("background: #8f2f24;") &&
+    stylesSource.includes(".goal-fit-invite-share-box") &&
+    stylesSource.includes(".goal-fit-invite-qrcode"),
   "global.css must make the coupon CTA visible and payment primary button stronger without changing payment logic"
 );
 ["模拟支付", "测试支付", "mock pay", "Native Pay", "API v3", "code_url", "notify_url", "mchid", "appid", "serial_no", "开发", "debug"].forEach((text) => {

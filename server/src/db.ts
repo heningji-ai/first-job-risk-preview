@@ -52,6 +52,11 @@ export function initializeDatabase(): void {
       wechatTransactionId TEXT,
       sourceReferralCode TEXT,
       referralVisitId TEXT,
+      analyticsVisitorId TEXT,
+      analyticsSource TEXT,
+      analyticsChannel TEXT,
+      analyticsCampaign TEXT,
+      analyticsReferralCode TEXT,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
       paidAt TEXT
@@ -117,6 +122,123 @@ export function initializeDatabase(): void {
 
     CREATE INDEX IF NOT EXISTS idx_goal_fit_referral_visits_result_session
       ON goal_fit_referral_visits (resultSessionId);
+
+    CREATE TABLE IF NOT EXISTS analytics_visitors (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      visitor_id TEXT NOT NULL UNIQUE,
+      first_seen_at TEXT NOT NULL,
+      last_seen_at TEXT NOT NULL,
+      first_source TEXT NOT NULL,
+      first_channel TEXT NOT NULL,
+      first_campaign TEXT NOT NULL,
+      first_referral_code TEXT,
+      first_landing_path TEXT NOT NULL,
+      first_user_agent_hash TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS analytics_attributions (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      visitor_id TEXT NOT NULL,
+      session_id TEXT,
+      source TEXT NOT NULL,
+      channel TEXT NOT NULL,
+      campaign TEXT NOT NULL,
+      referral_code TEXT,
+      landing_path TEXT NOT NULL,
+      landing_url TEXT,
+      referrer TEXT,
+      user_agent_hash TEXT,
+      ip_hash TEXT,
+      is_first_touch INTEGER NOT NULL,
+      is_valid INTEGER NOT NULL,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_analytics_attributions_visitor
+      ON analytics_attributions (visitor_id);
+
+    CREATE INDEX IF NOT EXISTS idx_analytics_attributions_session
+      ON analytics_attributions (session_id);
+
+    CREATE INDEX IF NOT EXISTS idx_analytics_attributions_channel
+      ON analytics_attributions (source, channel, campaign);
+
+    CREATE INDEX IF NOT EXISTS idx_analytics_attributions_referral
+      ON analytics_attributions (referral_code);
+
+    CREATE INDEX IF NOT EXISTS idx_analytics_attributions_created
+      ON analytics_attributions (created_at);
+
+    CREATE TABLE IF NOT EXISTS analytics_events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      event_id TEXT NOT NULL UNIQUE,
+      visitor_id TEXT NOT NULL,
+      session_id TEXT,
+      order_id TEXT,
+      event_name TEXT NOT NULL,
+      event_value REAL,
+      source TEXT NOT NULL,
+      channel TEXT NOT NULL,
+      campaign TEXT NOT NULL,
+      referral_code TEXT,
+      page_path TEXT,
+      metadata_json TEXT,
+      created_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_analytics_events_name_created
+      ON analytics_events (event_name, created_at);
+
+    CREATE INDEX IF NOT EXISTS idx_analytics_events_visitor
+      ON analytics_events (visitor_id);
+
+    CREATE INDEX IF NOT EXISTS idx_analytics_events_session
+      ON analytics_events (session_id);
+
+    CREATE INDEX IF NOT EXISTS idx_analytics_events_order
+      ON analytics_events (order_id);
+
+    CREATE INDEX IF NOT EXISTS idx_analytics_events_channel
+      ON analytics_events (source, channel, campaign);
+
+    CREATE TABLE IF NOT EXISTS channel_commission_rules (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      source TEXT NOT NULL,
+      channel TEXT NOT NULL,
+      campaign TEXT,
+      commission_type TEXT NOT NULL,
+      commission_value REAL NOT NULL,
+      effective_from TEXT NOT NULL,
+      effective_to TEXT,
+      enabled INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_channel_commission_rules_lookup
+      ON channel_commission_rules (source, channel, campaign, enabled);
+
+    CREATE TABLE IF NOT EXISTS channel_commission_records (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      order_id TEXT NOT NULL UNIQUE,
+      visitor_id TEXT,
+      session_id TEXT NOT NULL,
+      source TEXT NOT NULL,
+      channel TEXT NOT NULL,
+      campaign TEXT NOT NULL,
+      paid_amount_cents INTEGER NOT NULL,
+      commission_type TEXT NOT NULL,
+      commission_value REAL NOT NULL,
+      commission_amount_cents INTEGER NOT NULL,
+      settlement_status TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_channel_commission_records_channel
+      ON channel_commission_records (source, channel, campaign);
   `);
 
   const columns = db.prepare("PRAGMA table_info(orders)").all() as Array<{ name: string }>;
@@ -132,5 +254,25 @@ export function initializeDatabase(): void {
 
   if (!columnNames.has("referralVisitId")) {
     db.exec("ALTER TABLE orders ADD COLUMN referralVisitId TEXT");
+  }
+
+  if (!columnNames.has("analyticsVisitorId")) {
+    db.exec("ALTER TABLE orders ADD COLUMN analyticsVisitorId TEXT");
+  }
+
+  if (!columnNames.has("analyticsSource")) {
+    db.exec("ALTER TABLE orders ADD COLUMN analyticsSource TEXT");
+  }
+
+  if (!columnNames.has("analyticsChannel")) {
+    db.exec("ALTER TABLE orders ADD COLUMN analyticsChannel TEXT");
+  }
+
+  if (!columnNames.has("analyticsCampaign")) {
+    db.exec("ALTER TABLE orders ADD COLUMN analyticsCampaign TEXT");
+  }
+
+  if (!columnNames.has("analyticsReferralCode")) {
+    db.exec("ALTER TABLE orders ADD COLUMN analyticsReferralCode TEXT");
   }
 }

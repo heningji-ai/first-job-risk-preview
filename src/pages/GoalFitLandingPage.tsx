@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import GoalFitHeader from "../components/GoalFitHeader";
+import { trackGoalFitEvent, trackGoalFitVisit } from "../lib/goalFitAnalytics";
 import { recordGoalFitReferralVisitFromUrl } from "../lib/goalFitReferralStore";
 import { navigateTo } from "../lib/router";
 
@@ -42,8 +43,15 @@ function scrollToPreview() {
 
 function GoalFitLandingPage() {
   useEffect(() => {
+    trackGoalFitVisit();
+    trackGoalFitEvent({ eventName: "landing_view" });
     void recordGoalFitReferralVisitFromUrl();
   }, []);
+
+  function handleStartPreview(): void {
+    trackGoalFitEvent({ eventName: "test_start" });
+    navigateTo("/test-goal-fit-preview");
+  }
 
   return (
     <main className="goal-fit-shell goal-fit-landing-shell">
@@ -65,7 +73,7 @@ function GoalFitLandingPage() {
             <button
               className="primary-button goal-fit-landing-primary"
               type="button"
-              onClick={() => navigateTo("/test-goal-fit-preview")}
+              onClick={handleStartPreview}
             >
               开始预演
             </button>
@@ -112,7 +120,7 @@ function GoalFitLandingPage() {
         </ol>
 
         <div className="goal-fit-landing-bottom-cta goal-fit-landing-compact-cta">
-          <button className="primary-button" type="button" onClick={() => navigateTo("/test-goal-fit-preview")}>
+          <button className="primary-button" type="button" onClick={handleStartPreview}>
             开始预演
           </button>
           <small>基于21年招聘经验，帮应届生提前看清第一份工作的适应风险。</small>

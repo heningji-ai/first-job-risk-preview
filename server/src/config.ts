@@ -20,6 +20,11 @@ export const serverConfig = {
   frontendOrigin: getEnv("FRONTEND_ORIGIN", defaultPublicAppUrl),
   publicAppUrl: getEnv("PUBLIC_APP_URL", getEnv("FRONTEND_ORIGIN", defaultPublicAppUrl)),
   paymentMode: getEnv("PAYMENT_MODE", getDefaultPaymentMode(nodeEnv)) as PaymentModeConfig,
+  admin: {
+    username: getEnv("ADMIN_USERNAME"),
+    password: getEnv("ADMIN_PASSWORD"),
+    sessionSecret: getEnv("ADMIN_SESSION_SECRET")
+  },
   wechatPay: {
     mchId: getEnv("WECHAT_PAY_MCH_ID"),
     appId: getEnv("WECHAT_PAY_APP_ID"),

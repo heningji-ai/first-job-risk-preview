@@ -16,6 +16,8 @@
     "referral-stats": "npm --prefix server run referral-stats",
     "test-referral-discount": "npm --prefix server run test-referral-discount",
     "test-referral-stats": "npm --prefix server run test-referral-stats",
+    "test-analytics": "npm --prefix server run test-analytics",
+    "test-admin-analytics": "npm --prefix server run test-admin-analytics",
     "dev:server": "npm --prefix server run dev",
     "validate-questions-v2": "node --experimental-strip-types scripts/validate-questions-v2.ts",
     "test-scoring-v2": "node --experimental-strip-types scripts/test-scoring-v2.ts",

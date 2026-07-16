@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import GoalFitHeader from "../components/GoalFitHeader";
 import { buildApiUrl } from "../config/api";
+import { trackGoalFitEvent, trackGoalFitVisit } from "../lib/goalFitAnalytics";
 import { buildGoalFitResult } from "../lib/goalFitResultBuilder";
 import { goalFitQuestionBank } from "../lib/goalFitQuestionBank";
 import {
@@ -19,6 +20,7 @@ import {
 } from "../lib/goalFitReferralStore";
 import { getGoalFitSession } from "../lib/goalFitSessionStore";
 import { isGoalFitReportUnlocked, markGoalFitReportUnlocked } from "../lib/goalFitUnlockStore";
+import { getGoalFitVisitorId } from "../lib/goalFitVisitorStore";
 import { navigateTo } from "../lib/router";
 import type { CompanyType, GoalFitAnswerMap, GoalFitResult, RoleType } from "../lib/goalFitTypes";
 
@@ -193,6 +195,18 @@ function GoalFitUnlockPage() {
   }, [context.isSample, context.sessionId]);
 
   useEffect(() => {
+    trackGoalFitVisit(context.sessionId);
+    trackGoalFitEvent({
+      eventName: "unlock_page_view",
+      sessionId: context.sessionId,
+      metadata: {
+        isSample: context.isSample,
+        hasWechatOpenidToken: Boolean(context.wechatOpenidToken)
+      }
+    });
+  }, [context.isSample, context.sessionId, context.wechatOpenidToken]);
+
+  useEffect(() => {
     if (!context.result || !context.sessionId || isUnlocked) return;
     if (isWechatInAppBrowser && !context.wechatOpenidToken) return;
     if (isMobileExternalBrowser) return;
@@ -204,17 +218,37 @@ function GoalFitUnlockPage() {
 
       setIsCreatingOrder(true);
       setOrderError("");
+      trackGoalFitEvent({
+        eventName: "order_create_start",
+        sessionId: context.sessionId,
+        metadata: {
+          paymentMethod: isWechatInAppBrowser ? "jsapi" : "native"
+        }
+      });
 
       try {
+        const referralContext = getGoalFitReferralContext();
         const createdOrder = await createGoalFitOrderFromApi({
           sessionId: context.sessionId,
           paymentMethod: isWechatInAppBrowser ? "jsapi" : "native",
           wechatOpenidToken: context.wechatOpenidToken ?? undefined,
-          sourceReferralCode: getGoalFitReferralContext()?.referralCode,
-          visitorId: getGoalFitReferralContext()?.visitorId
+          sourceReferralCode: referralContext?.referralCode,
+          visitorId: referralContext?.visitorId ?? getGoalFitVisitorId()
         });
 
-        if (!ignore) setOrder(createdOrder);
+        if (!ignore) {
+          setOrder(createdOrder);
+          trackGoalFitEvent({
+            eventName: "order_create_success",
+            sessionId: context.sessionId,
+            orderId: createdOrder.orderId,
+            eventValue: createdOrder.payAmountCents,
+            metadata: {
+              paymentMode: createdOrder.paymentMode,
+              payAmountCents: createdOrder.payAmountCents
+            }
+          });
+        }
       } catch {
         if (!ignore) setOrderError("订单创建暂时失败，请稍后重试。");
       } finally {
@@ -351,6 +385,11 @@ function GoalFitUnlockPage() {
       if (!context.isSample) {
         markGoalFitReportUnlocked(context.sessionId);
       }
+      trackGoalFitEvent({
+        eventName: "report_unlocked",
+        sessionId: context.sessionId,
+        orderId: order.orderId
+      });
       setIsUnlocked(true);
       navigateTo(fullResultPath);
     } catch {
@@ -374,6 +413,11 @@ function GoalFitUnlockPage() {
         if (!context.isSample) {
           markGoalFitReportUnlocked(context.sessionId);
         }
+        trackGoalFitEvent({
+          eventName: "report_unlocked",
+          sessionId: context.sessionId,
+          orderId: latestOrder.orderId
+        });
         setIsUnlocked(true);
         navigateTo(fullResultPath);
       }
@@ -408,6 +452,11 @@ function GoalFitUnlockPage() {
         if (!context.isSample && context.sessionId) {
           markGoalFitReportUnlocked(context.sessionId);
         }
+        trackGoalFitEvent({
+          eventName: "report_unlocked",
+          sessionId: context.sessionId,
+          orderId: latestOrder.orderId
+        });
         setIsUnlocked(true);
         navigateTo(fullResultPath);
         return;
@@ -422,6 +471,13 @@ function GoalFitUnlockPage() {
 
     setIsInvokingJsapiPay(true);
     setOrderError("");
+    trackGoalFitEvent({
+      eventName: "payment_start",
+      sessionId: context.sessionId,
+      orderId: order.orderId,
+      eventValue: order.payAmountCents,
+      metadata: { paymentMode: "jsapi" }
+    });
 
     try {
       const result = await invokeWechatJsapiPay(order.jsapiPaymentParams);
@@ -443,6 +499,16 @@ function GoalFitUnlockPage() {
   }
 
   function handlePrimaryPay(): void {
+    trackGoalFitEvent({
+      eventName: "payment_start",
+      sessionId: context.sessionId,
+      orderId: order?.orderId,
+      eventValue: displayedPayAmount,
+      metadata: {
+        paymentMode: order?.paymentMode ?? (isWechatInAppBrowser ? "jsapi" : "native")
+      }
+    });
+
     if (isWechatInAppBrowser && !context.wechatOpenidToken) {
       handleStartWechatOauth();
       return;

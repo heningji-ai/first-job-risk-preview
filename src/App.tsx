@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { navigateTo, useRoute } from "./lib/router";
 import GoalFitFreeResultPage from "./pages/GoalFitFreeResultPage";
 import GoalFitLandingPage from "./pages/GoalFitLandingPage";
@@ -11,9 +12,26 @@ import ResultPageV2Preview from "./pages/ResultPageV2Preview";
 import TestPage from "./pages/TestPage";
 import TestPageV2Preview from "./pages/TestPageV2Preview";
 
+const AdminDashboardPage = lazy(() => import("./pages/AdminDashboardPage"));
+const AdminLoginPage = lazy(() => import("./pages/AdminLoginPage"));
+
 function App() {
   const route = useRoute();
 
+  if (route.path === "/admin/login") {
+    return (
+      <Suspense fallback={<main className="admin-shell">正在打开后台...</main>}>
+        <AdminLoginPage />
+      </Suspense>
+    );
+  }
+  if (route.path === "/admin") {
+    return (
+      <Suspense fallback={<main className="admin-shell">正在打开后台...</main>}>
+        <AdminDashboardPage />
+      </Suspense>
+    );
+  }
   if (route.path === "/test-goal-fit-preview") return <GoalFitTestPage />;
   if (route.path === "/goal-fit-preview") return <GoalFitLandingPage />;
   if (route.path === "/goal-fit-share-preview") return <GoalFitSharePage />;

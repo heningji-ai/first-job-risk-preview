@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import GoalFitHeader from "../components/GoalFitHeader";
 import { IS_PRODUCTION } from "../config/api";
+import { trackGoalFitEvent, trackGoalFitVisit } from "../lib/goalFitAnalytics";
 import { buildGoalFitResult } from "../lib/goalFitResultBuilder";
 import { goalFitQuestionBank } from "../lib/goalFitQuestionBank";
 import { selectGoalFitQuestions } from "../lib/goalFitQuestionSelector";
@@ -749,6 +750,26 @@ function GoalFitResultPage() {
       ignore = true;
     };
   }, [reportContext.isSample, reportContext.sessionId]);
+
+  useEffect(() => {
+    trackGoalFitVisit(reportContext.sessionId);
+    if (!reportContext.result) return;
+
+    trackGoalFitEvent({
+      eventName: "full_report_view",
+      sessionId: reportContext.sessionId,
+      metadata: {
+        isSample: reportContext.isSample,
+        targetCompany: reportContext.result.targetCompany,
+        targetRole: reportContext.result.targetRole
+      }
+    });
+    trackGoalFitEvent({
+      eventName: "official_account_cta_view",
+      sessionId: reportContext.sessionId,
+      metadata: { placement: "full_report_footer" }
+    });
+  }, [reportContext.isSample, reportContext.result, reportContext.sessionId]);
 
   if (!result) return <MissingReportPage />;
   if (!reportContext.isSample && reportContext.sessionId && !unlockCheckComplete) {

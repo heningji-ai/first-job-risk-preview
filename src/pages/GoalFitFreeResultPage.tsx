@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { ReactNode } from "react";
 import GoalFitHeader from "../components/GoalFitHeader";
+import { trackGoalFitEvent, trackGoalFitVisit } from "../lib/goalFitAnalytics";
 import { buildGoalFitResult } from "../lib/goalFitResultBuilder";
 import { goalFitQuestionBank } from "../lib/goalFitQuestionBank";
 import { selectGoalFitQuestions } from "../lib/goalFitQuestionSelector";
@@ -218,11 +219,27 @@ function GoalFitFreeResultPage() {
     "idle" | "copying" | "share_prompt" | "manual" | "confirm_failed" | "error"
   >("idle");
   const [inviteMessage, setInviteMessage] = useState("");
+  const [inviteQrCodeDataUrl, setInviteQrCodeDataUrl] = useState("");
+  const [inviteQrCodeError, setInviteQrCodeError] = useState("");
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("invite") === "1") setIsInvitePanelOpen(true);
   }, []);
+
+  useEffect(() => {
+    trackGoalFitVisit(sessionId);
+    if (!result) return;
+
+    trackGoalFitEvent({
+      eventName: "free_result_view",
+      sessionId,
+      metadata: {
+        isSample,
+        overallScore: result.scores.overallScore
+      }
+    });
+  }, [isSample, result, sessionId]);
 
   if (!result) return <MissingFreeResultPage />;
 
@@ -234,6 +251,12 @@ function GoalFitFreeResultPage() {
   const riskSentence = `你当前最容易卡在：${primaryRisk.title}。`;
 
   function handleUnlock(): void {
+    trackGoalFitEvent({
+      eventName: "pay_cta_click",
+      sessionId,
+      metadata: { isSample, entry: "free_result" }
+    });
+
     if (isSample) {
       navigateTo("/goal-fit-unlock-preview?sample=high_fit");
       return;
@@ -247,7 +270,39 @@ function GoalFitFreeResultPage() {
   function handleOpenInvitePanel(): void {
     setInviteStatus("idle");
     setInviteMessage("");
+    setInviteQrCodeDataUrl("");
+    setInviteQrCodeError("");
+    trackGoalFitEvent({
+      eventName: "coupon_cta_click",
+      sessionId,
+      metadata: { isSample }
+    });
     setIsInvitePanelOpen(true);
+  }
+
+  async function generateInviteQrCode(shareUrl: string): Promise<void> {
+    setInviteQrCodeDataUrl("");
+    setInviteQrCodeError("");
+
+    try {
+      const QRCode = await import("qrcode");
+      const dataUrl = await QRCode.toDataURL(shareUrl, {
+        margin: 1,
+        width: 192,
+        color: {
+          dark: "#253a33",
+          light: "#fffaf0"
+        }
+      });
+      setInviteQrCodeDataUrl(dataUrl);
+      trackGoalFitEvent({
+        eventName: "referral_qr_shown",
+        sessionId,
+        metadata: { hasQrCode: true }
+      });
+    } catch {
+      setInviteQrCodeError("二维码暂时生成失败，但不影响复制链接和领取优惠。");
+    }
   }
 
   async function handleConfirmReferralCopied(): Promise<void> {
@@ -280,6 +335,19 @@ function GoalFitFreeResultPage() {
         payAmountCents: discount.payAmountCents
       });
       setInviteStatus("share_prompt");
+      trackGoalFitEvent({
+        eventName: "referral_link_copied",
+        sessionId,
+        metadata: { referralCode: confirmed.referralCode }
+      });
+      trackGoalFitEvent({
+        eventName: "coupon_confirmed",
+        sessionId,
+        metadata: {
+          referralCode: confirmed.referralCode,
+          payAmountCents: discount.payAmountCents
+        }
+      });
       setInviteMessage("专属邀请链接已复制。请分享给微信好友或朋友圈，然后继续查看你的优惠。");
     } catch {
       setInviteStatus("confirm_failed");
@@ -302,6 +370,12 @@ function GoalFitFreeResultPage() {
     try {
       const nextReferral = await createGoalFitReferralLink(sessionId);
       setReferral(nextReferral);
+      trackGoalFitEvent({
+        eventName: "referral_link_created",
+        sessionId,
+        metadata: { referralCode: nextReferral.referralCode }
+      });
+      await generateInviteQrCode(nextReferral.shareUrl);
       const copied = await copyTextToClipboard(nextReferral.shareUrl);
 
       if (!copied) {
@@ -315,6 +389,22 @@ function GoalFitFreeResultPage() {
       setInviteStatus("error");
       setInviteMessage("专属链接暂时生成失败，请稍后再试。");
     }
+  }
+
+  async function handleCopyGeneratedReferralLink(): Promise<void> {
+    if (!referral?.shareUrl) return;
+
+    setInviteStatus("copying");
+    setInviteMessage("");
+
+    const copied = await copyTextToClipboard(referral.shareUrl);
+    if (!copied) {
+      setInviteStatus("manual");
+      setInviteMessage("复制没有成功。你可以手动选择链接复制，复制成功后再点击按钮确认。");
+      return;
+    }
+
+    await handleConfirmReferralCopied();
   }
 
   return (
@@ -446,24 +536,47 @@ function GoalFitFreeResultPage() {
         <section className="goal-fit-invite-overlay" role="dialog" aria-modal="true" aria-labelledby="goal-fit-invite-title">
           <div className="goal-fit-invite-panel">
             <p className="goal-fit-eyebrow">邀请优惠</p>
-            <h2 id="goal-fit-invite-title">分享测试，报告立减 ¥10</h2>
-            <p>生成你的专属测试链接，完整报告由 ¥19.9 优惠至 ¥9.9。</p>
+            <h2 id="goal-fit-invite-title">
+              {referral?.shareUrl ? "你的专属邀请已生成" : "分享测试，报告立减 ¥10"}
+            </h2>
+            <p>
+              {referral?.shareUrl
+                ? "复制链接或截图二维码，分享给微信好友、微信群或朋友圈。对方打开后即可完成测试，你也可以继续领取本次优惠。"
+                : "生成你的专属测试链接，完整报告由 ¥19.9 优惠至 ¥9.9。"}
+            </p>
             {inviteMessage ? <p className={`goal-fit-invite-message ${inviteStatus}`}>{inviteMessage}</p> : null}
+            {referral?.shareUrl ? (
+              <div className="goal-fit-invite-share-box">
+                <p>你可以复制链接，也可以截图二维码发给同学。</p>
+                {inviteQrCodeDataUrl ? (
+                  <img className="goal-fit-invite-qrcode" src={inviteQrCodeDataUrl} alt="专属邀请链接二维码" />
+                ) : inviteQrCodeError ? (
+                  <p className="goal-fit-invite-qrcode-error">{inviteQrCodeError}</p>
+                ) : (
+                  <div className="goal-fit-invite-qrcode-placeholder">正在生成二维码...</div>
+                )}
+              </div>
+            ) : null}
             {referral?.shareUrl && inviteStatus === "manual" ? (
               <textarea className="goal-fit-invite-manual-link" readOnly value={referral.shareUrl} />
             ) : null}
             <div className="goal-fit-invite-actions">
               {inviteStatus === "share_prompt" ? (
-                <button className="primary-button" type="button" onClick={handleUnlock}>
-                  继续，查看我的优惠
-                </button>
+                <>
+                  <button className="secondary-button" type="button" onClick={handleCopyGeneratedReferralLink}>
+                    复制邀请链接
+                  </button>
+                  <button className="primary-button" type="button" onClick={handleUnlock}>
+                    继续，查看我的优惠
+                  </button>
+                </>
               ) : inviteStatus === "manual" || inviteStatus === "confirm_failed" ? (
                 <button
                   className="primary-button"
                   type="button"
-                  onClick={handleConfirmReferralCopied}
+                  onClick={handleCopyGeneratedReferralLink}
                 >
-                  我已复制，确认领取 ¥10 优惠
+                  复制邀请链接
                 </button>
               ) : (
                 <button

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
+import { trackGoalFitEvent, trackGoalFitVisit } from "../lib/goalFitAnalytics";
 import { buildGoalFitResult } from "../lib/goalFitResultBuilder";
 import { goalFitQuestionBank } from "../lib/goalFitQuestionBank";
 import { selectGoalFitQuestions } from "../lib/goalFitQuestionSelector";
@@ -140,6 +141,8 @@ function GoalFitTestPage() {
   const currentQuestionNote = currentQuestion ? questionNotes[currentQuestion.id] : undefined;
 
   useEffect(() => {
+    trackGoalFitVisit();
+    trackGoalFitEvent({ eventName: "test_page_view" });
     void recordGoalFitReferralVisitFromUrl();
 
     const draft = getGoalFitDraft();
@@ -173,6 +176,10 @@ function GoalFitTestPage() {
     }
 
     setErrorMessage("");
+    trackGoalFitEvent({
+      eventName: "goal_company_selected",
+      metadata: { targetCompany }
+    });
     setStep("targetRole");
   }
 
@@ -183,6 +190,10 @@ function GoalFitTestPage() {
     }
 
     setErrorMessage("");
+    trackGoalFitEvent({
+      eventName: "goal_role_selected",
+      metadata: { targetCompany, targetRole }
+    });
     setStep("confirm");
   }
 
@@ -190,6 +201,10 @@ function GoalFitTestPage() {
     setErrorMessage("");
     setCurrentIndex(0);
     setStep("questions");
+    trackGoalFitEvent({
+      eventName: "test_form_start",
+      metadata: { targetCompany, targetRole }
+    });
     void markGoalFitReferralStarted();
   }
 
@@ -243,6 +258,15 @@ function GoalFitTestPage() {
       saveGoalFitSession(session);
       clearGoalFitDraft();
       void markGoalFitReferralCompleted(session.id);
+      trackGoalFitEvent({
+        eventName: "test_complete",
+        sessionId: session.id,
+        metadata: {
+          targetCompany,
+          targetRole,
+          answeredCount: selectedQuestions.length
+        }
+      });
       setErrorMessage("");
       navigateTo(`/result-goal-fit-free-preview?session=${encodeURIComponent(session.id)}`);
     } catch {
