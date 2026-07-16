@@ -11,10 +11,14 @@ const { initializeDatabase, databasePath, db } = await import("./db.js");
 const {
   createAdminChannelProfile,
   getAdminAnalyticsChannels,
+  getAdminAnalyticsEvents,
   getAdminAnalyticsFunnel,
   getAdminAnalyticsSummary,
   getAdminChannels,
-  getAdminRecentOrders
+  getAdminRecentOrders,
+  recordAnalyticsEvents,
+  recordAnalyticsVisit,
+  recordOrderPaidAnalytics
 } = await import("./analytics.js");
 const { loginAdmin, requireAdmin } = await import("./adminAuth.js");
 const { createOrder, updateOrderStatus } = await import("./orders.js");
@@ -61,11 +65,20 @@ assert(!allowed, "unauthenticated admin API access must be rejected");
 assert(unauthorized.state.statusCode === 401, "unauthenticated admin API access must return 401");
 
 const indexSource = fs.readFileSync(new URL("./index.ts", import.meta.url), "utf8");
+const adminPageSource = fs.readFileSync(new URL("../../src/pages/AdminDashboardPage.tsx", import.meta.url), "utf8");
 assert(indexSource.includes('app.post("/api/admin/channels"'), "admin channel creation route must exist");
+assert(indexSource.includes('app.get("/api/admin/analytics/events"'), "admin analytics events route must exist");
 const channelRouteStart = indexSource.indexOf('app.post("/api/admin/channels"');
 const channelRouteEnd = indexSource.indexOf('app.get("/api/admin/referrals"', channelRouteStart);
 const channelRouteSource = indexSource.slice(channelRouteStart, channelRouteEnd);
 assert(channelRouteSource.includes("requireAdmin(req, res)"), "admin channel creation route must require login");
+const eventsRouteStart = indexSource.indexOf('app.get("/api/admin/analytics/events"');
+const eventsRouteEnd = indexSource.indexOf('app.get("/api/admin/orders"', eventsRouteStart);
+const eventsRouteSource = indexSource.slice(eventsRouteStart, eventsRouteEnd);
+assert(eventsRouteSource.includes("requireAdmin(req, res)"), "admin events route must require login");
+assert(adminPageSource.includes('import("qrcode")'), "admin dashboard must generate QR codes locally with qrcode");
+assert(adminPageSource.includes("setSelectedPromoUrl(row.promoUrl)"), "existing channel rows must be selectable for QR generation");
+assert(adminPageSource.includes("展开链接和二维码"), "channel rows must expose promotion link and QR expansion");
 
 const login = createMockResponse();
 loginAdmin({ headers: {} } as never, login.res as never, "admin_test", "password_test");
@@ -92,6 +105,81 @@ assert(!channelProfile.promoUrl.includes("localhost") && !channelProfile.promoUr
 const channelProfiles = getAdminChannels("https://first-job-risk.jobeyes.com");
 assert(channelProfiles.some((row) => row.id === channelProfile.id), "created channel profile must be returned in list");
 
+const repeatSource = `repeat-${suffix}`;
+const repeatVisitor = `visitor-repeat-${suffix}`;
+recordAnalyticsVisit({
+  visitorId: repeatVisitor,
+  source: repeatSource,
+  channel: "organic",
+  campaign: "none",
+  landingPath: "/goal-fit-preview"
+});
+for (let index = 0; index < 3; index += 1) {
+  recordAnalyticsEvents([
+    {
+      eventId: `test_start:${suffix}:${index}`,
+      visitorId: repeatVisitor,
+      eventName: "test_start",
+      source: repeatSource,
+      channel: "organic",
+      campaign: "none",
+      pagePath: "/test-goal-fit-preview"
+    },
+    {
+      eventId: `test_complete:${suffix}:${index}`,
+      visitorId: repeatVisitor,
+      eventName: "test_complete",
+      source: repeatSource,
+      channel: "organic",
+      campaign: "none",
+      pagePath: "/test-goal-fit-preview"
+    },
+    {
+      eventId: `free_result_view:${suffix}:${index}`,
+      visitorId: repeatVisitor,
+      eventName: "free_result_view",
+      source: repeatSource,
+      channel: "organic",
+      campaign: "none",
+      pagePath: "/result-goal-fit-free-preview"
+    }
+  ]);
+}
+const repeatSummary = getAdminAnalyticsSummary({ range: "all", source: repeatSource });
+assert(repeatSummary.visits === 1, "same visitor must be counted as one independent visitor");
+assert(repeatSummary.testStarts === 3, "repeated test_start events must be counted as behavior occurrences");
+assert(repeatSummary.testCompletes === 3, "repeated test_complete events must be counted as behavior occurrences");
+assert(repeatSummary.freeResults === 3, "repeated free_result_view events must be counted as behavior occurrences");
+
+const noPaySource = `nopay-${suffix}`;
+recordAnalyticsEvents([
+  {
+    eventId: `unlock_page_view:${suffix}`,
+    visitorId: `visitor-nopay-${suffix}`,
+    eventName: "unlock_page_view",
+    source: noPaySource,
+    channel: "organic",
+    campaign: "none",
+    pagePath: "/goal-fit-unlock-preview"
+  },
+  {
+    eventId: `full_report_view:${suffix}`,
+    visitorId: `visitor-nopay-${suffix}`,
+    sessionId: `session-nopay-${suffix}`,
+    eventName: "full_report_view",
+    source: noPaySource,
+    channel: "organic",
+    campaign: "none",
+    pagePath: "/result-goal-fit-preview"
+  }
+]);
+const noPaySummary = getAdminAnalyticsSummary({ range: "all", source: noPaySource });
+assert(noPaySummary.unlockPageViews === 1, "unlock_page_view must be counted separately");
+assert(noPaySummary.fullReportViews === 1, "full_report_view must be counted separately");
+assert(noPaySummary.paidOrders === 0, "viewing report events must not be counted as paid orders");
+const reportEvents = getAdminAnalyticsEvents({ range: "all", source: noPaySource, eventName: "full_report_view" }) as Array<{ eventName: string; sessionId: string | null }>;
+assert(reportEvents.length === 1 && reportEvents[0]?.eventName === "full_report_view", "full_report_view must be queryable through admin events");
+
 const pendingSource = `pending-${suffix}`;
 createOrder({
   sessionId: `session-pending-${suffix}`,
@@ -107,6 +195,7 @@ createOrder({
   referralVisitId: null
 });
 const pendingSummary = getAdminAnalyticsSummary({ range: "all", source: pendingSource });
+assert(pendingSummary.pendingOrders === 1, "pending orders must be counted as pending orders");
 assert(pendingSummary.paidOrders === 0, "pending orders must not be counted as paid");
 assert(pendingSummary.revenueCents === 0, "pending orders must not be counted as revenue");
 
@@ -125,9 +214,14 @@ const paidOrder = createOrder({
   referralVisitId: null
 });
 updateOrderStatus(paidOrder.id, "paid");
+const paidRecord = db.prepare("SELECT * FROM orders WHERE id = ?").get(paidOrder.id) as Parameters<typeof recordOrderPaidAnalytics>[0];
+recordOrderPaidAnalytics(paidRecord);
+recordOrderPaidAnalytics(paidRecord);
 const paidSummary = getAdminAnalyticsSummary({ range: "all", source: paidSource });
 assert(paidSummary.paidOrders === 1, "paid orders must be counted as paid");
 assert(paidSummary.revenueCents > 0, "paid orders must be counted as revenue");
+const paidEvents = getAdminAnalyticsEvents({ range: "all", source: paidSource, eventName: "payment_paid" }) as Array<{ orderId: string | null }>;
+assert(paidEvents.filter((event) => event.orderId === paidOrder.id).length === 1, "payment_paid must be idempotent by orderId");
 
 const oldOrder = createOrder({
   sessionId: `session-old-${suffix}`,
@@ -177,7 +271,7 @@ const directChannels = getAdminAnalyticsChannels({ range: "all" }) as Array<{ so
 assert(directChannels.some((row) => row.source === "direct" && row.channel === "organic" && row.campaign === "none"), "direct/organic/none must remain visible in channel grouping");
 
 const funnel = getAdminAnalyticsFunnel({ range: "all" });
-assert(Array.isArray(funnel) && funnel.length === 8, "admin funnel must return all required steps");
+assert(Array.isArray(funnel) && funnel.length === 9, "admin funnel must return all required steps");
 assert("previousConversionRate" in funnel[1] && "visitConversionRate" in funnel[1], "funnel steps must include conversion rates");
 
 console.log("Goal Fit admin analytics tests passed.");

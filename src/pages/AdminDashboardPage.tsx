@@ -1,4 +1,4 @@
-﻿import { useEffect, useMemo, useState } from "react";
+﻿import { Fragment, useEffect, useMemo, useState } from "react";
 import type { FormEvent } from "react";
 import { buildApiUrl } from "../config/api";
 import { navigateTo } from "../lib/router";
@@ -15,6 +15,7 @@ type Summary = {
   referralQrShown: number;
   unlockPageViews: number;
   fullReportViews: number;
+  pendingOrders: number;
   paidOrders: number;
   revenueCents: number;
   commissionCents: number;
@@ -68,6 +69,19 @@ type OrderRow = {
   paidAt: string | null;
 };
 
+type EventRow = {
+  eventId: string;
+  eventName: string;
+  visitorId: string;
+  sessionId: string | null;
+  orderId: string | null;
+  source: string;
+  channel: string;
+  campaign: string;
+  pagePath: string | null;
+  createdAt: string;
+};
+
 const rangeOptions: Array<{ key: RangeKey; label: string }> = [
   { key: "today", label: "今日" },
   { key: "yesterday", label: "昨日" },
@@ -107,6 +121,10 @@ function formatOrderStatus(status: string): string {
     unknown: "未知"
   };
   return map[status] ?? map.unknown;
+}
+
+function tail(value: string | null | undefined): string {
+  return value ? value.slice(-6) : "-";
 }
 
 function buildQuery(filters: {
@@ -155,8 +173,12 @@ function AdminDashboardPage() {
   const [channels, setChannels] = useState<ChannelRow[]>([]);
   const [channelProfiles, setChannelProfiles] = useState<ChannelProfile[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
+  const [events, setEvents] = useState<EventRow[]>([]);
+  const [detailOrders, setDetailOrders] = useState<OrderRow[]>([]);
+  const [detailTitle, setDetailTitle] = useState("最近事件");
   const [selectedPromoUrl, setSelectedPromoUrl] = useState("");
   const [promoQr, setPromoQr] = useState("");
+  const [qrError, setQrError] = useState("");
   const [channelForm, setChannelForm] = useState({
     displayName: "",
     source: "",
@@ -174,11 +196,12 @@ function AdminDashboardPage() {
     setError("");
 
     try {
-      const [nextSummary, nextFunnel, nextChannels, nextOrders, nextChannelProfiles] = await Promise.all([
+      const [nextSummary, nextFunnel, nextChannels, nextOrders, nextEvents, nextChannelProfiles] = await Promise.all([
         fetchAdminJson<Summary>(`/api/admin/analytics/summary${query}`),
         fetchAdminJson<{ steps: FunnelStep[] }>(`/api/admin/analytics/funnel${query}`),
         fetchAdminJson<{ channels: ChannelRow[] }>(`/api/admin/analytics/channels${query}`),
         fetchAdminJson<{ orders: OrderRow[] }>(`/api/admin/orders${query}`),
+        fetchAdminJson<{ events: EventRow[] }>(`/api/admin/analytics/events${query}&limit=30`),
         fetchAdminJson<{ channels: ChannelProfile[] }>("/api/admin/channels")
       ]);
 
@@ -186,6 +209,9 @@ function AdminDashboardPage() {
       setFunnel(nextFunnel.steps);
       setChannels(nextChannels.channels);
       setOrders(nextOrders.orders);
+      setEvents(nextEvents.events);
+      setDetailOrders([]);
+      setDetailTitle("最近事件");
       setChannelProfiles(nextChannelProfiles.channels);
       if (!selectedPromoUrl && nextChannelProfiles.channels[0]?.promoUrl) {
         setSelectedPromoUrl(nextChannelProfiles.channels[0].promoUrl);
@@ -206,9 +232,11 @@ function AdminDashboardPage() {
     async function renderQr(): Promise<void> {
       if (!selectedPromoUrl) {
         setPromoQr("");
+        setQrError("");
         return;
       }
       try {
+        setQrError("");
         const QRCode = await import("qrcode");
         const dataUrl = await QRCode.toDataURL(selectedPromoUrl, {
           width: 192,
@@ -220,7 +248,10 @@ function AdminDashboardPage() {
         });
         if (!canceled) setPromoQr(dataUrl);
       } catch {
-        if (!canceled) setPromoQr("");
+        if (!canceled) {
+          setPromoQr("");
+          setQrError("二维码暂时无法生成，不影响复制链接。");
+        }
       }
     }
     void renderQr();
@@ -255,7 +286,7 @@ function AdminDashboardPage() {
       setChannelForm((current) => ({ ...current, displayName: "", campaign: "" }));
       await loadDashboard();
     } catch {
-      setError("渠道创建失败，请检查 source/channel/campaign 是否填写完整。");
+      setError("渠道创建失败，请检查渠道名称、source 和 channel 是否填写完整。campaign 留空会按 none 统计。");
     }
   }
 
@@ -268,16 +299,41 @@ function AdminDashboardPage() {
     }
   }
 
+  async function loadFunnelDetail(step: FunnelStep): Promise<void> {
+    setError("");
+    setDetailTitle(`${step.label}明细`);
+
+    try {
+      if (step.key === "pending_order") {
+        const result = await fetchAdminJson<{ orders: OrderRow[] }>(`/api/admin/orders${query}&status=pending&limit=30`);
+        setDetailOrders(result.orders);
+        setEvents([]);
+        return;
+      }
+
+      if (step.key === "landing_view") {
+        const result = await fetchAdminJson<{ events: EventRow[] }>(`/api/admin/analytics/events${query}&limit=30`);
+        setEvents(result.events);
+        setDetailOrders([]);
+        return;
+      }
+
+      const result = await fetchAdminJson<{ events: EventRow[] }>(`/api/admin/analytics/events${query}&eventName=${encodeURIComponent(step.key)}&limit=30`);
+      setEvents(result.events);
+      setDetailOrders([]);
+    } catch {
+      setError("明细暂时无法加载。");
+    }
+  }
+
   const metricCards = summary
     ? [
-        ["访问首页", summary.visits],
-        ["开始测试", summary.testStarts],
-        ["完成测试", summary.testCompletes],
-        ["免费结果", summary.freeResults],
-        ["点击付费", summary.payClicks],
-        ["复制邀请", summary.referralLinkCopies],
-        ["支付成功", summary.paidOrders],
-        ["完整报告", summary.fullReportViews],
+        ["独立访客", summary.visits],
+        ["开始测试次数", summary.testStarts],
+        ["完成测试次数", summary.testCompletes],
+        ["到达支付页次数", summary.unlockPageViews],
+        ["待支付订单", summary.pendingOrders],
+        ["支付成功订单", summary.paidOrders],
         ["收入", formatYuan(summary.revenueCents)],
         ["预估佣金", formatYuan(summary.commissionCents)]
       ]
@@ -406,25 +462,35 @@ function AdminDashboardPage() {
               </thead>
               <tbody>
                 {channelProfiles.map((row) => (
-                  <tr key={row.id}>
-                    <td>{row.displayName}</td>
-                    <td>{`${row.source}/${row.channel}/${row.campaign}`}</td>
-                    <td>{row.commissionType === "percent" ? `${row.commissionValue}%` : formatYuan(row.commissionValue)}</td>
-                    <td>{row.enabled ? "启用" : "停用"}</td>
-                    <td>
-                      <div className="admin-link-actions">
-                        <button type="button" onClick={() => setSelectedPromoUrl(row.promoUrl)}>二维码</button>
-                        <button type="button" onClick={() => void copyPromoUrl(row.promoUrl)}>复制</button>
-                      </div>
-                    </td>
-                  </tr>
+                  <Fragment key={row.id}>
+                    <tr>
+                      <td>{row.displayName}</td>
+                      <td>{`${row.source}/${row.channel}/${row.campaign}`}</td>
+                      <td>{row.commissionType === "percent" ? `${row.commissionValue}%` : formatYuan(row.commissionValue)}</td>
+                      <td>{row.enabled ? "启用" : "停用"}</td>
+                      <td>
+                        <div className="admin-link-actions">
+                          <button type="button" onClick={() => setSelectedPromoUrl(row.promoUrl)}>展开链接和二维码</button>
+                          <button type="button" onClick={() => void copyPromoUrl(row.promoUrl)}>复制链接</button>
+                        </div>
+                      </td>
+                    </tr>
+                    {selectedPromoUrl === row.promoUrl ? (
+                      <tr className="admin-channel-expanded">
+                        <td colSpan={5}>
+                          <code>{row.promoUrl}</code>
+                          {promoQr ? <img src={promoQr} alt={`${row.displayName} 推广链接二维码`} /> : <span>{qrError || "二维码生成中..."}</span>}
+                        </td>
+                      </tr>
+                    ) : null}
+                  </Fragment>
                 ))}
               </tbody>
             </table>
           </div>
           <aside className="admin-qr-card">
             <h3>推广链接二维码</h3>
-            {promoQr ? <img src={promoQr} alt="渠道推广链接二维码" /> : <p>选择一个渠道后生成二维码。</p>}
+            {promoQr ? <img src={promoQr} alt="渠道推广链接二维码" /> : <p>{qrError || "选择一个渠道后生成二维码。"}</p>}
             {selectedPromoUrl ? <code>{selectedPromoUrl}</code> : null}
           </aside>
         </div>
@@ -436,7 +502,13 @@ function AdminDashboardPage() {
           <ol className="admin-funnel-list">
             {funnel.map((step) => (
               <li key={step.key}>
-                <span>{step.label}</span>
+                {step.key === "landing_view" ? (
+                  <span>{step.label}</span>
+                ) : (
+                  <button type="button" onClick={() => void loadFunnelDetail(step)}>
+                    {step.label}
+                  </button>
+                )}
                 <strong>{step.count}</strong>
                 <small>上一步 {formatRate(step.previousConversionRate)} · 访问 {formatRate(step.visitConversionRate)}</small>
               </li>
@@ -477,8 +549,68 @@ function AdminDashboardPage() {
       </section>
 
       <section className="admin-panel">
+        <h2>{detailTitle}</h2>
+        <p className="admin-help-text">用于核对重复测试、支付页到达、完整报告查看等行为是否被逐次记录。</p>
+        {detailOrders.length > 0 ? (
+          <div className="admin-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>订单号</th>
+                  <th>金额</th>
+                  <th>状态</th>
+                  <th>source/channel/campaign</th>
+                  <th>创建时间</th>
+                </tr>
+              </thead>
+              <tbody>
+                {detailOrders.map((order) => (
+                  <tr key={order.id}>
+                    <td>{order.outTradeNo}</td>
+                    <td>{formatYuan(order.payAmountCents)}</td>
+                    <td>{formatOrderStatus(order.status)}</td>
+                    <td>{`${order.source}/${order.channel}/${order.campaign}`}</td>
+                    <td>{order.createdAt}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        ) : (
+          <div className="admin-table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>createdAt</th>
+                  <th>eventName</th>
+                  <th>visitorId</th>
+                  <th>sessionId</th>
+                  <th>orderId</th>
+                  <th>source/channel/campaign</th>
+                  <th>pagePath</th>
+                </tr>
+              </thead>
+              <tbody>
+                {events.map((event) => (
+                  <tr key={event.eventId}>
+                    <td>{event.createdAt}</td>
+                    <td>{event.eventName}</td>
+                    <td>{tail(event.visitorId)}</td>
+                    <td>{tail(event.sessionId)}</td>
+                    <td>{event.orderId ?? "-"}</td>
+                    <td>{`${event.source}/${event.channel}/${event.campaign}`}</td>
+                    <td>{event.pagePath ?? "-"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
+      <section className="admin-panel">
         <h2>最近订单</h2>
-        <p className="admin-help-text">待支付表示用户已创建订单但尚未支付成功，不代表已经查看完整报告。默认显示最近 50 条。</p>
+        <p className="admin-help-text">待支付表示用户已创建订单但尚未支付成功，不代表已经付款，也不代表已经查看完整报告。默认显示最近 50 条。</p>
         <div className="admin-table-wrap">
           <table>
             <thead>

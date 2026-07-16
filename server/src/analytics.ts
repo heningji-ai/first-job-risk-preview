@@ -47,6 +47,9 @@ type AnalyticsQuery = {
   source?: string | null;
   channel?: string | null;
   campaign?: string | null;
+  eventName?: string | null;
+  status?: string | null;
+  limit?: number | null;
 };
 
 export type AdminChannelProfileInput = {
@@ -372,7 +375,7 @@ export function recordAnalyticsEvents(events: AnalyticsEventInput[]): { inserted
           `
         )
         .run({
-          eventId: event.eventId || `evt_${nanoid()}`,
+          eventId: event.eventId || `evt_${Date.now()}_${nanoid()}`,
           visitorId,
           sessionId: nullable(event.sessionId),
           orderId: nullable(event.orderId),
@@ -572,6 +575,10 @@ function buildOrderWhere(query: AnalyticsQuery, dateAlias = "paidAt"): { sql: st
     conditions.push("COALESCE(analyticsCampaign, 'none') = @campaign");
     params.campaign = normalizedQuery.campaign;
   }
+  if (normalizedQuery.status) {
+    conditions.push("status = @status");
+    params.status = normalizedQuery.status;
+  }
 
   return {
     sql: conditions.length ? `WHERE ${conditions.join(" AND ")}` : "",
@@ -587,6 +594,7 @@ function scalar(sql: string, params: Record<string, string> = {}): number {
 export function getAdminAnalyticsSummary(query: AnalyticsQuery) {
   const eventWhere = buildWhere(query);
   const orderWhere = buildOrderWhere(query, "paidAt");
+  const createdOrderWhere = buildOrderWhere(query, "createdAt");
 
   const paidOrders = scalar(
     `
@@ -595,6 +603,14 @@ export function getAdminAnalyticsSummary(query: AnalyticsQuery) {
       ${orderWhere.sql ? orderWhere.sql.replace("WHERE", "WHERE status = 'paid' AND") : "WHERE status = 'paid'"}
     `,
     orderWhere.params
+  );
+  const pendingOrders = scalar(
+    `
+      SELECT COUNT(*) AS value
+      FROM orders
+      ${createdOrderWhere.sql ? createdOrderWhere.sql.replace("WHERE", "WHERE status = 'pending' AND") : "WHERE status = 'pending'"}
+    `,
+    createdOrderWhere.params
   );
   const revenueCents = scalar(
     `
@@ -613,10 +629,10 @@ export function getAdminAnalyticsSummary(query: AnalyticsQuery) {
     eventWhere.params
   );
 
-  const countEventVisitors = (eventName: string) =>
+  const countEventOccurrences = (eventName: string) =>
     scalar(
       `
-        SELECT COUNT(DISTINCT visitor_id) AS value
+        SELECT COUNT(*) AS value
         FROM analytics_events
         ${eventWhere.sql ? `${eventWhere.sql} AND event_name = @eventName` : "WHERE event_name = @eventName"}
       `,
@@ -628,14 +644,15 @@ export function getAdminAnalyticsSummary(query: AnalyticsQuery) {
       `SELECT COUNT(DISTINCT visitor_id) AS value FROM analytics_attributions ${eventWhere.sql}`,
       eventWhere.params
     ),
-    testStarts: countEventVisitors("test_start"),
-    testCompletes: countEventVisitors("test_complete"),
-    freeResults: countEventVisitors("free_result_view"),
-    payClicks: countEventVisitors("pay_cta_click"),
-    referralLinkCopies: countEventVisitors("referral_link_copied"),
-    referralQrShown: countEventVisitors("referral_qr_shown"),
-    unlockPageViews: countEventVisitors("unlock_page_view"),
-    fullReportViews: countEventVisitors("full_report_view"),
+    testStarts: countEventOccurrences("test_start"),
+    testCompletes: countEventOccurrences("test_complete"),
+    freeResults: countEventOccurrences("free_result_view"),
+    payClicks: countEventOccurrences("pay_cta_click"),
+    referralLinkCopies: countEventOccurrences("referral_link_copied"),
+    referralQrShown: countEventOccurrences("referral_qr_shown"),
+    unlockPageViews: countEventOccurrences("unlock_page_view"),
+    fullReportViews: countEventOccurrences("full_report_view"),
+    pendingOrders,
     paidOrders,
     revenueCents,
     commissionCents
@@ -648,9 +665,10 @@ export function getAdminAnalyticsFunnel(query: AnalyticsQuery) {
     { key: "landing_view", label: "访问首页", count: summary.visits },
     { key: "test_start", label: "开始测试", count: summary.testStarts },
     { key: "test_complete", label: "完成测试", count: summary.testCompletes },
-    { key: "free_result_view", label: "免费结果", count: summary.freeResults },
-    { key: "pay_cta_click", label: "点击付费", count: summary.payClicks },
-    { key: "referral_link_copied", label: "复制邀请链接", count: summary.referralLinkCopies },
+    { key: "free_result_view", label: "查看免费结果", count: summary.freeResults },
+    { key: "pay_cta_click", label: "点击查看完整报告", count: summary.payClicks },
+    { key: "unlock_page_view", label: "到达支付页", count: summary.unlockPageViews },
+    { key: "pending_order", label: "创建待支付订单", count: summary.pendingOrders },
     { key: "payment_paid", label: "支付成功", count: summary.paidOrders },
     { key: "full_report_view", label: "查看完整报告", count: summary.fullReportViews }
   ];
@@ -720,6 +738,40 @@ export function getAdminRecentOrders(query: AnalyticsQuery) {
     .all(where.params);
 }
 
+export function getAdminAnalyticsEvents(query: AnalyticsQuery) {
+  const where = buildWhere(query);
+  const eventName = nullable(query.eventName);
+  const limit = Math.max(1, Math.min(Number(query.limit ?? 30) || 30, 200));
+  const eventCondition = eventName ? (where.sql ? " AND event_name = @eventName" : "WHERE event_name = @eventName") : "";
+
+  return db
+    .prepare(
+      `
+        SELECT
+          event_id AS eventId,
+          event_name AS eventName,
+          visitor_id AS visitorId,
+          session_id AS sessionId,
+          order_id AS orderId,
+          source,
+          channel,
+          campaign,
+          referral_code AS referralCode,
+          page_path AS pagePath,
+          created_at AS createdAt
+        FROM analytics_events
+        ${where.sql}${eventCondition}
+        ORDER BY created_at DESC
+        LIMIT @limit
+      `
+    )
+    .all({
+      ...where.params,
+      eventName: eventName ?? "",
+      limit
+    });
+}
+
 export function getAdminChannels(publicAppUrl: string) {
   const rows = db
     .prepare(
@@ -764,13 +816,13 @@ export function createAdminChannelProfile(input: AdminChannelProfileInput, publi
   const displayName = clean(input.displayName);
   const source = clean(input.source);
   const channel = clean(input.channel);
-  const campaign = clean(input.campaign);
+  const campaign = clean(input.campaign, "none");
   const commissionType = input.commissionType === "percent" ? "percent" : "fixed";
   const commissionValue = Number.isFinite(input.commissionValue) ? input.commissionValue : 0;
   const enabled = input.enabled ? 1 : 0;
 
-  if (!displayName || !source || !channel || !campaign) {
-    throw new Error("displayName, source, channel and campaign are required");
+  if (!displayName || !source || !channel) {
+    throw new Error("displayName, source and channel are required");
   }
 
   const now = nowIso();

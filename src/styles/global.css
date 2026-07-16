@@ -1676,6 +1676,30 @@ p {
   cursor: pointer;
 }
 
+.admin-channel-expanded td {
+  background: rgba(255, 250, 240, 0.74);
+}
+
+.admin-channel-expanded td {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 128px;
+  gap: 12px;
+  align-items: center;
+}
+
+.admin-channel-expanded code {
+  white-space: normal;
+  word-break: break-all;
+  color: #5e675c;
+  font-size: 12px;
+}
+
+.admin-channel-expanded img {
+  width: 128px;
+  height: 128px;
+  border-radius: 10px;
+}
+
 .admin-qr-card {
   display: grid;
   gap: 10px;
@@ -1714,6 +1738,21 @@ p {
   grid-column: 1 / -1;
   color: #7a826f;
   font-size: 12px;
+}
+
+.admin-funnel-list button {
+  border: 0;
+  padding: 0;
+  background: transparent;
+  color: #304137;
+  font: inherit;
+  font-weight: 850;
+  text-align: left;
+  cursor: pointer;
+}
+
+.admin-funnel-list span {
+  font-weight: 850;
 }
 
 @media (max-width: 820px) {

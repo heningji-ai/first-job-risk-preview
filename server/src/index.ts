@@ -4,6 +4,7 @@ import express from "express";
 import {
   createAdminChannelProfile,
   getAdminAnalyticsChannels,
+  getAdminAnalyticsEvents,
   getAdminAnalyticsFunnel,
   getAdminAnalyticsSummary,
   getAdminChannels,
@@ -111,7 +112,10 @@ function getAnalyticsQuery(req: express.Request) {
     to: getString(req.query.to),
     source: getString(req.query.source),
     channel: getString(req.query.channel),
-    campaign: getString(req.query.campaign)
+    campaign: getString(req.query.campaign),
+    eventName: getString(req.query.eventName),
+    status: getString(req.query.status),
+    limit: req.query.limit ? Number(req.query.limit) : null
   };
 }
 
@@ -196,6 +200,11 @@ app.get("/api/admin/analytics/funnel", (req, res) => {
 app.get("/api/admin/analytics/channels", (req, res) => {
   if (!requireAdmin(req, res)) return;
   res.json({ channels: getAdminAnalyticsChannels(getAnalyticsQuery(req)) });
+});
+
+app.get("/api/admin/analytics/events", (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  res.json({ events: getAdminAnalyticsEvents(getAnalyticsQuery(req)) });
 });
 
 app.get("/api/admin/orders", (req, res) => {
