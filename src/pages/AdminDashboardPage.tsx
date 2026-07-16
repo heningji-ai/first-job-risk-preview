@@ -189,19 +189,36 @@ function AdminDashboardPage() {
     enabled: true
   });
   const [error, setError] = useState("");
+  const [eventsError, setEventsError] = useState("");
   const [notice, setNotice] = useState("");
   const query = useMemo(() => buildQuery(filters), [filters]);
+
+  async function loadRecentEvents(): Promise<void> {
+    setEventsError("");
+
+    try {
+      const result = await fetchAdminJson<{ events: EventRow[] }>(`/api/admin/analytics/events${query}&limit=30`);
+      setEvents(result.events);
+      setDetailOrders([]);
+      setDetailTitle("最近事件");
+    } catch (loadError) {
+      if (loadError instanceof Error && loadError.message === "admin login required") return;
+      setEvents([]);
+      setDetailOrders([]);
+      setDetailTitle("最近事件");
+      setEventsError("最近事件暂时无法加载");
+    }
+  }
 
   async function loadDashboard(): Promise<void> {
     setError("");
 
     try {
-      const [nextSummary, nextFunnel, nextChannels, nextOrders, nextEvents, nextChannelProfiles] = await Promise.all([
+      const [nextSummary, nextFunnel, nextChannels, nextOrders, nextChannelProfiles] = await Promise.all([
         fetchAdminJson<Summary>(`/api/admin/analytics/summary${query}`),
         fetchAdminJson<{ steps: FunnelStep[] }>(`/api/admin/analytics/funnel${query}`),
         fetchAdminJson<{ channels: ChannelRow[] }>(`/api/admin/analytics/channels${query}`),
         fetchAdminJson<{ orders: OrderRow[] }>(`/api/admin/orders${query}`),
-        fetchAdminJson<{ events: EventRow[] }>(`/api/admin/analytics/events${query}&limit=30`),
         fetchAdminJson<{ channels: ChannelProfile[] }>("/api/admin/channels")
       ]);
 
@@ -209,13 +226,11 @@ function AdminDashboardPage() {
       setFunnel(nextFunnel.steps);
       setChannels(nextChannels.channels);
       setOrders(nextOrders.orders);
-      setEvents(nextEvents.events);
-      setDetailOrders([]);
-      setDetailTitle("最近事件");
       setChannelProfiles(nextChannelProfiles.channels);
       if (!selectedPromoUrl && nextChannelProfiles.channels[0]?.promoUrl) {
         setSelectedPromoUrl(nextChannelProfiles.channels[0].promoUrl);
       }
+      await loadRecentEvents();
     } catch (loadError) {
       if (loadError instanceof Error && loadError.message !== "admin login required") {
         setError("后台数据暂时无法加载。");
@@ -551,6 +566,7 @@ function AdminDashboardPage() {
       <section className="admin-panel">
         <h2>{detailTitle}</h2>
         <p className="admin-help-text">用于核对重复测试、支付页到达、完整报告查看等行为是否被逐次记录。</p>
+        {eventsError && detailOrders.length === 0 ? <p className="admin-error">{eventsError}</p> : null}
         {detailOrders.length > 0 ? (
           <div className="admin-table-wrap">
             <table>

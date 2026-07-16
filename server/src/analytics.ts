@@ -739,10 +739,38 @@ export function getAdminRecentOrders(query: AnalyticsQuery) {
 }
 
 export function getAdminAnalyticsEvents(query: AnalyticsQuery) {
-  const where = buildWhere(query);
+  const normalizedQuery = normalizeAnalyticsQuery(query);
   const eventName = nullable(query.eventName);
   const limit = Math.max(1, Math.min(Number(query.limit ?? 30) || 30, 200));
-  const eventCondition = eventName ? (where.sql ? " AND event_name = @eventName" : "WHERE event_name = @eventName") : "";
+  const conditions: string[] = [];
+  const params: Array<string | number> = [];
+
+  if (normalizedQuery.from) {
+    conditions.push("created_at >= ?");
+    params.push(normalizedQuery.from);
+  }
+  if (normalizedQuery.to) {
+    conditions.push("created_at <= ?");
+    params.push(normalizedQuery.to);
+  }
+  if (normalizedQuery.source) {
+    conditions.push("source = ?");
+    params.push(normalizedQuery.source);
+  }
+  if (normalizedQuery.channel) {
+    conditions.push("channel = ?");
+    params.push(normalizedQuery.channel);
+  }
+  if (normalizedQuery.campaign) {
+    conditions.push("campaign = ?");
+    params.push(normalizedQuery.campaign);
+  }
+  if (eventName) {
+    conditions.push("event_name = ?");
+    params.push(eventName);
+  }
+
+  params.push(limit);
 
   return db
     .prepare(
@@ -760,16 +788,12 @@ export function getAdminAnalyticsEvents(query: AnalyticsQuery) {
           page_path AS pagePath,
           created_at AS createdAt
         FROM analytics_events
-        ${where.sql}${eventCondition}
+        ${conditions.length ? `WHERE ${conditions.join(" AND ")}` : ""}
         ORDER BY created_at DESC
-        LIMIT @limit
+        LIMIT ?
       `
     )
-    .all({
-      ...where.params,
-      eventName: eventName ?? "",
-      limit
-    });
+    .all(...params);
 }
 
 export function getAdminChannels(publicAppUrl: string) {

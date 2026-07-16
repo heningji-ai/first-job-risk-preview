@@ -79,6 +79,9 @@ assert(eventsRouteSource.includes("requireAdmin(req, res)"), "admin events route
 assert(adminPageSource.includes('import("qrcode")'), "admin dashboard must generate QR codes locally with qrcode");
 assert(adminPageSource.includes("setSelectedPromoUrl(row.promoUrl)"), "existing channel rows must be selectable for QR generation");
 assert(adminPageSource.includes("展开链接和二维码"), "channel rows must expose promotion link and QR expansion");
+assert(adminPageSource.includes("async function loadRecentEvents"), "recent events must load independently from core dashboard data");
+assert(adminPageSource.includes("最近事件暂时无法加载"), "recent events failure must show a local fallback message");
+assert(!adminPageSource.includes("nextEvents, nextChannelProfiles"), "events API failure must not break the core dashboard Promise.all");
 
 const login = createMockResponse();
 loginAdmin({ headers: {} } as never, login.res as never, "admin_test", "password_test");
@@ -179,6 +182,19 @@ assert(noPaySummary.fullReportViews === 1, "full_report_view must be counted sep
 assert(noPaySummary.paidOrders === 0, "viewing report events must not be counted as paid orders");
 const reportEvents = getAdminAnalyticsEvents({ range: "all", source: noPaySource, eventName: "full_report_view" }) as Array<{ eventName: string; sessionId: string | null }>;
 assert(reportEvents.length === 1 && reportEvents[0]?.eventName === "full_report_view", "full_report_view must be queryable through admin events");
+const sevenDayEvents = getAdminAnalyticsEvents({ range: "7d" }) as Array<{ eventName: string }>;
+assert(Array.isArray(sevenDayEvents), "admin events must support range=7d");
+const sevenDayReportEvents = getAdminAnalyticsEvents({ range: "7d", eventName: "full_report_view" }) as Array<{ eventName: string }>;
+assert(Array.isArray(sevenDayReportEvents), "admin events must support range=7d with full_report_view eventName");
+const sevenDayCompleteEvents = getAdminAnalyticsEvents({ range: "7d", eventName: "test_complete" }) as Array<{ eventName: string }>;
+assert(Array.isArray(sevenDayCompleteEvents), "admin events must support range=7d with test_complete eventName");
+const channelFilteredEvents = getAdminAnalyticsEvents({
+  range: "7d",
+  source: noPaySource,
+  channel: "organic",
+  campaign: "none"
+}) as Array<{ source: string; channel: string; campaign: string }>;
+assert(Array.isArray(channelFilteredEvents), "admin events must support source/channel/campaign filters");
 
 const pendingSource = `pending-${suffix}`;
 createOrder({
