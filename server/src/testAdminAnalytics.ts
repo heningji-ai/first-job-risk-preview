@@ -18,7 +18,8 @@ const {
   getAdminRecentOrders,
   recordAnalyticsEvents,
   recordAnalyticsVisit,
-  recordOrderPaidAnalytics
+  recordOrderPaidAnalytics,
+  updateAdminChannelProfile
 } = await import("./analytics.js");
 const { loginAdmin, requireAdmin } = await import("./adminAuth.js");
 const { createOrder, updateOrderStatus } = await import("./orders.js");
@@ -68,10 +69,15 @@ const indexSource = fs.readFileSync(new URL("./index.ts", import.meta.url), "utf
 const adminPageSource = fs.readFileSync(new URL("../../src/pages/AdminDashboardPage.tsx", import.meta.url), "utf8");
 assert(indexSource.includes('app.post("/api/admin/channels"'), "admin channel creation route must exist");
 assert(indexSource.includes('app.get("/api/admin/analytics/events"'), "admin analytics events route must exist");
+assert(indexSource.includes('app.patch("/api/admin/channels/:id"'), "admin channel update route must exist");
 const channelRouteStart = indexSource.indexOf('app.post("/api/admin/channels"');
 const channelRouteEnd = indexSource.indexOf('app.get("/api/admin/referrals"', channelRouteStart);
 const channelRouteSource = indexSource.slice(channelRouteStart, channelRouteEnd);
 assert(channelRouteSource.includes("requireAdmin(req, res)"), "admin channel creation route must require login");
+const channelPatchRouteStart = indexSource.indexOf('app.patch("/api/admin/channels/:id"');
+const channelPatchRouteEnd = indexSource.indexOf('app.get("/api/admin/referrals"', channelPatchRouteStart);
+const channelPatchRouteSource = indexSource.slice(channelPatchRouteStart, channelPatchRouteEnd);
+assert(channelPatchRouteSource.includes("requireAdmin(req, res)"), "admin channel update route must require login");
 const eventsRouteStart = indexSource.indexOf('app.get("/api/admin/analytics/events"');
 const eventsRouteEnd = indexSource.indexOf('app.get("/api/admin/orders"', eventsRouteStart);
 const eventsRouteSource = indexSource.slice(eventsRouteStart, eventsRouteEnd);
@@ -107,6 +113,129 @@ assert(channelProfile.promoUrl === `https://first-job-risk.jobeyes.com/goal-fit-
 assert(!channelProfile.promoUrl.includes("localhost") && !channelProfile.promoUrl.includes("vercel"), "promotion link must not use local or Vercel domains");
 const channelProfiles = getAdminChannels("https://first-job-risk.jobeyes.com");
 assert(channelProfiles.some((row) => row.id === channelProfile.id), "created channel profile must be returned in list");
+
+const disabledChannel = createAdminChannelProfile(
+  {
+    displayName: "禁用渠道",
+    source: `disabled-${suffix}`,
+    channel: "kol-b",
+    campaign: "none",
+    commissionType: "fixed",
+    commissionValue: 100,
+    enabled: false
+  },
+  "https://first-job-risk.jobeyes.com"
+);
+const enabledChannel = updateAdminChannelProfile(
+  disabledChannel.id,
+  {
+    displayName: disabledChannel.displayName,
+    source: disabledChannel.source,
+    channel: disabledChannel.channel,
+    campaign: disabledChannel.campaign,
+    commissionType: disabledChannel.commissionType,
+    commissionValue: disabledChannel.commissionValue,
+    enabled: true
+  },
+  "https://first-job-risk.jobeyes.com"
+);
+assert(enabledChannel.enabled === true, "logged in admin logic must enable disabled channels");
+const disabledAgain = updateAdminChannelProfile(
+  disabledChannel.id,
+  {
+    enabled: false
+  },
+  "https://first-job-risk.jobeyes.com"
+);
+assert(disabledAgain.enabled === false, "logged in admin logic must disable enabled channels");
+const renamedChannel = updateAdminChannelProfile(
+  disabledChannel.id,
+  {
+    displayName: "已改名渠道",
+    commissionType: "percent",
+    commissionValue: 12.5,
+    enabled: true
+  },
+  "https://first-job-risk.jobeyes.com"
+);
+assert(renamedChannel.displayName === "已改名渠道", "channel display name must be editable");
+const updatedRule = db
+  .prepare(
+    "SELECT commission_type, commission_value, enabled FROM channel_commission_rules WHERE source = @source AND channel = @channel AND campaign = @campaign ORDER BY id DESC LIMIT 1"
+  )
+  .get({
+    source: renamedChannel.source,
+    channel: renamedChannel.channel,
+    campaign: renamedChannel.campaign
+  }) as { commission_type: string; commission_value: number; enabled: number } | undefined;
+assert(updatedRule?.commission_type === "percent" && updatedRule.commission_value === 12.5 && updatedRule.enabled === 1, "channel updates must sync commission rules");
+
+const identityEditable = updateAdminChannelProfile(
+  disabledChannel.id,
+  {
+    source: `edited-${suffix}`,
+    channel: "kol-edited",
+    campaign: "campaign-edited"
+  },
+  "https://first-job-risk.jobeyes.com"
+);
+assert(identityEditable.source === `edited-${suffix}` && identityEditable.canEditIdentity === true, "channels without history must allow identity edits");
+
+recordAnalyticsVisit({
+  visitorId: `visitor-locked-${suffix}`,
+  source: identityEditable.source,
+  channel: identityEditable.channel,
+  campaign: identityEditable.campaign,
+  landingPath: "/goal-fit-preview"
+});
+const lockedChannel = getAdminChannels("https://first-job-risk.jobeyes.com").find((row) => row.id === identityEditable.id);
+assert(lockedChannel?.hasData === true && lockedChannel.canEditIdentity === false, "channels with history must return canEditIdentity=false");
+let identityLocked = false;
+try {
+  updateAdminChannelProfile(
+    identityEditable.id,
+    {
+      source: `locked-edit-${suffix}`
+    },
+    "https://first-job-risk.jobeyes.com"
+  );
+} catch {
+  identityLocked = true;
+}
+assert(identityLocked, "channels with history must reject source/channel/campaign edits");
+
+const duplicatedChannel = createAdminChannelProfile(
+  {
+    displayName: `${lockedChannel?.displayName ?? "渠道"} 副本`,
+    source: lockedChannel?.source ?? `dup-${suffix}`,
+    channel: `${lockedChannel?.channel ?? "kol"}_copy`,
+    campaign: `${lockedChannel?.campaign ?? "none"}_copy`,
+    commissionType: lockedChannel?.commissionType ?? "fixed",
+    commissionValue: lockedChannel?.commissionValue ?? 0,
+    enabled: lockedChannel?.enabled ?? true
+  },
+  "https://first-job-risk.jobeyes.com"
+);
+assert(duplicatedChannel.promoUrl.includes("_copy"), "duplicated channels must generate a distinct promotion link");
+const channelAttributedOrder = createOrder({
+  sessionId: `session-channel-price-${suffix}`,
+  accessMode: "direct",
+  couponCode: null,
+  paymentMode: "native",
+  analyticsVisitorId: `visitor-channel-price-${suffix}`,
+  analyticsSource: duplicatedChannel.source,
+  analyticsChannel: duplicatedChannel.channel,
+  analyticsCampaign: duplicatedChannel.campaign,
+  analyticsReferralCode: null,
+  sourceReferralCode: null,
+  referralVisitId: null
+});
+assert(
+  channelAttributedOrder.originalAmountCents === 1990 &&
+    channelAttributedOrder.discountAmountCents === 0 &&
+    channelAttributedOrder.payAmountCents === 1990,
+  "source/channel/campaign must not affect order amount or discount eligibility"
+);
 
 const repeatSource = `repeat-${suffix}`;
 const repeatVisitor = `visitor-repeat-${suffix}`;

@@ -62,6 +62,8 @@ export type AdminChannelProfileInput = {
   enabled: boolean;
 };
 
+export type AdminChannelProfileUpdateInput = Partial<AdminChannelProfileInput>;
+
 function nowIso(): string {
   return new Date().toISOString();
 }
@@ -123,6 +125,44 @@ function buildPromotionUrl(publicAppUrl: string, source: string, channel: string
   url.searchParams.set("channel", channel);
   url.searchParams.set("campaign", campaign);
   return url.toString();
+}
+
+function getChannelUsage(source: string, channel: string, campaign: string) {
+  const params = { source, channel, campaign };
+  const eventCount = scalar(
+    "SELECT COUNT(*) AS value FROM analytics_events WHERE source = @source AND channel = @channel AND campaign = @campaign",
+    params
+  );
+  const attributionCount = scalar(
+    "SELECT COUNT(*) AS value FROM analytics_attributions WHERE source = @source AND channel = @channel AND campaign = @campaign",
+    params
+  );
+  const orderCount = scalar(
+    "SELECT COUNT(*) AS value FROM orders WHERE COALESCE(analyticsSource, 'direct') = @source AND COALESCE(analyticsChannel, 'organic') = @channel AND COALESCE(analyticsCampaign, 'none') = @campaign",
+    params
+  );
+  const commissionRecordCount = scalar(
+    "SELECT COUNT(*) AS value FROM channel_commission_records WHERE source = @source AND channel = @channel AND campaign = @campaign",
+    params
+  );
+  const visitCount = scalar(
+    "SELECT COUNT(DISTINCT visitor_id) AS value FROM analytics_attributions WHERE source = @source AND channel = @channel AND campaign = @campaign",
+    params
+  );
+  const paidOrderCount = scalar(
+    "SELECT COUNT(*) AS value FROM orders WHERE status = 'paid' AND COALESCE(analyticsSource, 'direct') = @source AND COALESCE(analyticsChannel, 'organic') = @channel AND COALESCE(analyticsCampaign, 'none') = @campaign",
+    params
+  );
+
+  return {
+    eventCount,
+    attributionCount,
+    orderCount,
+    commissionRecordCount,
+    visitCount,
+    paidOrderCount,
+    hasData: eventCount + attributionCount + orderCount + commissionRecordCount > 0
+  };
 }
 
 function hashSensitive(value?: string | null): string | null {
@@ -829,11 +869,18 @@ export function getAdminChannels(publicAppUrl: string) {
     updatedAt: string;
   }>;
 
-  return rows.map((row) => ({
-    ...row,
-    enabled: Boolean(row.enabled),
-    promoUrl: buildPromotionUrl(publicAppUrl, row.source, row.channel, row.campaign)
-  }));
+  return rows.map((row) => {
+    const usage = getChannelUsage(row.source, row.channel, row.campaign);
+    return {
+      ...row,
+      enabled: Boolean(row.enabled),
+      hasData: usage.hasData,
+      canEditIdentity: !usage.hasData,
+      visitCount: usage.visitCount,
+      paidOrderCount: usage.paidOrderCount,
+      promoUrl: buildPromotionUrl(publicAppUrl, row.source, row.channel, row.campaign)
+    };
+  });
 }
 
 export function createAdminChannelProfile(input: AdminChannelProfileInput, publicAppUrl: string) {
@@ -999,10 +1046,228 @@ export function createAdminChannelProfile(input: AdminChannelProfileInput, publi
 
   if (!profile) throw new Error("channel profile was not created");
 
+  const usage = getChannelUsage(source, channel, campaign);
+
   return {
     ...profile,
     enabled: Boolean(profile.enabled),
+    hasData: usage.hasData,
+    canEditIdentity: !usage.hasData,
+    visitCount: usage.visitCount,
+    paidOrderCount: usage.paidOrderCount,
     promoUrl: buildPromotionUrl(publicAppUrl, source, channel, campaign)
+  };
+}
+
+export function updateAdminChannelProfile(id: number, input: AdminChannelProfileUpdateInput, publicAppUrl: string) {
+  const existing = db
+    .prepare(
+      `
+        SELECT
+          id,
+          display_name AS displayName,
+          source,
+          channel,
+          campaign,
+          commission_type AS commissionType,
+          commission_value AS commissionValue,
+          enabled
+        FROM channel_profiles
+        WHERE id = ?
+      `
+    )
+    .get(id) as
+    | {
+        id: number;
+        displayName: string;
+        source: string;
+        channel: string;
+        campaign: string;
+        commissionType: "fixed" | "percent";
+        commissionValue: number;
+        enabled: number;
+      }
+    | undefined;
+
+  if (!existing) throw new Error("channel profile not found");
+
+  const displayName = input.displayName === undefined ? existing.displayName : clean(input.displayName);
+  const source = input.source === undefined ? existing.source : clean(input.source);
+  const channel = input.channel === undefined ? existing.channel : clean(input.channel);
+  const campaign = input.campaign === undefined ? existing.campaign : clean(input.campaign, "none");
+  const commissionType =
+    input.commissionType === undefined ? existing.commissionType : input.commissionType === "percent" ? "percent" : "fixed";
+  const commissionValue =
+    input.commissionValue === undefined
+      ? existing.commissionValue
+      : Number.isFinite(input.commissionValue)
+        ? input.commissionValue
+        : existing.commissionValue;
+  const enabled = input.enabled === undefined ? existing.enabled : input.enabled ? 1 : 0;
+
+  if (!displayName || !source || !channel) {
+    throw new Error("displayName, source and channel are required");
+  }
+
+  const identityChanged = source !== existing.source || channel !== existing.channel || campaign !== existing.campaign;
+  const usage = getChannelUsage(existing.source, existing.channel, existing.campaign);
+  if (identityChanged && usage.hasData) {
+    throw new Error("channel identity is locked because it already has data");
+  }
+
+  const now = nowIso();
+
+  runImmediateTransaction(() => {
+    db.prepare(
+      `
+        UPDATE channel_profiles
+        SET display_name = @displayName,
+            source = @source,
+            channel = @channel,
+            campaign = @campaign,
+            commission_type = @commissionType,
+            commission_value = @commissionValue,
+            enabled = @enabled,
+            updated_at = @now
+        WHERE id = @id
+      `
+    ).run({
+      id,
+      displayName,
+      source,
+      channel,
+      campaign,
+      commissionType,
+      commissionValue,
+      enabled,
+      now
+    });
+
+    const existingRule = db
+      .prepare(
+        `
+          SELECT id
+          FROM channel_commission_rules
+          WHERE source = @oldSource
+            AND channel = @oldChannel
+            AND campaign = @oldCampaign
+            AND effective_to IS NULL
+          ORDER BY id DESC
+          LIMIT 1
+        `
+      )
+      .get({
+        oldSource: existing.source,
+        oldChannel: existing.channel,
+        oldCampaign: existing.campaign
+      }) as { id: number } | undefined;
+
+    if (existingRule) {
+      db.prepare(
+        `
+          UPDATE channel_commission_rules
+          SET source = @source,
+              channel = @channel,
+              campaign = @campaign,
+              commission_type = @commissionType,
+              commission_value = @commissionValue,
+              enabled = @enabled,
+              updated_at = @now
+          WHERE id = @id
+        `
+      ).run({
+        id: existingRule.id,
+        source,
+        channel,
+        campaign,
+        commissionType,
+        commissionValue,
+        enabled,
+        now
+      });
+    } else {
+      db.prepare(
+        `
+          INSERT INTO channel_commission_rules (
+            source,
+            channel,
+            campaign,
+            commission_type,
+            commission_value,
+            effective_from,
+            effective_to,
+            enabled,
+            created_at,
+            updated_at
+          ) VALUES (
+            @source,
+            @channel,
+            @campaign,
+            @commissionType,
+            @commissionValue,
+            @now,
+            NULL,
+            @enabled,
+            @now,
+            @now
+          )
+        `
+      ).run({
+        source,
+        channel,
+        campaign,
+        commissionType,
+        commissionValue,
+        enabled,
+        now
+      });
+    }
+  });
+
+  const updated = db
+    .prepare(
+      `
+        SELECT
+          id,
+          display_name AS displayName,
+          source,
+          channel,
+          campaign,
+          commission_type AS commissionType,
+          commission_value AS commissionValue,
+          enabled,
+          created_at AS createdAt,
+          updated_at AS updatedAt
+        FROM channel_profiles
+        WHERE id = ?
+      `
+    )
+    .get(id) as
+    | {
+        id: number;
+        displayName: string;
+        source: string;
+        channel: string;
+        campaign: string;
+        commissionType: "fixed" | "percent";
+        commissionValue: number;
+        enabled: number;
+        createdAt: string;
+        updatedAt: string;
+      }
+    | undefined;
+
+  if (!updated) throw new Error("channel profile was not updated");
+
+  const updatedUsage = getChannelUsage(updated.source, updated.channel, updated.campaign);
+  return {
+    ...updated,
+    enabled: Boolean(updated.enabled),
+    hasData: updatedUsage.hasData,
+    canEditIdentity: !updatedUsage.hasData,
+    visitCount: updatedUsage.visitCount,
+    paidOrderCount: updatedUsage.paidOrderCount,
+    promoUrl: buildPromotionUrl(publicAppUrl, updated.source, updated.channel, updated.campaign)
   };
 }
 

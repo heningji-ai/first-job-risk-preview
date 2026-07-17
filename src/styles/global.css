@@ -1642,6 +1642,11 @@ p {
   color: #26342d;
 }
 
+.admin-channel-form input:disabled {
+  background: #f0eadf;
+  color: #898172;
+}
+
 .admin-checkbox-row {
   display: flex !important;
   flex-direction: row;
@@ -1654,6 +1659,12 @@ p {
   width: auto;
 }
 
+.admin-form-actions {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
 .admin-channel-layout {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 260px;
@@ -1663,6 +1674,7 @@ p {
 
 .admin-link-actions {
   display: flex;
+  flex-wrap: wrap;
   gap: 8px;
 }
 
@@ -1674,6 +1686,21 @@ p {
   color: #4d5b4d;
   font-weight: 800;
   cursor: pointer;
+}
+
+.admin-status-pill {
+  display: inline-flex;
+  border-radius: 999px;
+  padding: 4px 8px;
+  background: #eee4d0;
+  color: #715c3b;
+  font-size: 12px;
+  font-weight: 850;
+}
+
+.admin-status-pill.active {
+  background: #e5f1e2;
+  color: #3d6a3c;
 }
 
 .admin-channel-expanded td {

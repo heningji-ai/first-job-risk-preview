@@ -13,7 +13,8 @@ import {
   getAttributionForOrder,
   recordAnalyticsEvents,
   recordAnalyticsVisit,
-  recordOrderPaidAnalytics
+  recordOrderPaidAnalytics,
+  updateAdminChannelProfile
 } from "./analytics.js";
 import { loginAdmin, logoutAdmin, requireAdmin } from "./adminAuth.js";
 import { serverConfig } from "./config.js";
@@ -238,6 +239,46 @@ app.post("/api/admin/channels", (req, res) => {
   } catch (error) {
     console.error("[admin-channels]", error instanceof Error ? error.message : error);
     res.status(400).json({ error: "channel creation failed" });
+  }
+});
+
+app.patch("/api/admin/channels/:id", (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  try {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id) || id <= 0) {
+      res.status(400).json({ error: "channel id is invalid" });
+      return;
+    }
+
+    const body = req.body as Record<string, unknown>;
+    const channel = updateAdminChannelProfile(
+      id,
+      {
+        displayName: getString(body.displayName) ?? undefined,
+        source: getString(body.source) ?? undefined,
+        channel: getString(body.channel) ?? undefined,
+        campaign: body.campaign === "" ? "" : (getString(body.campaign) ?? undefined),
+        commissionType: body.commissionType === "percent" ? "percent" : body.commissionType === "fixed" ? "fixed" : undefined,
+        commissionValue: body.commissionValue === undefined ? undefined : Number(body.commissionValue),
+        enabled: body.enabled === undefined ? undefined : body.enabled !== false
+      },
+      getAdminPromotionOrigin()
+    );
+    res.json({ channel });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "";
+    if (message.includes("not found")) {
+      res.status(404).json({ error: "channel not found" });
+      return;
+    }
+    if (message.includes("identity is locked")) {
+      res.status(409).json({ error: "channel identity is locked" });
+      return;
+    }
+    console.error("[admin-channel-update]", message || error);
+    res.status(400).json({ error: "channel update failed" });
   }
 });
 

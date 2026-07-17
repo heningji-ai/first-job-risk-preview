@@ -47,6 +47,10 @@ type ChannelProfile = {
   commissionType: "fixed" | "percent";
   commissionValue: number;
   enabled: boolean;
+  hasData: boolean;
+  canEditIdentity: boolean;
+  visitCount: number;
+  paidOrderCount: number;
   promoUrl: string;
   createdAt: string;
   updatedAt: string;
@@ -180,6 +184,8 @@ function AdminDashboardPage() {
   const [promoQr, setPromoQr] = useState("");
   const [qrError, setQrError] = useState("");
   const [channelForm, setChannelForm] = useState({
+    editingId: null as number | null,
+    identityLocked: false,
     displayName: "",
     source: "",
     channel: "",
@@ -283,25 +289,101 @@ function AdminDashboardPage() {
     navigateTo("/admin/login");
   }
 
-  async function handleCreateChannel(event: FormEvent<HTMLFormElement>): Promise<void> {
+  function resetChannelForm(): void {
+    setChannelForm({
+      editingId: null,
+      identityLocked: false,
+      displayName: "",
+      source: "",
+      channel: "",
+      campaign: "",
+      commissionType: "fixed",
+      commissionValue: "0",
+      enabled: true
+    });
+  }
+
+  function startEditChannel(row: ChannelProfile): void {
+    setNotice("");
+    setError("");
+    setSelectedPromoUrl(row.promoUrl);
+    setChannelForm({
+      editingId: row.id,
+      identityLocked: !row.canEditIdentity,
+      displayName: row.displayName,
+      source: row.source,
+      channel: row.channel,
+      campaign: row.campaign,
+      commissionType: row.commissionType,
+      commissionValue: String(row.commissionValue),
+      enabled: row.enabled
+    });
+  }
+
+  function duplicateChannel(row: ChannelProfile): void {
+    setNotice("已复制为新渠道，请修改 channel 或 campaign 后保存。");
+    setError("");
+    setChannelForm({
+      editingId: null,
+      identityLocked: false,
+      displayName: `${row.displayName} 副本`,
+      source: row.source,
+      channel: `${row.channel}_copy`,
+      campaign: row.campaign === "none" ? "none_copy" : `${row.campaign}_copy`,
+      commissionType: row.commissionType,
+      commissionValue: String(row.commissionValue),
+      enabled: row.enabled
+    });
+  }
+
+  async function saveChannel(event: FormEvent<HTMLFormElement>): Promise<void> {
     event.preventDefault();
     setError("");
     setNotice("");
 
     try {
-      const result = await fetchAdminJson<{ channel: ChannelProfile }>("/api/admin/channels", {
-        method: "POST",
+      const path = channelForm.editingId ? `/api/admin/channels/${channelForm.editingId}` : "/api/admin/channels";
+      const result = await fetchAdminJson<{ channel: ChannelProfile }>(path, {
+        method: channelForm.editingId ? "PATCH" : "POST",
         body: JSON.stringify({
           ...channelForm,
           commissionValue: Number(channelForm.commissionValue || 0)
         })
       });
-      setNotice("渠道已保存，推广链接已生成。");
+      setNotice(channelForm.editingId ? "渠道已更新。" : "渠道已保存，推广链接已生成。");
       setSelectedPromoUrl(result.channel.promoUrl);
-      setChannelForm((current) => ({ ...current, displayName: "", campaign: "" }));
+      resetChannelForm();
+      await loadDashboard();
+    } catch (saveError) {
+      if (saveError instanceof Error && channelForm.editingId && channelForm.identityLocked) {
+        setError("该渠道已有访问或订单，source/channel/campaign 已锁定。如需新链接，请使用复制为新渠道。");
+        return;
+      }
+      setError("渠道保存失败，请检查渠道名称、source 和 channel 是否填写完整。campaign 留空会按 none 统计。");
+    }
+  }
+
+  async function toggleChannel(row: ChannelProfile): Promise<void> {
+    setError("");
+    setNotice("");
+
+    try {
+      const result = await fetchAdminJson<{ channel: ChannelProfile }>(`/api/admin/channels/${row.id}`, {
+        method: "PATCH",
+        body: JSON.stringify({
+          displayName: row.displayName,
+          source: row.source,
+          channel: row.channel,
+          campaign: row.campaign,
+          commissionType: row.commissionType,
+          commissionValue: row.commissionValue,
+          enabled: !row.enabled
+        })
+      });
+      setNotice(result.channel.enabled ? "渠道已启用。" : "渠道已停用。");
       await loadDashboard();
     } catch {
-      setError("渠道创建失败，请检查渠道名称、source 和 channel 是否填写完整。campaign 留空会按 none 统计。");
+      setError("渠道状态更新失败。");
     }
   }
 
@@ -428,22 +510,22 @@ function AdminDashboardPage() {
           ))}
         </div>
 
-        <form className="admin-channel-form" onSubmit={handleCreateChannel}>
+        <form className="admin-channel-form" onSubmit={saveChannel}>
           <label>
             渠道名称
             <input value={channelForm.displayName} onChange={(event) => setChannelForm((current) => ({ ...current, displayName: event.target.value }))} />
           </label>
           <label>
             source
-            <input value={channelForm.source} placeholder="xhs" onChange={(event) => setChannelForm((current) => ({ ...current, source: event.target.value }))} />
+            <input disabled={channelForm.identityLocked} value={channelForm.source} placeholder="xhs" onChange={(event) => setChannelForm((current) => ({ ...current, source: event.target.value }))} />
           </label>
           <label>
             channel
-            <input value={channelForm.channel} placeholder="kol-a" onChange={(event) => setChannelForm((current) => ({ ...current, channel: event.target.value }))} />
+            <input disabled={channelForm.identityLocked} value={channelForm.channel} placeholder="kol-a" onChange={(event) => setChannelForm((current) => ({ ...current, channel: event.target.value }))} />
           </label>
           <label>
             campaign
-            <input value={channelForm.campaign} placeholder="summer-2026" onChange={(event) => setChannelForm((current) => ({ ...current, campaign: event.target.value }))} />
+            <input disabled={channelForm.identityLocked} value={channelForm.campaign} placeholder="summer-2026" onChange={(event) => setChannelForm((current) => ({ ...current, campaign: event.target.value }))} />
           </label>
           <label>
             佣金类型
@@ -460,8 +542,18 @@ function AdminDashboardPage() {
             <input type="checkbox" checked={channelForm.enabled} onChange={(event) => setChannelForm((current) => ({ ...current, enabled: event.target.checked }))} />
             启用
           </label>
-          <button className="primary-button" type="submit">新增 / 更新渠道</button>
+          <div className="admin-form-actions">
+            <button className="primary-button" type="submit">{channelForm.editingId ? "保存渠道" : "新增渠道"}</button>
+            {channelForm.editingId ? (
+              <button className="secondary-button" type="button" onClick={resetChannelForm}>
+                取消编辑
+              </button>
+            ) : null}
+          </div>
         </form>
+        {channelForm.identityLocked ? (
+          <p className="admin-help-text">该渠道已有访问或订单，source/channel/campaign 已锁定。如需新链接，请使用复制为新渠道。</p>
+        ) : null}
 
         <div className="admin-channel-layout">
           <div className="admin-table-wrap">
@@ -472,6 +564,7 @@ function AdminDashboardPage() {
                   <th>source/channel/campaign</th>
                   <th>佣金</th>
                   <th>状态</th>
+                  <th>数据</th>
                   <th>推广链接</th>
                 </tr>
               </thead>
@@ -482,9 +575,15 @@ function AdminDashboardPage() {
                       <td>{row.displayName}</td>
                       <td>{`${row.source}/${row.channel}/${row.campaign}`}</td>
                       <td>{row.commissionType === "percent" ? `${row.commissionValue}%` : formatYuan(row.commissionValue)}</td>
-                      <td>{row.enabled ? "启用" : "停用"}</td>
+                      <td>
+                        <span className={row.enabled ? "admin-status-pill active" : "admin-status-pill"}>{row.enabled ? "启用" : "停用"}</span>
+                      </td>
+                      <td>{row.hasData ? `访问 ${row.visitCount} / 付款 ${row.paidOrderCount} · 身份锁定` : "无历史数据"}</td>
                       <td>
                         <div className="admin-link-actions">
+                          <button type="button" onClick={() => startEditChannel(row)}>编辑</button>
+                          <button type="button" onClick={() => void toggleChannel(row)}>{row.enabled ? "停用" : "启用"}</button>
+                          <button type="button" onClick={() => duplicateChannel(row)}>复制为新渠道</button>
                           <button type="button" onClick={() => setSelectedPromoUrl(row.promoUrl)}>展开链接和二维码</button>
                           <button type="button" onClick={() => void copyPromoUrl(row.promoUrl)}>复制链接</button>
                         </div>
@@ -492,7 +591,7 @@ function AdminDashboardPage() {
                     </tr>
                     {selectedPromoUrl === row.promoUrl ? (
                       <tr className="admin-channel-expanded">
-                        <td colSpan={5}>
+                        <td colSpan={6}>
                           <code>{row.promoUrl}</code>
                           {promoQr ? <img src={promoQr} alt={`${row.displayName} 推广链接二维码`} /> : <span>{qrError || "二维码生成中..."}</span>}
                         </td>
