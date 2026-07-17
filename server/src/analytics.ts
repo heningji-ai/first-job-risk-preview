@@ -3,8 +3,12 @@ import { nanoid } from "nanoid";
 import { db, runImmediateTransaction } from "./db.js";
 import type { OrderRecord } from "./types.js";
 
+export const analyticsPlatforms = ["h5", "wechat_miniapp", "douyin_miniapp", "xiaohongshu_miniapp", "unknown"] as const;
+export type AnalyticsPlatform = (typeof analyticsPlatforms)[number];
+
 export type AnalyticsAttribution = {
   visitorId: string;
+  platform: AnalyticsPlatform;
   source: string;
   channel: string;
   campaign: string;
@@ -13,6 +17,7 @@ export type AnalyticsAttribution = {
 
 export type AnalyticsVisitInput = {
   visitorId: string;
+  platform?: string | null;
   sessionId?: string | null;
   source?: string | null;
   channel?: string | null;
@@ -32,6 +37,7 @@ export type AnalyticsEventInput = {
   orderId?: string | null;
   eventName: string;
   eventValue?: number | null;
+  platform?: string | null;
   source?: string | null;
   channel?: string | null;
   campaign?: string | null;
@@ -47,6 +53,7 @@ type AnalyticsQuery = {
   source?: string | null;
   channel?: string | null;
   campaign?: string | null;
+  platform?: string | null;
   eventName?: string | null;
   status?: string | null;
   limit?: number | null;
@@ -82,6 +89,13 @@ function normalizeChannel(value: unknown): string {
 
 function normalizeCampaign(value: unknown): string {
   return clean(value, "none");
+}
+
+export function normalizeAnalyticsPlatform(value: unknown): AnalyticsPlatform {
+  if (value === undefined || value === null || value === "") return "h5";
+  return typeof value === "string" && analyticsPlatforms.includes(value.trim() as AnalyticsPlatform)
+    ? (value.trim() as AnalyticsPlatform)
+    : "unknown";
 }
 
 function nullable(value: unknown): string | null {
@@ -184,6 +198,7 @@ export function recordAnalyticsVisit(input: AnalyticsVisitInput): AnalyticsAttri
 
   return runImmediateTransaction(() => {
     const source = normalizeSource(input.source);
+    const platform = normalizeAnalyticsPlatform(input.platform);
     const channel = normalizeChannel(input.channel);
     const campaign = normalizeCampaign(input.campaign);
     const referralCode = nullable(input.referralCode);
@@ -203,6 +218,7 @@ export function recordAnalyticsVisit(input: AnalyticsVisitInput): AnalyticsAttri
           first_campaign,
           first_referral_code,
           first_landing_path,
+          platform,
           first_user_agent_hash,
           created_at,
           updated_at
@@ -215,6 +231,7 @@ export function recordAnalyticsVisit(input: AnalyticsVisitInput): AnalyticsAttri
           @campaign,
           @referralCode,
           @landingPath,
+          @platform,
           @userAgentHash,
           @now,
           @now
@@ -231,6 +248,7 @@ export function recordAnalyticsVisit(input: AnalyticsVisitInput): AnalyticsAttri
       campaign,
       referralCode,
       landingPath,
+      platform,
       userAgentHash: hashSensitive(input.userAgent)
     });
 
@@ -239,6 +257,7 @@ export function recordAnalyticsVisit(input: AnalyticsVisitInput): AnalyticsAttri
         INSERT INTO analytics_attributions (
           visitor_id,
           session_id,
+          platform,
           source,
           channel,
           campaign,
@@ -254,6 +273,7 @@ export function recordAnalyticsVisit(input: AnalyticsVisitInput): AnalyticsAttri
         ) VALUES (
           @visitorId,
           @sessionId,
+          @platform,
           @source,
           @channel,
           @campaign,
@@ -271,6 +291,7 @@ export function recordAnalyticsVisit(input: AnalyticsVisitInput): AnalyticsAttri
     ).run({
       visitorId,
       sessionId: nullable(input.sessionId),
+      platform,
       source,
       channel,
       campaign,
@@ -287,7 +308,7 @@ export function recordAnalyticsVisit(input: AnalyticsVisitInput): AnalyticsAttri
     const visitor = db
       .prepare(
         `
-          SELECT first_source, first_channel, first_campaign, first_referral_code
+          SELECT platform, first_source, first_channel, first_campaign, first_referral_code
           FROM analytics_visitors
           WHERE visitor_id = ?
         `
@@ -295,6 +316,7 @@ export function recordAnalyticsVisit(input: AnalyticsVisitInput): AnalyticsAttri
       .get(visitorId) as
       | {
           first_source: string;
+          platform: AnalyticsPlatform;
           first_channel: string;
           first_campaign: string;
           first_referral_code: string | null;
@@ -303,6 +325,7 @@ export function recordAnalyticsVisit(input: AnalyticsVisitInput): AnalyticsAttri
 
     return {
       visitorId,
+      platform: visitor?.platform ?? platform,
       source: visitor?.first_source ?? source,
       channel: visitor?.first_channel ?? channel,
       campaign: visitor?.first_campaign ?? campaign,
@@ -323,7 +346,7 @@ export function getAttributionForOrder(params: {
     ? db
         .prepare(
           `
-            SELECT visitor_id, source, channel, campaign, referral_code
+            SELECT visitor_id, platform, source, channel, campaign, referral_code
             FROM analytics_attributions
             WHERE visitor_id = ?
             ORDER BY is_first_touch DESC, created_at ASC
@@ -335,7 +358,7 @@ export function getAttributionForOrder(params: {
       ? db
           .prepare(
             `
-              SELECT visitor_id, source, channel, campaign, referral_code
+              SELECT visitor_id, platform, source, channel, campaign, referral_code
               FROM analytics_attributions
               WHERE session_id = ?
               ORDER BY is_first_touch DESC, created_at ASC
@@ -346,6 +369,7 @@ export function getAttributionForOrder(params: {
       : null) as
     | {
         visitor_id: string;
+        platform: AnalyticsPlatform;
         source: string;
         channel: string;
         campaign: string;
@@ -355,6 +379,7 @@ export function getAttributionForOrder(params: {
 
   return {
     visitorId: row?.visitor_id ?? visitorId ?? "unknown",
+    platform: row?.platform ?? "h5",
     source: row?.source ?? "direct",
     channel: row?.channel ?? "organic",
     campaign: row?.campaign ?? "none",
@@ -390,6 +415,7 @@ export function recordAnalyticsEvents(events: AnalyticsEventInput[]): { inserted
               order_id,
               event_name,
               event_value,
+              platform,
               source,
               channel,
               campaign,
@@ -404,6 +430,7 @@ export function recordAnalyticsEvents(events: AnalyticsEventInput[]): { inserted
               @orderId,
               @eventName,
               @eventValue,
+              @platform,
               @source,
               @channel,
               @campaign,
@@ -421,6 +448,7 @@ export function recordAnalyticsEvents(events: AnalyticsEventInput[]): { inserted
           orderId: nullable(event.orderId),
           eventName,
           eventValue: typeof event.eventValue === "number" ? event.eventValue : null,
+          platform: normalizeAnalyticsPlatform(event.platform),
           source: normalizeSource(event.source || attribution.source),
           channel: normalizeChannel(event.channel || attribution.channel),
           campaign: normalizeCampaign(event.campaign || attribution.campaign),
@@ -444,6 +472,11 @@ export function recordAnalyticsEvents(events: AnalyticsEventInput[]): { inserted
 export function recordOrderPaidAnalytics(order: OrderRecord): void {
   try {
     const eventId = `payment_paid:${order.id}`;
+    const attribution = getAttributionForOrder({
+      visitorId: order.analyticsVisitorId,
+      sessionId: order.sessionId,
+      fallbackReferralCode: order.analyticsReferralCode
+    });
     recordAnalyticsEvents([
       {
         eventId,
@@ -452,6 +485,7 @@ export function recordOrderPaidAnalytics(order: OrderRecord): void {
         orderId: order.id,
         eventName: "payment_paid",
         eventValue: order.payAmountCents,
+        platform: attribution.platform,
         source: order.analyticsSource,
         channel: order.analyticsChannel,
         campaign: order.analyticsCampaign,
@@ -584,6 +618,10 @@ function buildWhere(query: AnalyticsQuery, alias = "created_at"): { sql: string;
     conditions.push("campaign = @campaign");
     params.campaign = normalizedQuery.campaign;
   }
+  if (normalizedQuery.platform) {
+    conditions.push("platform = @platform");
+    params.platform = normalizeAnalyticsPlatform(normalizedQuery.platform);
+  }
 
   return {
     sql: conditions.length ? `WHERE ${conditions.join(" AND ")}` : "",
@@ -615,6 +653,16 @@ function buildOrderWhere(query: AnalyticsQuery, dateAlias = "paidAt"): { sql: st
     conditions.push("COALESCE(analyticsCampaign, 'none') = @campaign");
     params.campaign = normalizedQuery.campaign;
   }
+  if (normalizedQuery.platform) {
+    conditions.push(`COALESCE((
+      SELECT attribution.platform
+      FROM analytics_attributions attribution
+      WHERE attribution.visitor_id = analyticsVisitorId
+      ORDER BY attribution.is_first_touch DESC, attribution.created_at ASC
+      LIMIT 1
+    ), 'h5') = @platform`);
+    params.platform = normalizeAnalyticsPlatform(normalizedQuery.platform);
+  }
   if (normalizedQuery.status) {
     conditions.push("status = @status");
     params.status = normalizedQuery.status;
@@ -635,6 +683,7 @@ export function getAdminAnalyticsSummary(query: AnalyticsQuery) {
   const eventWhere = buildWhere(query);
   const orderWhere = buildOrderWhere(query, "paidAt");
   const createdOrderWhere = buildOrderWhere(query, "createdAt");
+  const commissionWhere = buildOrderWhere(query, "records.created_at");
 
   const paidOrders = scalar(
     `
@@ -671,10 +720,11 @@ export function getAdminAnalyticsSummary(query: AnalyticsQuery) {
   const commissionCents = scalar(
     `
       SELECT COALESCE(SUM(commission_amount_cents), 0) AS value
-      FROM channel_commission_records
-      ${eventWhere.sql}
+      FROM channel_commission_records records
+      JOIN orders ON orders.id = records.order_id
+      ${commissionWhere.sql}
     `,
-    eventWhere.params
+    commissionWhere.params
   );
 
   const countEventOccurrences = (eventName: string) =>
@@ -738,6 +788,13 @@ export function getAdminAnalyticsChannels(query: AnalyticsQuery) {
     .prepare(
       `
         SELECT
+          COALESCE((
+            SELECT attribution.platform
+            FROM analytics_attributions attribution
+            WHERE attribution.visitor_id = orders.analyticsVisitorId
+            ORDER BY attribution.is_first_touch DESC, attribution.created_at ASC
+            LIMIT 1
+          ), 'h5') AS platform,
           COALESCE(orders.analyticsSource, 'direct') AS source,
           COALESCE(orders.analyticsChannel, 'organic') AS channel,
           COALESCE(orders.analyticsCampaign, 'none') AS campaign,
@@ -748,6 +805,7 @@ export function getAdminAnalyticsChannels(query: AnalyticsQuery) {
         LEFT JOIN channel_commission_records records ON records.order_id = orders.id
         ${where.sql ? where.sql.replace("WHERE", "WHERE orders.status = 'paid' AND COALESCE(orders.payAmountCents, 0) > 0 AND") : "WHERE orders.status = 'paid' AND COALESCE(orders.payAmountCents, 0) > 0"}
         GROUP BY
+          platform,
           COALESCE(orders.analyticsSource, 'direct'),
           COALESCE(orders.analyticsChannel, 'organic'),
           COALESCE(orders.analyticsCampaign, 'none')
@@ -773,6 +831,13 @@ export function getAdminRecentOrders(query: AnalyticsQuery) {
           discountAmountCents,
           payAmountCents,
           paymentMode,
+          COALESCE((
+            SELECT attribution.platform
+            FROM analytics_attributions attribution
+            WHERE attribution.visitor_id = analyticsVisitorId
+            ORDER BY attribution.is_first_touch DESC, attribution.created_at ASC
+            LIMIT 1
+          ), 'h5') AS platform,
           COALESCE(analyticsSource, 'direct') AS source,
           COALESCE(analyticsChannel, 'organic') AS channel,
           COALESCE(analyticsCampaign, 'none') AS campaign,
@@ -814,6 +879,10 @@ export function getAdminAnalyticsEvents(query: AnalyticsQuery) {
     conditions.push("campaign = ?");
     params.push(normalizedQuery.campaign);
   }
+  if (normalizedQuery.platform) {
+    conditions.push("platform = ?");
+    params.push(normalizeAnalyticsPlatform(normalizedQuery.platform));
+  }
   if (eventName) {
     conditions.push("event_name = ?");
     params.push(eventName);
@@ -830,6 +899,7 @@ export function getAdminAnalyticsEvents(query: AnalyticsQuery) {
           visitor_id AS visitorId,
           session_id AS sessionId,
           order_id AS orderId,
+          platform,
           source,
           channel,
           campaign,
