@@ -256,7 +256,55 @@ export function initializeDatabase(): void {
 
     CREATE INDEX IF NOT EXISTS idx_channel_profiles_lookup
       ON channel_profiles (source, channel, campaign, enabled);
+
+    CREATE TABLE IF NOT EXISTS product_pricing_rules (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      product_key TEXT NOT NULL UNIQUE,
+      base_price_cents INTEGER NOT NULL,
+      sale_price_cents INTEGER NOT NULL,
+      invite_discount_cents INTEGER NOT NULL,
+      free_trial_enabled INTEGER NOT NULL DEFAULT 0,
+      free_trial_start_at TEXT,
+      free_trial_end_at TEXT,
+      allow_invite_discount_stack INTEGER NOT NULL DEFAULT 1,
+      enabled INTEGER NOT NULL DEFAULT 1,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL
+    );
   `);
+
+  db.prepare(
+    `
+      INSERT INTO product_pricing_rules (
+        product_key,
+        base_price_cents,
+        sale_price_cents,
+        invite_discount_cents,
+        free_trial_enabled,
+        free_trial_start_at,
+        free_trial_end_at,
+        allow_invite_discount_stack,
+        enabled,
+        created_at,
+        updated_at
+      )
+      SELECT
+        'goal_fit_report',
+        1990,
+        1990,
+        1000,
+        0,
+        NULL,
+        NULL,
+        1,
+        1,
+        @now,
+        @now
+      WHERE NOT EXISTS (
+        SELECT 1 FROM product_pricing_rules WHERE product_key = 'goal_fit_report'
+      )
+    `
+  ).run({ now: new Date().toISOString() });
 
   const columns = db.prepare("PRAGMA table_info(orders)").all() as Array<{ name: string }>;
   const columnNames = new Set(columns.map((column) => column.name));
@@ -291,5 +339,33 @@ export function initializeDatabase(): void {
 
   if (!columnNames.has("analyticsReferralCode")) {
     db.exec("ALTER TABLE orders ADD COLUMN analyticsReferralCode TEXT");
+  }
+
+  if (!columnNames.has("basePriceCents")) {
+    db.exec("ALTER TABLE orders ADD COLUMN basePriceCents INTEGER");
+  }
+
+  if (!columnNames.has("salePriceCents")) {
+    db.exec("ALTER TABLE orders ADD COLUMN salePriceCents INTEGER");
+  }
+
+  if (!columnNames.has("discountCents")) {
+    db.exec("ALTER TABLE orders ADD COLUMN discountCents INTEGER");
+  }
+
+  if (!columnNames.has("finalAmountCents")) {
+    db.exec("ALTER TABLE orders ADD COLUMN finalAmountCents INTEGER");
+  }
+
+  if (!columnNames.has("pricingRuleId")) {
+    db.exec("ALTER TABLE orders ADD COLUMN pricingRuleId INTEGER");
+  }
+
+  if (!columnNames.has("pricingSnapshotJson")) {
+    db.exec("ALTER TABLE orders ADD COLUMN pricingSnapshotJson TEXT");
+  }
+
+  if (!columnNames.has("pricingMode")) {
+    db.exec("ALTER TABLE orders ADD COLUMN pricingMode TEXT");
   }
 }

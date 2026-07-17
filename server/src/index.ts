@@ -25,6 +25,7 @@ import {
   getPaidOrderBySessionId,
   updateOrderStatus
 } from "./orders.js";
+import { getGoalFitPricingDisplay, updateGoalFitPricingRule } from "./pricing.js";
 import {
   attachReferralVisitToOrder,
   buildReferralResponse,
@@ -98,6 +99,10 @@ app.use(express.json());
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
+});
+
+app.get("/api/pricing/goal-fit-report", (_req, res) => {
+  res.json(getGoalFitPricingDisplay());
 });
 
 function getIp(req: express.Request): string | null {
@@ -216,6 +221,23 @@ app.get("/api/admin/orders", (req, res) => {
 app.get("/api/admin/channels", (req, res) => {
   if (!requireAdmin(req, res)) return;
   res.json({ channels: getAdminChannels(getAdminPromotionOrigin()) });
+});
+
+app.get("/api/admin/pricing", (req, res) => {
+  if (!requireAdmin(req, res)) return;
+  res.json(getGoalFitPricingDisplay());
+});
+
+app.patch("/api/admin/pricing", (req, res) => {
+  if (!requireAdmin(req, res)) return;
+
+  try {
+    updateGoalFitPricingRule(req.body as Record<string, unknown>);
+    res.json(getGoalFitPricingDisplay());
+  } catch (error) {
+    console.error("[admin-pricing]", error instanceof Error ? error.message : error);
+    res.status(400).json({ error: "pricing update failed" });
+  }
 });
 
 app.post("/api/admin/channels", (req, res) => {
@@ -460,8 +482,14 @@ app.post("/api/orders/create", async (req, res) => {
     return;
   }
 
-  const requestedPaymentMode: PaymentMode =
-    serverPaymentMode === "mock" ? "mock" : paymentMethod === "jsapi" ? "jsapi" : "native";
+  const pricingDisplay = getGoalFitPricingDisplay();
+  const requestedPaymentMode: PaymentMode = pricingDisplay.freeTrialActive
+    ? "free_trial"
+    : serverPaymentMode === "mock"
+      ? "mock"
+      : paymentMethod === "jsapi"
+        ? "jsapi"
+        : "native";
 
   let jsapiOpenid = "";
   if (requestedPaymentMode === "jsapi") {
@@ -505,6 +533,11 @@ app.post("/api/orders/create", async (req, res) => {
       visitorId: visitorIdValue,
       orderId: order.id
     });
+  }
+
+  if (order.payAmountCents === 0 || order.paymentProvider === "free_trial" || order.paymentMode === "free_trial") {
+    res.json(order);
+    return;
   }
 
   if (requestedPaymentMode === "jsapi") {

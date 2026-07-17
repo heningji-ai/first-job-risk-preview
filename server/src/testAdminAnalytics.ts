@@ -23,6 +23,10 @@ const {
 } = await import("./analytics.js");
 const { loginAdmin, requireAdmin } = await import("./adminAuth.js");
 const { createOrder, updateOrderStatus } = await import("./orders.js");
+const {
+  getGoalFitPricingDisplay,
+  updateGoalFitPricingRule
+} = await import("./pricing.js");
 
 initializeDatabase();
 
@@ -70,6 +74,9 @@ const adminPageSource = fs.readFileSync(new URL("../../src/pages/AdminDashboardP
 assert(indexSource.includes('app.post("/api/admin/channels"'), "admin channel creation route must exist");
 assert(indexSource.includes('app.get("/api/admin/analytics/events"'), "admin analytics events route must exist");
 assert(indexSource.includes('app.patch("/api/admin/channels/:id"'), "admin channel update route must exist");
+assert(indexSource.includes('app.get("/api/admin/pricing"'), "admin pricing read route must exist");
+assert(indexSource.includes('app.patch("/api/admin/pricing"'), "admin pricing update route must exist");
+assert(indexSource.includes('app.get("/api/pricing/goal-fit-report"'), "public pricing display route must exist");
 const channelRouteStart = indexSource.indexOf('app.post("/api/admin/channels"');
 const channelRouteEnd = indexSource.indexOf('app.get("/api/admin/referrals"', channelRouteStart);
 const channelRouteSource = indexSource.slice(channelRouteStart, channelRouteEnd);
@@ -88,6 +95,8 @@ assert(adminPageSource.includes("展开链接和二维码"), "channel rows must 
 assert(adminPageSource.includes("async function loadRecentEvents"), "recent events must load independently from core dashboard data");
 assert(adminPageSource.includes("最近事件暂时无法加载"), "recent events failure must show a local fallback message");
 assert(!adminPageSource.includes("nextEvents, nextChannelProfiles"), "events API failure must not break the core dashboard Promise.all");
+assert(adminPageSource.includes("价格设置"), "admin dashboard must expose pricing settings");
+assert(adminPageSource.includes("免费试用期间不会创建微信支付订单，收入为 0"), "admin pricing module must explain free-trial revenue behavior");
 
 const login = createMockResponse();
 loginAdmin({ headers: {} } as never, login.res as never, "admin_test", "password_test");
@@ -418,6 +427,112 @@ assert(directChannels.some((row) => row.source === "direct" && row.channel === "
 const funnel = getAdminAnalyticsFunnel({ range: "all" });
 assert(Array.isArray(funnel) && funnel.length === 9, "admin funnel must return all required steps");
 assert("previousConversionRate" in funnel[1] && "visitConversionRate" in funnel[1], "funnel steps must include conversion rates");
+
+const defaultPricing = getGoalFitPricingDisplay();
+assert(
+  defaultPricing.basePriceCents === 1990 &&
+    defaultPricing.salePriceCents === 1990 &&
+    defaultPricing.inviteDiscountCents === 1000,
+  "default pricing must be 19.9 with 10 yuan invite discount"
+);
+
+updateGoalFitPricingRule({
+  basePriceCents: 1990,
+  salePriceCents: 1590,
+  inviteDiscountCents: 700,
+  freeTrialEnabled: false,
+  freeTrialStartAt: null,
+  freeTrialEndAt: null,
+  allowInviteDiscountStack: true
+});
+const saleOrder = createOrder({
+  sessionId: `session-sale-${suffix}`,
+  accessMode: "direct",
+  couponCode: null,
+  paymentMode: "native",
+  analyticsVisitorId: `visitor-sale-${suffix}`,
+  analyticsSource: `pricing-sale-${suffix}`,
+  analyticsChannel: "organic",
+  analyticsCampaign: "none",
+  analyticsReferralCode: null,
+  sourceReferralCode: null,
+  referralVisitId: null
+});
+assert(saleOrder.payAmountCents === 1590 && saleOrder.salePriceCents === 1590, "new orders must use updated sale price");
+assert(paidOrder.payAmountCents === 1990, "pricing changes must not mutate historical orders");
+
+const couponOrder = createOrder({
+  sessionId: `session-config-coupon-${suffix}`,
+  accessMode: "share_coupon",
+  couponCode: "share_card",
+  paymentMode: "native",
+  analyticsVisitorId: `visitor-config-coupon-${suffix}`,
+  analyticsSource: `pricing-coupon-${suffix}`,
+  analyticsChannel: "organic",
+  analyticsCampaign: "none",
+  analyticsReferralCode: null,
+  sourceReferralCode: null,
+  referralVisitId: null
+});
+assert(
+  couponOrder.discountAmountCents === 1100 && couponOrder.payAmountCents === 890,
+  "invite discount must be calculated from pricing config, not hardcoded 10 yuan"
+);
+
+updateGoalFitPricingRule({
+  freeTrialEnabled: true,
+  freeTrialStartAt: "2020-01-01T00:00:00.000Z",
+  freeTrialEndAt: "2099-01-01T00:00:00.000Z"
+});
+const freeTrialSource = `free-trial-${suffix}`;
+const freeTrialOrder = createOrder({
+  sessionId: `session-free-trial-${suffix}`,
+  accessMode: "direct",
+  couponCode: null,
+  paymentMode: "native",
+  analyticsVisitorId: `visitor-free-trial-${suffix}`,
+  analyticsSource: freeTrialSource,
+  analyticsChannel: "organic",
+  analyticsCampaign: "none",
+  analyticsReferralCode: null,
+  sourceReferralCode: null,
+  referralVisitId: null
+});
+assert(
+  freeTrialOrder.payAmountCents === 0 &&
+    freeTrialOrder.status === "paid" &&
+    freeTrialOrder.paymentProvider === "free_trial" &&
+    freeTrialOrder.pricingMode === "free_trial",
+  "active free trial must create a paid zero-yuan unlock order without WeChat payment"
+);
+const freeTrialSummary = getAdminAnalyticsSummary({ range: "all", source: freeTrialSource });
+assert(freeTrialSummary.freeUnlockOrders === 1, "free trial unlocks must be counted separately");
+assert(freeTrialSummary.paidOrders === 0, "free trial unlocks must not count as paid orders");
+assert(freeTrialSummary.revenueCents === 0, "free trial unlocks must not count as revenue");
+
+updateGoalFitPricingRule({
+  basePriceCents: 1990,
+  salePriceCents: 1990,
+  inviteDiscountCents: 1000,
+  freeTrialEnabled: false,
+  freeTrialStartAt: null,
+  freeTrialEndAt: null,
+  allowInviteDiscountStack: true
+});
+const restoredOrder = createOrder({
+  sessionId: `session-restored-${suffix}`,
+  accessMode: "direct",
+  couponCode: null,
+  paymentMode: "native",
+  analyticsVisitorId: `visitor-restored-${suffix}`,
+  analyticsSource: `pricing-restored-${suffix}`,
+  analyticsChannel: "organic",
+  analyticsCampaign: "none",
+  analyticsReferralCode: null,
+  sourceReferralCode: null,
+  referralVisitId: null
+});
+assert(restoredOrder.payAmountCents === 1990, "closing free trial must restore normal pricing for new orders");
 
 console.log("Goal Fit admin analytics tests passed.");
 console.log(`databasePath: ${databasePath}`);

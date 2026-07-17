@@ -4,9 +4,11 @@ export type AccessMode = "direct" | "share_coupon";
 
 export type CouponCode = "share_card";
 
-export type PaymentProvider = "mock" | "wechat";
+export type PaymentProvider = "mock" | "wechat" | "free_trial";
 
-export type PaymentMode = "native" | "jsapi" | "h5" | "mock";
+export type PaymentMode = "native" | "jsapi" | "h5" | "mock" | "free_trial";
+
+export type PricingMode = "normal" | "sale" | "free_trial";
 
 export type OrderRecord = {
   id: string;
@@ -30,6 +32,13 @@ export type OrderRecord = {
   analyticsChannel: string | null;
   analyticsCampaign: string | null;
   analyticsReferralCode: string | null;
+  basePriceCents: number | null;
+  salePriceCents: number | null;
+  discountCents: number | null;
+  finalAmountCents: number | null;
+  pricingRuleId: number | null;
+  pricingSnapshotJson: string | null;
+  pricingMode: PricingMode | null;
   createdAt: string;
   updatedAt: string;
   paidAt: string | null;
@@ -54,6 +63,13 @@ export type AmountCalculation = {
   discountAmountCents: number;
   payAmountCents: number;
   couponCode: CouponCode | null;
+  basePriceCents?: number;
+  salePriceCents?: number;
+  discountCents?: number;
+  finalAmountCents?: number;
+  pricingRuleId?: number;
+  pricingSnapshotJson?: string;
+  pricingMode?: PricingMode;
 };
 
 export type WechatNativeOrderResponse = {

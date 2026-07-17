@@ -366,14 +366,16 @@ assert(
     freeResultPageSource.includes("当前预演：") &&
     freeResultPageSource.includes("主要风险") &&
     freeResultPageSource.includes("行动提醒") &&
-    freeResultPageSource.includes("完整报告 ¥19.9") &&
+    freeResultPageSource.includes("getGoalFitPricingDisplay") &&
+    freeResultPageSource.includes("primaryUnlockLabel") &&
+    freeResultPageSource.includes("inviteButtonLabel") &&
     freeResultPageSource.includes("公司环境") &&
     freeResultPageSource.includes("岗位差距") &&
     freeResultPageSource.includes("投递风险") &&
     freeResultPageSource.includes("调整方向") &&
-    freeResultPageSource.includes("¥19.9 查看完整报告") &&
+    freeResultPageSource.includes("限时免费查看完整报告") &&
     freeResultPageSource.includes("goal-fit-free-coupon-cta") &&
-    freeResultPageSource.includes("复制邀请链接，立减 ¥10") &&
+    freeResultPageSource.includes("formatGoalFitYuan") &&
     freeResultPageSource.includes("createGoalFitReferralLink") &&
     freeResultPageSource.includes("confirmGoalFitReferralCopied") &&
     freeResultPageSource.includes("getGoalFitDiscountStatus") &&
@@ -478,12 +480,12 @@ assert(
     unlockPageSource.includes("确认解锁完整报告") &&
     unlockPageSource.includes("context.wechatOpenidToken") &&
     unlockPageSource.includes("正在准备支付") &&
-    unlockPageSource.includes("已获得 ¥10 邀请优惠") &&
-    unlockPageSource.includes("原价 ${formatYuan(displayedOriginalAmount)}") &&
-    unlockPageSource.includes("优惠 -¥10") &&
-    unlockPageSource.includes("本次支付") &&
-    unlockPageSource.includes("完整报告 ¥19.9") &&
-    unlockPageSource.includes("复制邀请链接，可优惠至 ¥9.9") &&
+    unlockPageSource.includes("getGoalFitPricingDisplay") &&
+    unlockPageSource.includes("免费解锁完整报告") &&
+    unlockPageSource.includes("限时免费试用") &&
+    unlockPageSource.includes("discountLabel") &&
+    unlockPageSource.includes("standardUnlockLabel") &&
+    unlockPageSource.includes("复制邀请链接，立减 {discountLabel}") &&
     unlockPageSource.includes("根据你的选择，报告将预演你在这类工作环境中可能遇到的问题。") &&
     unlockPageSource.includes("你选择的是：") &&
     unlockPageSource.includes("goal-fit-unlock-target-mini") &&

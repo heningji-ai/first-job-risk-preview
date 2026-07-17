@@ -18,6 +18,11 @@ import {
   getGoalFitReferralContext,
   type GoalFitDiscountStatus
 } from "../lib/goalFitReferralStore";
+import {
+  formatGoalFitYuan,
+  getGoalFitPricingDisplay,
+  type GoalFitPricingDisplay
+} from "../lib/goalFitPricing";
 import { getGoalFitSession } from "../lib/goalFitSessionStore";
 import { isGoalFitReportUnlocked, markGoalFitReportUnlocked } from "../lib/goalFitUnlockStore";
 import { getGoalFitVisitorId } from "../lib/goalFitVisitorStore";
@@ -102,7 +107,7 @@ function buildShareCouponPath(context: UnlockContext): string {
 }
 
 function formatYuan(amountCents: number): string {
-  return `¥${(amountCents / 100).toFixed(1)}`;
+  return formatGoalFitYuan(amountCents);
 }
 
 function isWechatBrowser(): boolean {
@@ -165,6 +170,7 @@ function GoalFitUnlockPage() {
   const [orderError, setOrderError] = useState("");
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState("");
   const [discountStatus, setDiscountStatus] = useState<GoalFitDiscountStatus | null>(null);
+  const [pricing, setPricing] = useState<GoalFitPricingDisplay | null>(null);
   const [copiedPageLink, setCopiedPageLink] = useState(false);
   const isWechatInAppBrowser = isWechatBrowser();
   const isMobileExternalBrowser = isMobileBrowser() && !isWechatInAppBrowser;
@@ -195,6 +201,25 @@ function GoalFitUnlockPage() {
   }, [context.isSample, context.sessionId]);
 
   useEffect(() => {
+    let ignore = false;
+
+    async function loadPricing(): Promise<void> {
+      try {
+        const nextPricing = await getGoalFitPricingDisplay();
+        if (!ignore) setPricing(nextPricing);
+      } catch {
+        if (!ignore) setPricing(null);
+      }
+    }
+
+    void loadPricing();
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  useEffect(() => {
     trackGoalFitVisit(context.sessionId);
     trackGoalFitEvent({
       eventName: "unlock_page_view",
@@ -209,7 +234,7 @@ function GoalFitUnlockPage() {
   useEffect(() => {
     if (!context.result || !context.sessionId || isUnlocked) return;
     if (isWechatInAppBrowser && !context.wechatOpenidToken) return;
-    if (isMobileExternalBrowser) return;
+    if (isMobileExternalBrowser && !pricing?.freeTrialActive) return;
 
     let ignore = false;
 
@@ -267,7 +292,8 @@ function GoalFitUnlockPage() {
     context.wechatOpenidToken,
     isWechatInAppBrowser,
     isMobileExternalBrowser,
-    isUnlocked
+    isUnlocked,
+    pricing?.freeTrialActive
   ]);
 
   useEffect(() => {
@@ -366,13 +392,42 @@ function GoalFitUnlockPage() {
       !order.wechatCodeUrl &&
       (order.paymentMode === "mock" || order.paymentProvider === "mock")
   );
-  const displayedOriginalAmount = order?.originalAmountCents ?? 1990;
+  const isFreeTrialActive = Boolean(pricing?.freeTrialActive || order?.paymentProvider === "free_trial" || order?.paymentMode === "free_trial");
+  const isFreeTrialOrder = Boolean(order?.paymentProvider === "free_trial" || order?.paymentMode === "free_trial" || order?.pricingMode === "free_trial");
+  const displayedOriginalAmount = order?.originalAmountCents ?? pricing?.basePriceCents ?? 1990;
   const hasDiscount = Boolean(order ? order.discountAmountCents > 0 : discountStatus?.discountGranted);
-  const displayedPayAmount = order?.payAmountCents ?? discountStatus?.payAmountCents ?? 1990;
+  const configuredDiscountCents = pricing?.inviteDiscountCents ?? discountStatus?.discountAmountCents ?? 1000;
+  const displayedPayAmount =
+    order?.payAmountCents ??
+    (isFreeTrialActive
+      ? 0
+      : discountStatus?.discountGranted
+        ? Math.max(0, (pricing?.salePriceCents ?? 1990) - configuredDiscountCents)
+        : pricing?.finalStandardPriceCents ?? 1990);
   const payAmountLabel = formatYuan(displayedPayAmount);
-  const primaryPayLabel = hasDiscount ? `${payAmountLabel} 支付后查看完整报告` : `${payAmountLabel} 查看完整报告`;
-  const isWaitingForJsapiPaymentParams = Boolean(isWechatInAppBrowser && context.wechatOpenidToken && !order?.jsapiPaymentParams);
-  const isWaitingForNativeCodeUrl = Boolean(!isWechatInAppBrowser && !isMockOrder && !order?.wechatCodeUrl);
+  const primaryPayLabel = isFreeTrialActive
+    ? "免费解锁完整报告"
+    : hasDiscount
+      ? `${payAmountLabel} 支付后查看完整报告`
+      : `${payAmountLabel} 查看完整报告`;
+  const standardUnlockLabel = `完整报告 ${formatYuan(pricing?.finalStandardPriceCents ?? displayedOriginalAmount)}`;
+  const discountLabel = formatYuan(configuredDiscountCents);
+  const unlockTitle = isFreeTrialActive
+    ? "限时免费试用"
+    : hasDiscount
+      ? `已获得 ${discountLabel} 邀请优惠`
+      : standardUnlockLabel;
+  const unlockDescription = isFreeTrialActive
+    ? "当前处于免费试用期，点击后即可查看完整报告。"
+    : hasDiscount
+      ? "确认优惠金额后即可付款查看完整报告。"
+      : "确认当前价格后即可付款查看完整报告。";
+  const isWaitingForJsapiPaymentParams = Boolean(
+    !isFreeTrialActive && isWechatInAppBrowser && context.wechatOpenidToken && !order?.jsapiPaymentParams
+  );
+  const isWaitingForNativeCodeUrl = Boolean(
+    !isFreeTrialActive && !isWechatInAppBrowser && !isMockOrder && !order?.wechatCodeUrl
+  );
 
   async function handleMarkPaid(): Promise<void> {
     if (!context.sessionId || !order?.orderId) return;
@@ -514,6 +569,20 @@ function GoalFitUnlockPage() {
       return;
     }
 
+    if (isFreeTrialOrder && order?.status === "paid") {
+      if (!context.isSample && context.sessionId) {
+        markGoalFitReportUnlocked(context.sessionId);
+      }
+      trackGoalFitEvent({
+        eventName: "report_unlocked",
+        sessionId: context.sessionId,
+        orderId: order.orderId
+      });
+      setIsUnlocked(true);
+      navigateTo(fullResultPath);
+      return;
+    }
+
     if (order?.jsapiPaymentParams) {
       void handleWechatJsapiPay();
     }
@@ -548,23 +617,20 @@ function GoalFitUnlockPage() {
       <section className="goal-fit-panel goal-fit-unlock-frame">
         <header className="goal-fit-unlock-header">
           <p className="goal-fit-eyebrow">完整报告确认</p>
-          <h1>{hasDiscount ? "已获得 ¥10 邀请优惠" : "完整报告 ¥19.9"}</h1>
-          <p>
-            {hasDiscount
-              ? "确认优惠金额后即可付款查看完整报告。"
-              : "确认标准价后即可付款查看完整报告。"}
-          </p>
+          <h1>{unlockTitle}</h1>
+          <p>{unlockDescription}</p>
         </header>
 
         <div className="goal-fit-unlock-layout">
           <section className="goal-fit-unlock-main-card">
             <div className="goal-fit-unlock-product">
-              <span>{hasDiscount ? "邀请优惠" : "标准解锁"}</span>
-              <strong>{hasDiscount ? "已获得 ¥10 邀请优惠" : "完整报告 ¥19.9"}</strong>
+              <span>{isFreeTrialActive ? "免费试用" : hasDiscount ? "邀请优惠" : "标准解锁"}</span>
+              <strong>{unlockTitle}</strong>
             </div>
             <div className="goal-fit-unlock-price-detail goal-fit-unlock-price-decision">
-              <span>{hasDiscount ? `原价 ${formatYuan(displayedOriginalAmount)}` : "完整报告 ¥19.9"}</span>
-              {hasDiscount ? <span>优惠 -¥10</span> : null}
+              <span>{hasDiscount || isFreeTrialActive ? `原价 ${formatYuan(displayedOriginalAmount)}` : standardUnlockLabel}</span>
+              {hasDiscount ? <span>优惠 -{discountLabel}</span> : null}
+              {isFreeTrialActive ? <span>限时免费试用</span> : null}
               <strong>{hasDiscount ? "本次支付" : "应付"} {payAmountLabel}</strong>
             </div>
             <div className="goal-fit-unlock-price goal-fit-unlock-pay-hero">
@@ -572,7 +638,19 @@ function GoalFitUnlockPage() {
               <strong>{payAmountLabel}</strong>
             </div>
             {orderError ? <p className="goal-fit-unlock-error">{orderError}</p> : null}
-            {isMobileExternalBrowser ? (
+            {isFreeTrialActive ? (
+              <div className="goal-fit-unlock-wechat-pay">
+                {isCreatingOrder && !order ? <p>正在准备免费试用...</p> : null}
+                <button
+                  className="primary-button goal-fit-pay-primary"
+                  type="button"
+                  disabled={!order || isCreatingOrder}
+                  onClick={handlePrimaryPay}
+                >
+                  {order ? primaryPayLabel : "正在准备免费试用"}
+                </button>
+              </div>
+            ) : isMobileExternalBrowser ? (
               <div className="goal-fit-unlock-wechat-pay">
                 <strong>请使用微信打开当前页面完成支付。</strong>
                 <p>手机外部浏览器暂不生成二维码订单，避免出现本机无法扫码的支付体验。</p>
@@ -669,10 +747,10 @@ function GoalFitUnlockPage() {
             ) : null}
             {!hasDiscount ? (
               <div className="goal-fit-unlock-coupon-reminder">
-                <strong>完整报告 ¥19.9</strong>
-                <p>复制邀请链接，可优惠至 ¥9.9。</p>
+                <strong>{standardUnlockLabel}</strong>
+                <p>复制邀请链接，可立减 {discountLabel}。</p>
                 <button className="secondary-button" type="button" onClick={() => navigateTo(shareCouponPath)}>
-                  复制邀请链接，可优惠至 ¥9.9
+                  复制邀请链接，立减 {discountLabel}
                 </button>
               </div>
             ) : null}

@@ -6,7 +6,7 @@ export type GoalFitOrderStatus = "pending" | "paid" | "expired" | "closed" | "fa
 
 export type GoalFitAccessMode = "direct" | "share_coupon";
 
-export type GoalFitPaymentMode = "mock" | "native" | "jsapi" | "h5";
+export type GoalFitPaymentMode = "mock" | "native" | "jsapi" | "h5" | "free_trial";
 
 export type GoalFitJsapiPaymentParams = {
   appId: string;
@@ -31,8 +31,15 @@ export type GoalFitOrder = {
   discountAmountCents: number;
   payAmountCents: number;
   couponCode?: "share_card";
-  paymentProvider?: "mock" | "wechat";
+  paymentProvider?: "mock" | "wechat" | "free_trial";
   paymentMode?: GoalFitPaymentMode;
+  basePriceCents?: number | null;
+  salePriceCents?: number | null;
+  discountCents?: number | null;
+  finalAmountCents?: number | null;
+  pricingRuleId?: number | null;
+  pricingSnapshotJson?: string | null;
+  pricingMode?: "normal" | "sale" | "free_trial" | null;
   wechatPrepayId?: string | null;
   wechatCodeUrl?: string | null;
   jsapiPaymentParams?: GoalFitJsapiPaymentParams;

@@ -1,6 +1,6 @@
 import { nanoid } from "nanoid";
-import { calculateOrderAmount } from "./coupons.js";
 import { db, runImmediateTransaction } from "./db.js";
+import { calculateGoalFitOrderAmount } from "./pricing.js";
 import type {
   AccessMode,
   CouponCode,
@@ -33,6 +33,13 @@ const orderColumns = `
   analyticsChannel,
   analyticsCampaign,
   analyticsReferralCode,
+  basePriceCents,
+  salePriceCents,
+  discountCents,
+  finalAmountCents,
+  pricingRuleId,
+  pricingSnapshotJson,
+  pricingMode,
   createdAt,
   updatedAt,
   paidAt
@@ -47,25 +54,28 @@ function toOrderRecord(row: unknown): OrderRecord | null {
   return row as OrderRecord;
 }
 
-function getPaymentProvider(paymentMode: PaymentMode): PaymentProvider {
+function getPaymentProvider(paymentMode: PaymentMode, payAmountCents: number): PaymentProvider {
+  if (paymentMode === "free_trial" || payAmountCents === 0) return "free_trial";
   return paymentMode === "mock" ? "mock" : "wechat";
 }
 
 export function createOrder(input: CreateOrderInput): OrderRecord {
   const now = new Date().toISOString();
-  const amount = calculateOrderAmount(input.accessMode, input.couponCode);
+  const amount = calculateGoalFitOrderAmount(input.accessMode, input.couponCode);
+  const isFreeTrialOrder = amount.payAmountCents === 0;
+  const paymentMode = isFreeTrialOrder ? "free_trial" : input.paymentMode;
   const order: OrderRecord = {
     id: nanoid(),
     outTradeNo: createOutTradeNo(),
     sessionId: input.sessionId,
-    status: "pending",
+    status: isFreeTrialOrder ? "paid" : "pending",
     accessMode: input.accessMode,
     originalAmountCents: amount.originalAmountCents,
     discountAmountCents: amount.discountAmountCents,
     payAmountCents: amount.payAmountCents,
     couponCode: amount.couponCode,
-    paymentProvider: getPaymentProvider(input.paymentMode),
-    paymentMode: input.paymentMode,
+    paymentProvider: getPaymentProvider(paymentMode, amount.payAmountCents),
+    paymentMode,
     wechatPrepayId: null,
     wechatCodeUrl: null,
     wechatTransactionId: null,
@@ -76,9 +86,16 @@ export function createOrder(input: CreateOrderInput): OrderRecord {
     analyticsChannel: input.analyticsChannel ?? null,
     analyticsCampaign: input.analyticsCampaign ?? null,
     analyticsReferralCode: input.analyticsReferralCode ?? null,
+    basePriceCents: amount.basePriceCents ?? amount.originalAmountCents,
+    salePriceCents: amount.salePriceCents ?? amount.originalAmountCents,
+    discountCents: amount.discountCents ?? amount.discountAmountCents,
+    finalAmountCents: amount.finalAmountCents ?? amount.payAmountCents,
+    pricingRuleId: amount.pricingRuleId ?? null,
+    pricingSnapshotJson: amount.pricingSnapshotJson ?? null,
+    pricingMode: amount.pricingMode ?? (isFreeTrialOrder ? "free_trial" : "normal"),
     createdAt: now,
     updatedAt: now,
-    paidAt: null
+    paidAt: isFreeTrialOrder ? now : null
   };
 
   db.prepare(
@@ -107,6 +124,13 @@ export function createOrder(input: CreateOrderInput): OrderRecord {
         @analyticsChannel,
         @analyticsCampaign,
         @analyticsReferralCode,
+        @basePriceCents,
+        @salePriceCents,
+        @discountCents,
+        @finalAmountCents,
+        @pricingRuleId,
+        @pricingSnapshotJson,
+        @pricingMode,
         @createdAt,
         @updatedAt,
         @paidAt
@@ -122,7 +146,29 @@ export function getOrder(orderId: string): OrderRecord | null {
 }
 
 export function getReusablePendingOrder(input: CreateOrderInput): OrderRecord | null {
-  const amount = calculateOrderAmount(input.accessMode, input.couponCode);
+  const amount = calculateGoalFitOrderAmount(input.accessMode, input.couponCode);
+  if (amount.payAmountCents === 0) {
+    return toOrderRecord(
+      db
+        .prepare(
+          `
+            SELECT ${orderColumns}
+            FROM orders
+            WHERE sessionId = @sessionId
+              AND status = 'paid'
+              AND accessMode = @accessMode
+              AND paymentProvider = 'free_trial'
+              AND payAmountCents = 0
+            ORDER BY createdAt DESC
+            LIMIT 1
+          `
+        )
+        .get({
+          sessionId: input.sessionId,
+          accessMode: input.accessMode
+        })
+    );
+  }
 
   return toOrderRecord(
     db
@@ -278,5 +324,5 @@ export function getPaidOrderBySessionId(sessionId: string): OrderRecord | null {
 }
 
 export function isPaymentMode(value: unknown): value is PaymentMode {
-  return value === "mock" || value === "native" || value === "jsapi" || value === "h5";
+  return value === "mock" || value === "native" || value === "jsapi" || value === "h5" || value === "free_trial";
 }

@@ -11,6 +11,11 @@ import {
   getGoalFitDiscountStatus,
   type GoalFitReferralResponse
 } from "../lib/goalFitReferralStore";
+import {
+  formatGoalFitYuan,
+  getGoalFitPricingDisplay,
+  type GoalFitPricingDisplay
+} from "../lib/goalFitPricing";
 import { getGoalFitSession } from "../lib/goalFitSessionStore";
 import { navigateTo } from "../lib/router";
 import type { CompanyType, GoalFitAnswerMap, GoalFitResult, RoleType } from "../lib/goalFitTypes";
@@ -221,10 +226,30 @@ function GoalFitFreeResultPage() {
   const [inviteMessage, setInviteMessage] = useState("");
   const [inviteQrCodeDataUrl, setInviteQrCodeDataUrl] = useState("");
   const [inviteQrCodeError, setInviteQrCodeError] = useState("");
+  const [pricing, setPricing] = useState<GoalFitPricingDisplay | null>(null);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("invite") === "1") setIsInvitePanelOpen(true);
+  }, []);
+
+  useEffect(() => {
+    let ignore = false;
+
+    async function loadPricing(): Promise<void> {
+      try {
+        const nextPricing = await getGoalFitPricingDisplay();
+        if (!ignore) setPricing(nextPricing);
+      } catch {
+        if (!ignore) setPricing(null);
+      }
+    }
+
+    void loadPricing();
+
+    return () => {
+      ignore = true;
+    };
   }, []);
 
   useEffect(() => {
@@ -249,6 +274,27 @@ function GoalFitFreeResultPage() {
   const actionReminder = getActionReminder(result, primaryRisk.title);
   const judgementSentence = `这个方向可以继续投递，但需要重点注意「${primaryRisk.title}」。`;
   const riskSentence = `你当前最容易卡在：${primaryRisk.title}。`;
+
+  const standardPriceCents = pricing?.finalStandardPriceCents ?? 1990;
+  const basePriceCents = pricing?.basePriceCents ?? 1990;
+  const inviteDiscountCents = pricing?.inviteDiscountCents ?? 1000;
+  const freeTrialActive = Boolean(pricing?.freeTrialActive);
+  const standardPriceLabel = formatGoalFitYuan(standardPriceCents);
+  const basePriceLabel = formatGoalFitYuan(basePriceCents);
+  const inviteDiscountLabel = formatGoalFitYuan(inviteDiscountCents);
+  const primaryUnlockLabel = freeTrialActive ? "限时免费查看完整报告" : `查看完整报告 ${standardPriceLabel}`;
+  const priceLineLabel = freeTrialActive ? "限时免费试用" : `完整报告 ${standardPriceLabel}`;
+  const inviteButtonLabel = `复制邀请链接，立减 ${inviteDiscountLabel}`;
+  const invitePanelTitle = referral?.shareUrl
+    ? "你的专属邀请已生成"
+    : freeTrialActive
+      ? "分享测试，邀请好友一起预演"
+      : `分享测试，报告立减 ${inviteDiscountLabel}`;
+  const invitePanelDescription = referral?.shareUrl
+    ? "复制链接或截图二维码，分享给微信好友、微信群或朋友圈。对方打开后即可完成测试，你也可以继续领取本次优惠。"
+    : freeTrialActive
+      ? "生成你的专属测试链接，分享给同学或朋友一起提前看看第一份工作的适应情况。"
+      : `生成你的专属测试链接，完整报告由 ${basePriceLabel} 最多优惠 ${inviteDiscountLabel}。`;
 
   function handleUnlock(): void {
     trackGoalFitEvent({
@@ -450,16 +496,16 @@ function GoalFitFreeResultPage() {
           </div>
 
           <div className="goal-fit-free-cta-stack goal-fit-free-inline-actions">
-            <p className="goal-fit-free-price-line">完整报告 ¥19.9</p>
+            <p className="goal-fit-free-price-line">{priceLineLabel}</p>
             <button
               className="primary-button goal-fit-free-primary-cta goal-fit-pay-primary"
               type="button"
               onClick={handleUnlock}
             >
-              ¥19.9 查看完整报告
+              {primaryUnlockLabel}
             </button>
             <button className="secondary-button goal-fit-free-coupon-cta" type="button" onClick={handleOpenInvitePanel}>
-              复制邀请链接，立减 ¥10
+              {inviteButtonLabel}
             </button>
           </div>
         </section>
@@ -516,7 +562,7 @@ function GoalFitFreeResultPage() {
 
         <section className="goal-fit-free-unlock-card">
           <button className="secondary-button goal-fit-free-direct-unlock-link" type="button" onClick={handleUnlock}>
-            直接 ¥19.9 查看完整报告
+            直接 {standardPriceLabel} 查看完整报告
           </button>
           <p>查看公司差距、岗位差距和具体行动建议。</p>
           <small>免费页先给你总判断，完整报告会继续给你拆解和行动。</small>
@@ -525,10 +571,10 @@ function GoalFitFreeResultPage() {
 
       <nav className="goal-fit-free-sticky-actions" aria-label="完整报告操作">
         <button className="primary-button goal-fit-pay-primary" type="button" onClick={handleUnlock}>
-          ¥19.9 查看完整报告
+          {primaryUnlockLabel}
         </button>
         <button className="secondary-button" type="button" onClick={handleOpenInvitePanel}>
-          复制邀请链接，立减 ¥10
+          {inviteButtonLabel}
         </button>
       </nav>
 
@@ -537,12 +583,10 @@ function GoalFitFreeResultPage() {
           <div className="goal-fit-invite-panel">
             <p className="goal-fit-eyebrow">邀请优惠</p>
             <h2 id="goal-fit-invite-title">
-              {referral?.shareUrl ? "你的专属邀请已生成" : "分享测试，报告立减 ¥10"}
+              {invitePanelTitle}
             </h2>
             <p>
-              {referral?.shareUrl
-                ? "复制链接或截图二维码，分享给微信好友、微信群或朋友圈。对方打开后即可完成测试，你也可以继续领取本次优惠。"
-                : "生成你的专属测试链接，完整报告由 ¥19.9 优惠至 ¥9.9。"}
+              {invitePanelDescription}
             </p>
             {inviteMessage ? <p className={`goal-fit-invite-message ${inviteStatus}`}>{inviteMessage}</p> : null}
             {referral?.shareUrl ? (
@@ -585,7 +629,7 @@ function GoalFitFreeResultPage() {
                   disabled={inviteStatus === "copying"}
                   onClick={handleCopyReferralLink}
                 >
-                  {inviteStatus === "copying" ? "正在复制..." : "复制邀请链接，立减 ¥10"}
+                  {inviteStatus === "copying" ? "正在复制..." : inviteButtonLabel}
                 </button>
               )}
               <button className="secondary-button" type="button" onClick={() => setIsInvitePanelOpen(false)}>

@@ -1,8 +1,6 @@
 import { nanoid } from "nanoid";
 import { db, runImmediateTransaction } from "./db.js";
-
-const ORIGINAL_AMOUNT_CENTS = 1990;
-const DISCOUNT_AMOUNT_CENTS = 1000;
+import { calculateGoalFitOrderAmount } from "./pricing.js";
 
 export type ReferralRecord = {
   id: string;
@@ -174,12 +172,13 @@ export function getReferralDiscountStatus(sessionId: string): {
   const discountGranted = Boolean(referral?.discountGrantedAt);
   const discountUsed = Boolean(referral?.discountUsedOrderId);
   const activeDiscount = discountGranted && !discountUsed;
+  const amount = calculateGoalFitOrderAmount(activeDiscount ? "share_coupon" : "direct", activeDiscount ? "share_card" : null);
 
   return {
     discountGranted: activeDiscount,
     discountUsed,
-    discountAmountCents: activeDiscount ? DISCOUNT_AMOUNT_CENTS : 0,
-    payAmountCents: ORIGINAL_AMOUNT_CENTS - (activeDiscount ? DISCOUNT_AMOUNT_CENTS : 0),
+    discountAmountCents: activeDiscount ? amount.discountAmountCents : 0,
+    payAmountCents: amount.payAmountCents,
     referralCode: referral?.referralCode ?? null
   };
 }
@@ -368,13 +367,14 @@ export function buildReferralResponse(referral: ReferralRecord, origin: string):
 } {
   const shareUrl = `${origin.replace(/\/$/, "")}/goal-fit-preview?ref=${encodeURIComponent(referral.referralCode)}`;
   const discountGranted = Boolean(referral.discountGrantedAt && !referral.discountUsedOrderId);
+  const amount = calculateGoalFitOrderAmount(discountGranted ? "share_coupon" : "direct", discountGranted ? "share_card" : null);
 
   return {
     referralCode: referral.referralCode,
     shareUrl,
     copied: Boolean(referral.firstCopiedAt),
     discountGranted,
-    discountAmountCents: discountGranted ? DISCOUNT_AMOUNT_CENTS : 0,
-    payAmountCents: ORIGINAL_AMOUNT_CENTS - (discountGranted ? DISCOUNT_AMOUNT_CENTS : 0)
+    discountAmountCents: discountGranted ? amount.discountAmountCents : 0,
+    payAmountCents: amount.payAmountCents
   };
 }

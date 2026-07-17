@@ -640,7 +640,15 @@ export function getAdminAnalyticsSummary(query: AnalyticsQuery) {
     `
       SELECT COUNT(*) AS value
       FROM orders
-      ${orderWhere.sql ? orderWhere.sql.replace("WHERE", "WHERE status = 'paid' AND") : "WHERE status = 'paid'"}
+      ${orderWhere.sql ? orderWhere.sql.replace("WHERE", "WHERE status = 'paid' AND COALESCE(payAmountCents, 0) > 0 AND") : "WHERE status = 'paid' AND COALESCE(payAmountCents, 0) > 0"}
+    `,
+    orderWhere.params
+  );
+  const freeUnlockOrders = scalar(
+    `
+      SELECT COUNT(*) AS value
+      FROM orders
+      ${orderWhere.sql ? orderWhere.sql.replace("WHERE", "WHERE status = 'paid' AND COALESCE(payAmountCents, 0) = 0 AND") : "WHERE status = 'paid' AND COALESCE(payAmountCents, 0) = 0"}
     `,
     orderWhere.params
   );
@@ -656,7 +664,7 @@ export function getAdminAnalyticsSummary(query: AnalyticsQuery) {
     `
       SELECT COALESCE(SUM(payAmountCents), 0) AS value
       FROM orders
-      ${orderWhere.sql ? orderWhere.sql.replace("WHERE", "WHERE status = 'paid' AND") : "WHERE status = 'paid'"}
+      ${orderWhere.sql ? orderWhere.sql.replace("WHERE", "WHERE status = 'paid' AND COALESCE(payAmountCents, 0) > 0 AND") : "WHERE status = 'paid' AND COALESCE(payAmountCents, 0) > 0"}
     `,
     orderWhere.params
   );
@@ -694,6 +702,7 @@ export function getAdminAnalyticsSummary(query: AnalyticsQuery) {
     fullReportViews: countEventOccurrences("full_report_view"),
     pendingOrders,
     paidOrders,
+    freeUnlockOrders,
     revenueCents,
     commissionCents
   };
@@ -737,7 +746,7 @@ export function getAdminAnalyticsChannels(query: AnalyticsQuery) {
           COALESCE(SUM(records.commission_amount_cents), 0) AS commissionCents
         FROM orders
         LEFT JOIN channel_commission_records records ON records.order_id = orders.id
-        ${where.sql ? where.sql.replace("WHERE", "WHERE orders.status = 'paid' AND") : "WHERE orders.status = 'paid'"}
+        ${where.sql ? where.sql.replace("WHERE", "WHERE orders.status = 'paid' AND COALESCE(orders.payAmountCents, 0) > 0 AND") : "WHERE orders.status = 'paid' AND COALESCE(orders.payAmountCents, 0) > 0"}
         GROUP BY
           COALESCE(orders.analyticsSource, 'direct'),
           COALESCE(orders.analyticsChannel, 'organic'),

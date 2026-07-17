@@ -17,8 +17,24 @@ type Summary = {
   fullReportViews: number;
   pendingOrders: number;
   paidOrders: number;
+  freeUnlockOrders: number;
   revenueCents: number;
   commissionCents: number;
+};
+
+type PricingConfig = {
+  basePriceCents: number;
+  salePriceCents: number;
+  inviteDiscountCents: number;
+  finalStandardPriceCents: number;
+  freeTrialEnabled: boolean;
+  freeTrialActive: boolean;
+  freeTrialStartAt: string | null;
+  freeTrialEndAt: string | null;
+  allowInviteDiscountStack: boolean;
+  enabled: boolean;
+  pricingRuleId: number;
+  priceLabel: string;
 };
 
 type FunnelStep = {
@@ -127,28 +143,56 @@ function formatOrderStatus(status: string): string {
   return map[status] ?? map.unknown;
 }
 
+function createDefaultFilters() {
+  return { range: "7d" as RangeKey, from: "", to: "", source: "", channel: "", campaign: "" };
+}
+
+type AdminFilters = ReturnType<typeof createDefaultFilters>;
+
+function normalizeCustomDate(value: string, boundary: "start" | "end"): string {
+  const trimmed = value.trim();
+  if (!trimmed) return "";
+
+  const match = trimmed.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
+  if (match) {
+    const [, year, month, day] = match;
+    const date = new Date(Number(year), Number(month) - 1, Number(day));
+    if (boundary === "end") date.setHours(23, 59, 59, 999);
+    else date.setHours(0, 0, 0, 0);
+    return date.toISOString();
+  }
+
+  const parsed = new Date(trimmed);
+  if (Number.isNaN(parsed.getTime())) return trimmed;
+  if (boundary === "end" && /^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    parsed.setHours(23, 59, 59, 999);
+  }
+  return parsed.toISOString();
+}
+
 function tail(value: string | null | undefined): string {
   return value ? value.slice(-6) : "-";
 }
 
-function buildQuery(filters: {
-  range: RangeKey;
-  from: string;
-  to: string;
-  source: string;
-  channel: string;
-  campaign: string;
-}): string {
+function buildQuery(filters: AdminFilters): string {
   const params = new URLSearchParams();
   params.set("range", filters.range);
   if (filters.range === "custom") {
-    if (filters.from.trim()) params.set("from", filters.from.trim());
-    if (filters.to.trim()) params.set("to", filters.to.trim());
+    if (filters.from.trim()) params.set("from", normalizeCustomDate(filters.from, "start"));
+    if (filters.to.trim()) params.set("to", normalizeCustomDate(filters.to, "end"));
   }
   (["source", "channel", "campaign"] as const).forEach((key) => {
     if (filters[key].trim()) params.set(key, filters[key].trim());
   });
   return `?${params.toString()}`;
+}
+
+function toDateTimeLocal(value: string | null): string {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const offsetMs = date.getTimezoneOffset() * 60 * 1000;
+  return new Date(date.getTime() - offsetMs).toISOString().slice(0, 16);
 }
 
 async function fetchAdminJson<T>(path: string, init?: RequestInit): Promise<T> {
@@ -171,13 +215,15 @@ async function fetchAdminJson<T>(path: string, init?: RequestInit): Promise<T> {
 }
 
 function AdminDashboardPage() {
-  const [filters, setFilters] = useState({ range: "7d" as RangeKey, from: "", to: "", source: "", channel: "", campaign: "" });
+  const [filters, setFilters] = useState<AdminFilters>(() => createDefaultFilters());
+  const [draftFilters, setDraftFilters] = useState<AdminFilters>(() => createDefaultFilters());
   const [summary, setSummary] = useState<Summary | null>(null);
   const [funnel, setFunnel] = useState<FunnelStep[]>([]);
   const [channels, setChannels] = useState<ChannelRow[]>([]);
   const [channelProfiles, setChannelProfiles] = useState<ChannelProfile[]>([]);
   const [orders, setOrders] = useState<OrderRow[]>([]);
   const [events, setEvents] = useState<EventRow[]>([]);
+  const [pricing, setPricing] = useState<PricingConfig | null>(null);
   const [detailOrders, setDetailOrders] = useState<OrderRow[]>([]);
   const [detailTitle, setDetailTitle] = useState("最近事件");
   const [selectedPromoUrl, setSelectedPromoUrl] = useState("");
@@ -193,6 +239,15 @@ function AdminDashboardPage() {
     commissionType: "fixed" as "fixed" | "percent",
     commissionValue: "0",
     enabled: true
+  });
+  const [pricingForm, setPricingForm] = useState({
+    basePriceCents: "1990",
+    salePriceCents: "1990",
+    inviteDiscountCents: "1000",
+    freeTrialEnabled: false,
+    freeTrialStartAt: "",
+    freeTrialEndAt: "",
+    allowInviteDiscountStack: true
   });
   const [error, setError] = useState("");
   const [eventsError, setEventsError] = useState("");
@@ -220,12 +275,13 @@ function AdminDashboardPage() {
     setError("");
 
     try {
-      const [nextSummary, nextFunnel, nextChannels, nextOrders, nextChannelProfiles] = await Promise.all([
+      const [nextSummary, nextFunnel, nextChannels, nextOrders, nextChannelProfiles, nextPricing] = await Promise.all([
         fetchAdminJson<Summary>(`/api/admin/analytics/summary${query}`),
         fetchAdminJson<{ steps: FunnelStep[] }>(`/api/admin/analytics/funnel${query}`),
         fetchAdminJson<{ channels: ChannelRow[] }>(`/api/admin/analytics/channels${query}`),
         fetchAdminJson<{ orders: OrderRow[] }>(`/api/admin/orders${query}`),
-        fetchAdminJson<{ channels: ChannelProfile[] }>("/api/admin/channels")
+        fetchAdminJson<{ channels: ChannelProfile[] }>("/api/admin/channels"),
+        fetchAdminJson<PricingConfig>("/api/admin/pricing")
       ]);
 
       setSummary(nextSummary);
@@ -233,6 +289,16 @@ function AdminDashboardPage() {
       setChannels(nextChannels.channels);
       setOrders(nextOrders.orders);
       setChannelProfiles(nextChannelProfiles.channels);
+      setPricing(nextPricing);
+      setPricingForm({
+        basePriceCents: String(nextPricing.basePriceCents),
+        salePriceCents: String(nextPricing.salePriceCents),
+        inviteDiscountCents: String(nextPricing.inviteDiscountCents),
+        freeTrialEnabled: nextPricing.freeTrialEnabled,
+        freeTrialStartAt: toDateTimeLocal(nextPricing.freeTrialStartAt),
+        freeTrialEndAt: toDateTimeLocal(nextPricing.freeTrialEndAt),
+        allowInviteDiscountStack: nextPricing.allowInviteDiscountStack
+      });
       if (!selectedPromoUrl && nextChannelProfiles.channels[0]?.promoUrl) {
         setSelectedPromoUrl(nextChannelProfiles.channels[0].promoUrl);
       }
@@ -287,6 +353,19 @@ function AdminDashboardPage() {
       credentials: "include"
     });
     navigateTo("/admin/login");
+  }
+
+  function handleSelectRange(range: RangeKey): void {
+    const nextFilters = { ...draftFilters, range };
+    setDraftFilters(nextFilters);
+    if (range !== "custom") {
+      setFilters(nextFilters);
+    }
+  }
+
+  function handleApplyFilters(): void {
+    setFilters(draftFilters);
+    setNotice("筛选条件已应用。");
   }
 
   function resetChannelForm(): void {
@@ -387,6 +466,32 @@ function AdminDashboardPage() {
     }
   }
 
+  async function handleSavePricing(event: FormEvent<HTMLFormElement>): Promise<void> {
+    event.preventDefault();
+    setNotice("");
+    setError("");
+
+    try {
+      const nextPricing = await fetchAdminJson<PricingConfig>("/api/admin/pricing", {
+        method: "PATCH",
+        body: JSON.stringify({
+          basePriceCents: Number(pricingForm.basePriceCents || 0),
+          salePriceCents: Number(pricingForm.salePriceCents || 0),
+          inviteDiscountCents: Number(pricingForm.inviteDiscountCents || 0),
+          freeTrialEnabled: pricingForm.freeTrialEnabled,
+          freeTrialStartAt: pricingForm.freeTrialStartAt ? new Date(pricingForm.freeTrialStartAt).toISOString() : null,
+          freeTrialEndAt: pricingForm.freeTrialEndAt ? new Date(pricingForm.freeTrialEndAt).toISOString() : null,
+          allowInviteDiscountStack: pricingForm.allowInviteDiscountStack
+        })
+      });
+      setPricing(nextPricing);
+      setNotice("价格设置已保存。");
+      await loadDashboard();
+    } catch {
+      setError("价格设置保存失败。");
+    }
+  }
+
   async function copyPromoUrl(url: string): Promise<void> {
     try {
       await navigator.clipboard.writeText(url);
@@ -431,6 +536,7 @@ function AdminDashboardPage() {
         ["到达支付页次数", summary.unlockPageViews],
         ["待支付订单", summary.pendingOrders],
         ["支付成功订单", summary.paidOrders],
+        ["免费解锁订单", summary.freeUnlockOrders],
         ["收入", formatYuan(summary.revenueCents)],
         ["预估佣金", formatYuan(summary.commissionCents)]
       ]
@@ -453,34 +559,47 @@ function AdminDashboardPage() {
           {rangeOptions.map((option) => (
             <button
               key={option.key}
-              className={filters.range === option.key ? "admin-range-tab active" : "admin-range-tab"}
+              className={draftFilters.range === option.key ? "admin-range-tab active" : "admin-range-tab"}
               type="button"
-              onClick={() => setFilters((current) => ({ ...current, range: option.key }))}
+              onClick={() => handleSelectRange(option.key)}
             >
               {option.label}
             </button>
           ))}
         </div>
-        {filters.range === "custom" ? (
+        {draftFilters.range === "custom" ? (
           <div className="admin-date-row">
             <label>
               from
-              <input value={filters.from} placeholder="2026-07-01" onChange={(event) => setFilters((current) => ({ ...current, from: event.target.value }))} />
+              <input value={draftFilters.from} placeholder="2026-07-01" onChange={(event) => setDraftFilters((current) => ({ ...current, from: event.target.value }))} />
             </label>
             <label>
               to
-              <input value={filters.to} placeholder="2026-07-16" onChange={(event) => setFilters((current) => ({ ...current, to: event.target.value }))} />
+              <input value={draftFilters.to} placeholder="2026-07-16" onChange={(event) => setDraftFilters((current) => ({ ...current, to: event.target.value }))} />
             </label>
+            <button className="primary-button admin-filter-apply-button" type="button" onClick={handleApplyFilters}>
+              应用筛选
+            </button>
           </div>
         ) : null}
         <div className="admin-date-row">
           {(["source", "channel", "campaign"] as const).map((key) => (
             <label key={key}>
               {key}
-              <input value={filters[key]} placeholder={key} onChange={(event) => setFilters((current) => ({ ...current, [key]: event.target.value }))} />
+              <input value={draftFilters[key]} placeholder={key} onChange={(event) => setDraftFilters((current) => ({ ...current, [key]: event.target.value }))} />
             </label>
           ))}
+          <button className="secondary-button admin-filter-apply-button" type="button" onClick={handleApplyFilters}>
+            应用渠道筛选
+          </button>
         </div>
+        <p className="admin-filter-current">
+          当前生效：{rangeOptions.find((option) => option.key === filters.range)?.label ?? filters.range}
+          {filters.range === "custom" ? ` ${filters.from || "未设开始"} 至 ${filters.to || "未设结束"}` : ""}
+          {filters.source ? `｜source=${filters.source}` : ""}
+          {filters.channel ? `｜channel=${filters.channel}` : ""}
+          {filters.campaign ? `｜campaign=${filters.campaign}` : ""}
+        </p>
       </section>
 
       {error ? <p className="admin-error">{error}</p> : null}
@@ -493,6 +612,55 @@ function AdminDashboardPage() {
             <strong>{value}</strong>
           </article>
         ))}
+      </section>
+
+      <section className="admin-panel admin-pricing-manager">
+        <div className="admin-section-heading">
+          <div>
+            <h2>价格设置</h2>
+            <p>价格修改只影响新订单，不影响历史订单。免费试用期间不会创建微信支付订单，收入为 0。</p>
+          </div>
+          {pricing ? (
+            <div className="admin-pricing-status">
+              <span>当前状态</span>
+              <strong>{pricing.freeTrialActive ? "限时免费试用中" : `当前售价 ${formatYuan(pricing.finalStandardPriceCents)}`}</strong>
+            </div>
+          ) : null}
+        </div>
+
+        <form className="admin-channel-form admin-pricing-form" onSubmit={handleSavePricing}>
+          <label>
+            原价（分）
+            <input type="number" min="0" value={pricingForm.basePriceCents} onChange={(event) => setPricingForm((current) => ({ ...current, basePriceCents: event.target.value }))} />
+          </label>
+          <label>
+            当前售价（分）
+            <input type="number" min="0" value={pricingForm.salePriceCents} onChange={(event) => setPricingForm((current) => ({ ...current, salePriceCents: event.target.value }))} />
+          </label>
+          <label>
+            邀请优惠金额（分）
+            <input type="number" min="0" value={pricingForm.inviteDiscountCents} onChange={(event) => setPricingForm((current) => ({ ...current, inviteDiscountCents: event.target.value }))} />
+          </label>
+          <label>
+            免费试用开始
+            <input type="datetime-local" value={pricingForm.freeTrialStartAt} onChange={(event) => setPricingForm((current) => ({ ...current, freeTrialStartAt: event.target.value }))} />
+          </label>
+          <label>
+            免费试用结束
+            <input type="datetime-local" value={pricingForm.freeTrialEndAt} onChange={(event) => setPricingForm((current) => ({ ...current, freeTrialEndAt: event.target.value }))} />
+          </label>
+          <label className="admin-checkbox-row">
+            <input type="checkbox" checked={pricingForm.allowInviteDiscountStack} onChange={(event) => setPricingForm((current) => ({ ...current, allowInviteDiscountStack: event.target.checked }))} />
+            允许叠加邀请优惠
+          </label>
+          <label className="admin-checkbox-row">
+            <input type="checkbox" checked={pricingForm.freeTrialEnabled} onChange={(event) => setPricingForm((current) => ({ ...current, freeTrialEnabled: event.target.checked }))} />
+            开启免费试用
+          </label>
+          <div className="admin-form-actions">
+            <button className="primary-button" type="submit">保存价格设置</button>
+          </div>
+        </form>
       </section>
 
       <section className="admin-panel admin-channel-manager">
