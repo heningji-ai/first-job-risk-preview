@@ -33,6 +33,16 @@ export function runImmediateTransaction<T>(work: () => T): T {
   }
 }
 
+export function migrateAnalyticsPlatformColumns(database: DatabaseSync = db): void {
+  for (const tableName of ["analytics_visitors", "analytics_attributions", "analytics_events"]) {
+    const analyticsColumns = database.prepare(`PRAGMA table_info(${tableName})`).all() as Array<{ name: string }>;
+    if (!analyticsColumns.some((column) => column.name === "platform")) {
+      database.exec(`ALTER TABLE ${tableName} ADD COLUMN platform TEXT NOT NULL DEFAULT 'h5'`);
+    }
+    database.exec(`UPDATE ${tableName} SET platform = 'h5' WHERE platform IS NULL OR TRIM(platform) = ''`);
+  }
+}
+
 export function initializeDatabase(): void {
   db.exec(`
     CREATE TABLE IF NOT EXISTS orders (
@@ -133,6 +143,7 @@ export function initializeDatabase(): void {
       first_campaign TEXT NOT NULL,
       first_referral_code TEXT,
       first_landing_path TEXT NOT NULL,
+      platform TEXT NOT NULL DEFAULT 'h5',
       first_user_agent_hash TEXT,
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
@@ -142,6 +153,7 @@ export function initializeDatabase(): void {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       visitor_id TEXT NOT NULL,
       session_id TEXT,
+      platform TEXT NOT NULL DEFAULT 'h5',
       source TEXT NOT NULL,
       channel TEXT NOT NULL,
       campaign TEXT NOT NULL,
@@ -179,6 +191,7 @@ export function initializeDatabase(): void {
       order_id TEXT,
       event_name TEXT NOT NULL,
       event_value REAL,
+      platform TEXT NOT NULL DEFAULT 'h5',
       source TEXT NOT NULL,
       channel TEXT NOT NULL,
       campaign TEXT NOT NULL,
@@ -368,4 +381,14 @@ export function initializeDatabase(): void {
   if (!columnNames.has("pricingMode")) {
     db.exec("ALTER TABLE orders ADD COLUMN pricingMode TEXT");
   }
+
+  migrateAnalyticsPlatformColumns();
+  db.exec(`
+    CREATE INDEX IF NOT EXISTS idx_analytics_visitors_platform
+      ON analytics_visitors (platform);
+    CREATE INDEX IF NOT EXISTS idx_analytics_attributions_platform_created
+      ON analytics_attributions (platform, created_at);
+    CREATE INDEX IF NOT EXISTS idx_analytics_events_platform_created
+      ON analytics_events (platform, created_at);
+  `);
 }

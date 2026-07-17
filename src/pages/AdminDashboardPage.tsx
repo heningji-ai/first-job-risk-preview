@@ -4,6 +4,7 @@ import { buildApiUrl } from "../config/api";
 import { navigateTo } from "../lib/router";
 
 type RangeKey = "today" | "yesterday" | "7d" | "30d" | "all" | "custom";
+type AnalyticsPlatform = "" | "h5" | "wechat_miniapp" | "douyin_miniapp" | "xiaohongshu_miniapp" | "unknown";
 
 type Summary = {
   visits: number;
@@ -46,6 +47,7 @@ type FunnelStep = {
 };
 
 type ChannelRow = {
+  platform: Exclude<AnalyticsPlatform, "">;
   source: string;
   channel: string;
   campaign: string;
@@ -82,6 +84,7 @@ type OrderRow = {
   discountAmountCents: number;
   payAmountCents: number;
   paymentMode: string;
+  platform: Exclude<AnalyticsPlatform, "">;
   source: string;
   channel: string;
   campaign: string;
@@ -95,6 +98,7 @@ type EventRow = {
   visitorId: string;
   sessionId: string | null;
   orderId: string | null;
+  platform: Exclude<AnalyticsPlatform, "">;
   source: string;
   channel: string;
   campaign: string;
@@ -110,6 +114,19 @@ const rangeOptions: Array<{ key: RangeKey; label: string }> = [
   { key: "all", label: "全部" },
   { key: "custom", label: "自定义日期" }
 ];
+
+const platformOptions: Array<{ value: AnalyticsPlatform; label: string }> = [
+  { value: "", label: "全部平台" },
+  { value: "h5", label: "H5" },
+  { value: "wechat_miniapp", label: "微信小程序" },
+  { value: "douyin_miniapp", label: "抖音小程序" },
+  { value: "xiaohongshu_miniapp", label: "小红书小程序" },
+  { value: "unknown", label: "未知" }
+];
+
+function formatPlatform(platform: Exclude<AnalyticsPlatform, "">): string {
+  return platformOptions.find((option) => option.value === platform)?.label ?? "未知";
+}
 
 const sourceHints = [
   ["xhs", "小红书"],
@@ -144,7 +161,7 @@ function formatOrderStatus(status: string): string {
 }
 
 function createDefaultFilters() {
-  return { range: "7d" as RangeKey, from: "", to: "", source: "", channel: "", campaign: "" };
+  return { range: "7d" as RangeKey, from: "", to: "", platform: "" as AnalyticsPlatform, source: "", channel: "", campaign: "" };
 }
 
 type AdminFilters = ReturnType<typeof createDefaultFilters>;
@@ -181,6 +198,7 @@ function buildQuery(filters: AdminFilters): string {
     if (filters.from.trim()) params.set("from", normalizeCustomDate(filters.from, "start"));
     if (filters.to.trim()) params.set("to", normalizeCustomDate(filters.to, "end"));
   }
+  if (filters.platform) params.set("platform", filters.platform);
   (["source", "channel", "campaign"] as const).forEach((key) => {
     if (filters[key].trim()) params.set(key, filters[key].trim());
   });
@@ -583,6 +601,12 @@ function AdminDashboardPage() {
           </div>
         ) : null}
         <div className="admin-date-row">
+          <label>
+            platform
+            <select value={draftFilters.platform} onChange={(event) => setDraftFilters((current) => ({ ...current, platform: event.target.value as AnalyticsPlatform }))}>
+              {platformOptions.map((option) => <option key={option.value || "all"} value={option.value}>{option.label}</option>)}
+            </select>
+          </label>
           {(["source", "channel", "campaign"] as const).map((key) => (
             <label key={key}>
               {key}
@@ -596,6 +620,7 @@ function AdminDashboardPage() {
         <p className="admin-filter-current">
           当前生效：{rangeOptions.find((option) => option.key === filters.range)?.label ?? filters.range}
           {filters.range === "custom" ? ` ${filters.from || "未设开始"} 至 ${filters.to || "未设结束"}` : ""}
+          {filters.platform ? `｜platform=${formatPlatform(filters.platform)}` : ""}
           {filters.source ? `｜source=${filters.source}` : ""}
           {filters.channel ? `｜channel=${filters.channel}` : ""}
           {filters.campaign ? `｜campaign=${filters.campaign}` : ""}
@@ -806,6 +831,7 @@ function AdminDashboardPage() {
               <thead>
                 <tr>
                   <th>source</th>
+                  <th>platform</th>
                   <th>channel</th>
                   <th>campaign</th>
                   <th>付款</th>
@@ -815,8 +841,9 @@ function AdminDashboardPage() {
               </thead>
               <tbody>
                 {channels.map((row) => (
-                  <tr key={`${row.source}:${row.channel}:${row.campaign}`}>
+                  <tr key={`${row.platform}:${row.source}:${row.channel}:${row.campaign}`}>
                     <td>{row.source}</td>
+                    <td>{formatPlatform(row.platform)}</td>
                     <td>{row.channel}</td>
                     <td>{row.campaign}</td>
                     <td>{row.paidOrders}</td>
@@ -842,6 +869,7 @@ function AdminDashboardPage() {
                   <th>订单号</th>
                   <th>金额</th>
                   <th>状态</th>
+                  <th>platform</th>
                   <th>source/channel/campaign</th>
                   <th>创建时间</th>
                 </tr>
@@ -852,6 +880,7 @@ function AdminDashboardPage() {
                     <td>{order.outTradeNo}</td>
                     <td>{formatYuan(order.payAmountCents)}</td>
                     <td>{formatOrderStatus(order.status)}</td>
+                    <td>{formatPlatform(order.platform)}</td>
                     <td>{`${order.source}/${order.channel}/${order.campaign}`}</td>
                     <td>{order.createdAt}</td>
                   </tr>
@@ -869,6 +898,7 @@ function AdminDashboardPage() {
                   <th>visitorId</th>
                   <th>sessionId</th>
                   <th>orderId</th>
+                  <th>platform</th>
                   <th>source/channel/campaign</th>
                   <th>pagePath</th>
                 </tr>
@@ -881,6 +911,7 @@ function AdminDashboardPage() {
                     <td>{tail(event.visitorId)}</td>
                     <td>{tail(event.sessionId)}</td>
                     <td>{event.orderId ?? "-"}</td>
+                    <td>{formatPlatform(event.platform)}</td>
                     <td>{`${event.source}/${event.channel}/${event.campaign}`}</td>
                     <td>{event.pagePath ?? "-"}</td>
                   </tr>
@@ -902,6 +933,7 @@ function AdminDashboardPage() {
                 <th>金额</th>
                 <th>优惠</th>
                 <th>状态</th>
+                <th>platform</th>
                 <th>source/channel/campaign</th>
                 <th>创建时间</th>
                 <th>支付时间</th>
@@ -914,6 +946,7 @@ function AdminDashboardPage() {
                   <td>{formatYuan(order.payAmountCents)}</td>
                   <td>{order.discountAmountCents > 0 ? `优惠 ${formatYuan(order.discountAmountCents)}` : "标准价"}</td>
                   <td>{formatOrderStatus(order.status)}</td>
+                  <td>{formatPlatform(order.platform)}</td>
                   <td>{`${order.source}/${order.channel}/${order.campaign}`}</td>
                   <td>{order.createdAt}</td>
                   <td>{order.paidAt ?? "-"}</td>

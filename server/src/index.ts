@@ -119,6 +119,7 @@ function getAnalyticsQuery(req: express.Request) {
     source: getString(req.query.source),
     channel: getString(req.query.channel),
     campaign: getString(req.query.campaign),
+    platform: getString(req.query.platform),
     eventName: getString(req.query.eventName),
     status: getString(req.query.status),
     limit: req.query.limit ? Number(req.query.limit) : null
@@ -149,6 +150,7 @@ app.post("/api/analytics/visit", (req, res) => {
     const body = req.body as Record<string, unknown>;
     const attribution = recordAnalyticsVisit({
       visitorId: getString(body.visitorId) ?? "",
+      platform: getString(body.platform),
       sessionId: getString(body.sessionId),
       source: getString(body.source),
       channel: getString(body.channel),

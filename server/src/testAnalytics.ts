@@ -2,7 +2,8 @@ process.env.GOAL_FIT_DB_PATH = "data/analytics-test.db";
 process.env.NODE_ENV = "development";
 process.env.PAYMENT_MODE = "mock";
 
-const { initializeDatabase, db, databasePath } = await import("./db.js");
+const { DatabaseSync } = await import("node:sqlite");
+const { initializeDatabase, migrateAnalyticsPlatformColumns, db, databasePath } = await import("./db.js");
 const {
   getAdminAnalyticsSummary,
   getAttributionForOrder,
@@ -26,6 +27,72 @@ function count(sql: string, params: Record<string, string | number | null> = {})
 const runId = `analytics_${Date.now()}_${Math.random().toString(36).slice(2)}`;
 const visitorId = `${runId}_visitor`;
 const sessionId = `${runId}_session`;
+
+const legacyDb = new DatabaseSync(`data/analytics-platform-migration-${Date.now()}.db`);
+legacyDb.exec(`
+  CREATE TABLE analytics_visitors (id INTEGER PRIMARY KEY, visitor_id TEXT);
+  CREATE TABLE analytics_attributions (id INTEGER PRIMARY KEY, visitor_id TEXT);
+  CREATE TABLE analytics_events (id INTEGER PRIMARY KEY, event_id TEXT);
+  INSERT INTO analytics_visitors (visitor_id) VALUES ('legacy-visitor');
+  INSERT INTO analytics_attributions (visitor_id) VALUES ('legacy-visitor');
+  INSERT INTO analytics_events (event_id) VALUES ('legacy-event');
+`);
+migrateAnalyticsPlatformColumns(legacyDb);
+migrateAnalyticsPlatformColumns(legacyDb);
+for (const tableName of ["analytics_visitors", "analytics_attributions", "analytics_events"]) {
+  const row = legacyDb.prepare(`SELECT platform FROM ${tableName} LIMIT 1`).get() as { platform: string };
+  assert(row.platform === "h5", `${tableName} historical rows must migrate to h5`);
+}
+legacyDb.close();
+
+recordAnalyticsVisit({
+  visitorId: `${runId}_legacy_h5_visitor`,
+  landingPath: "/legacy"
+});
+recordAnalyticsVisit({
+  visitorId: `${runId}_wechat_visitor`,
+  platform: "wechat_miniapp",
+  landingPath: "/wechat"
+});
+recordAnalyticsVisit({
+  visitorId: `${runId}_invalid_platform_visitor`,
+  platform: "invalid-platform",
+  landingPath: "/invalid"
+});
+assert(
+  count("SELECT COUNT(*) AS count FROM analytics_attributions WHERE visitor_id = @visitorId AND platform = 'h5'", { visitorId: `${runId}_legacy_h5_visitor` }) === 1,
+  "visit without platform must default to h5"
+);
+assert(
+  count("SELECT COUNT(*) AS count FROM analytics_attributions WHERE visitor_id = @visitorId AND platform = 'wechat_miniapp'", { visitorId: `${runId}_wechat_visitor` }) === 1,
+  "wechat_miniapp visit platform must be preserved"
+);
+assert(
+  count("SELECT COUNT(*) AS count FROM analytics_attributions WHERE visitor_id = @visitorId AND platform = 'unknown'", { visitorId: `${runId}_invalid_platform_visitor` }) === 1,
+  "invalid visit platform must normalize to unknown"
+);
+
+recordAnalyticsEvents([
+  {
+    eventId: `${runId}_legacy_h5_event`,
+    visitorId: `${runId}_legacy_h5_visitor`,
+    eventName: "legacy_event"
+  },
+  {
+    eventId: `${runId}_douyin_event`,
+    visitorId: `${runId}_legacy_h5_visitor`,
+    eventName: "douyin_event",
+    platform: "douyin_miniapp"
+  }
+]);
+assert(
+  count("SELECT COUNT(*) AS count FROM analytics_events WHERE event_id = @eventId AND platform = 'h5'", { eventId: `${runId}_legacy_h5_event` }) === 1,
+  "event without platform must default to h5"
+);
+assert(
+  count("SELECT COUNT(*) AS count FROM analytics_events WHERE event_id = @eventId AND platform = 'douyin_miniapp'", { eventId: `${runId}_douyin_event` }) === 1,
+  "douyin_miniapp event platform must be preserved"
+);
 
 recordAnalyticsVisit({
   visitorId,

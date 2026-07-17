@@ -77,6 +77,8 @@ assert(indexSource.includes('app.patch("/api/admin/channels/:id"'), "admin chann
 assert(indexSource.includes('app.get("/api/admin/pricing"'), "admin pricing read route must exist");
 assert(indexSource.includes('app.patch("/api/admin/pricing"'), "admin pricing update route must exist");
 assert(indexSource.includes('app.get("/api/pricing/goal-fit-report"'), "public pricing display route must exist");
+assert(indexSource.includes("platform: getString(body.platform)"), "analytics visit route must accept optional platform");
+assert(indexSource.includes("platform: getString(req.query.platform)"), "admin analytics routes must accept platform filter");
 const channelRouteStart = indexSource.indexOf('app.post("/api/admin/channels"');
 const channelRouteEnd = indexSource.indexOf('app.get("/api/admin/referrals"', channelRouteStart);
 const channelRouteSource = indexSource.slice(channelRouteStart, channelRouteEnd);
@@ -97,6 +99,9 @@ assert(adminPageSource.includes("最近事件暂时无法加载"), "recent event
 assert(!adminPageSource.includes("nextEvents, nextChannelProfiles"), "events API failure must not break the core dashboard Promise.all");
 assert(adminPageSource.includes("价格设置"), "admin dashboard must expose pricing settings");
 assert(adminPageSource.includes("免费试用期间不会创建微信支付订单，收入为 0"), "admin pricing module must explain free-trial revenue behavior");
+for (const platform of ["h5", "wechat_miniapp", "douyin_miniapp", "xiaohongshu_miniapp", "unknown"]) {
+  assert(adminPageSource.includes(`value: "${platform}"`), `admin dashboard must expose ${platform} filter`);
+}
 
 const login = createMockResponse();
 loginAdmin({ headers: {} } as never, login.res as never, "admin_test", "password_test");
@@ -333,6 +338,63 @@ const channelFilteredEvents = getAdminAnalyticsEvents({
   campaign: "none"
 }) as Array<{ source: string; channel: string; campaign: string }>;
 assert(Array.isArray(channelFilteredEvents), "admin events must support source/channel/campaign filters");
+
+const platformSource = `platform-${suffix}`;
+const platformVisitor = `visitor-platform-${suffix}`;
+recordAnalyticsVisit({
+  visitorId: platformVisitor,
+  platform: "wechat_miniapp",
+  source: platformSource,
+  channel: "organic",
+  campaign: "none",
+  landingPath: "/pages/index/index"
+});
+recordAnalyticsEvents([
+  {
+    eventId: `platform-wechat:${suffix}`,
+    visitorId: platformVisitor,
+    platform: "wechat_miniapp",
+    eventName: "test_start",
+    source: platformSource,
+    channel: "organic",
+    campaign: "none"
+  },
+  {
+    eventId: `platform-h5:${suffix}`,
+    visitorId: platformVisitor,
+    eventName: "test_start",
+    source: platformSource,
+    channel: "organic",
+    campaign: "none"
+  }
+]);
+const wechatPlatformSummary = getAdminAnalyticsSummary({ range: "all", platform: "wechat_miniapp", source: platformSource });
+assert(wechatPlatformSummary.visits === 1, "platform summary filter must include matching visits");
+assert(wechatPlatformSummary.testStarts === 1, "platform summary filter must include only matching events");
+const wechatPlatformEvents = getAdminAnalyticsEvents({ range: "all", platform: "wechat_miniapp", source: platformSource }) as Array<{ platform: string }>;
+assert(wechatPlatformEvents.length === 1 && wechatPlatformEvents[0]?.platform === "wechat_miniapp", "admin event platform filter must return matching rows with platform");
+const platformOrder = createOrder({
+  sessionId: `session-platform-${suffix}`,
+  accessMode: "direct",
+  couponCode: null,
+  paymentMode: "native",
+  analyticsVisitorId: platformVisitor,
+  analyticsSource: platformSource,
+  analyticsChannel: "organic",
+  analyticsCampaign: "none",
+  analyticsReferralCode: null
+});
+updateOrderStatus(platformOrder.id, "paid");
+const platformPaidRecord = db.prepare("SELECT * FROM orders WHERE id = ?").get(platformOrder.id) as Parameters<typeof recordOrderPaidAnalytics>[0];
+recordOrderPaidAnalytics(platformPaidRecord);
+const wechatPaidSummary = getAdminAnalyticsSummary({ range: "all", platform: "wechat_miniapp", source: platformSource });
+assert(wechatPaidSummary.paidOrders === 1 && wechatPaidSummary.revenueCents === 1990, "platform filter must preserve paid-only positive revenue metrics");
+const wechatPlatformChannels = getAdminAnalyticsChannels({ range: "all", platform: "wechat_miniapp", source: platformSource }) as Array<{ platform: string; paidOrders: number }>;
+assert(wechatPlatformChannels.length === 1 && wechatPlatformChannels[0]?.platform === "wechat_miniapp" && wechatPlatformChannels[0].paidOrders === 1, "channel summary must group and filter by platform");
+const wechatPlatformOrders = getAdminRecentOrders({ range: "all", platform: "wechat_miniapp", source: platformSource }) as Array<{ id: string; platform: string }>;
+assert(wechatPlatformOrders.some((order) => order.id === platformOrder.id && order.platform === "wechat_miniapp"), "admin order list must return and filter derived platform");
+const h5PaidSummary = getAdminAnalyticsSummary({ range: "all", platform: "h5", source: platformSource });
+assert(h5PaidSummary.paidOrders === 0 && h5PaidSummary.revenueCents === 0, "platform filter must exclude non-matching paid orders");
 
 const pendingSource = `pending-${suffix}`;
 createOrder({
