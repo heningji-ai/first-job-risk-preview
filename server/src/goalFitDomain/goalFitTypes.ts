@@ -1,0 +1,204 @@
+export type CompanyType = "G" | "F" | "D" | "V" | "M";
+
+export type RoleType =
+  | "SLS"
+  | "PM"
+  | "OPS"
+  | "TECH"
+  | "DATA"
+  | "FUNC"
+  | "MKT"
+  | "SUP";
+
+export type QuestionModule =
+  | "A_BACKGROUND"
+  | "B_PERSONALITY"
+  | "C_MOTIVATION"
+  | "D_WORKPLACE_SCENARIO"
+  | "E_ROLE_SCENARIO";
+
+export type MotivationTag =
+  | "money"
+  | "stable"
+  | "status"
+  | "growth"
+  | "create"
+  | "first_job"
+  | "anxiety"
+  | "balanced";
+
+export type RiskTag =
+  | "HIGH_PRESSURE"
+  | "SOCIAL_DRAIN"
+  | "AMBIGUITY"
+  | "NEEDS_TRAINING"
+  | "PROCESS_MISMATCH"
+  | "BOUNDARY_CONFLICT"
+  | "LOW_RESOURCE_INITIATIVE"
+  | "REJECTION_SENSITIVE"
+  | "GROWTH_GAP"
+  | "MOTIVATION_MISMATCH"
+  | "LOW_CLARITY";
+
+export type CompanyScoreMap = Partial<Record<CompanyType, number>>;
+
+export type RoleScoreMap = Partial<Record<RoleType, number>>;
+
+export type QuestionOption = {
+  id: string;
+  text: string;
+  mainScore: number;
+  companyScores?: CompanyScoreMap;
+  roleScores?: RoleScoreMap;
+  motivationTags?: MotivationTag[];
+  riskTags?: RiskTag[];
+};
+
+export type GoalFitQuestion = {
+  id: string;
+  module: QuestionModule;
+  text: string;
+  options: QuestionOption[];
+  roleBranch?: RoleType;
+  requiredInMVP?: boolean;
+};
+
+export type TargetQuestion = {
+  id: "T01" | "T02" | string;
+  type: "targetCompany" | "targetRole" | string;
+  text: string;
+  options: Array<{
+    id: string;
+    text: string;
+  }>;
+};
+
+export type GoalFitDrawRules = {
+  A_BACKGROUND: string[];
+  B_PERSONALITY: string[];
+  C_MOTIVATION: string[];
+  D_WORKPLACE_SCENARIO: string[];
+  E_ROLE_SCENARIO: string;
+};
+
+export type GoalFitQuestionBank = {
+  version: string;
+  description: string;
+  companyTypes: Record<CompanyType, string>;
+  roleTypes: Record<RoleType, string>;
+  defaultCompanyScore: number;
+  defaultRoleScore: number;
+  targetQuestions: TargetQuestion[];
+  drawRules: GoalFitDrawRules;
+  questions: GoalFitQuestion[];
+};
+
+export type GoalFitAnswerMap = Record<string, string>;
+
+export type MotivationTagCount = {
+  tag: MotivationTag;
+  count: number;
+};
+
+export type RiskTagCount = {
+  tag: RiskTag;
+  count: number;
+};
+
+export type GoalFitScoreResult = {
+  targetCompany: CompanyType;
+  targetRole: RoleType;
+  companyEntryScore: number;
+  roleEntryScore: number;
+  companyPersonalityScore: number;
+  companyBehaviorScore: number;
+  companyFitScore: number;
+  rolePersonalityScore: number;
+  roleBehaviorScore: number;
+  roleFitScore: number;
+  motivationFitScore: number;
+  pairScore: number;
+  overallScore: number;
+  motivationTags: MotivationTag[];
+  motivationTagCounts: MotivationTagCount[];
+  riskTagCounts: RiskTagCount[];
+  answeredQuestionCount: number;
+  selectedQuestionIds: string[];
+  scoreVersion: string;
+};
+
+export type GoalFitConclusionLevel =
+  | "high_match"
+  | "good_match"
+  | "conditional_match"
+  | "high_risk"
+  | "not_priority";
+
+export type GoalFitOverallConclusion = {
+  level: GoalFitConclusionLevel;
+  title: string;
+  summary: string;
+};
+
+export type GoalFitQuadrantType =
+  | "high_match"
+  | "personality_fit_behavior_weak"
+  | "behavior_fit_personality_drain"
+  | "low_match"
+  | "conditional";
+
+export type GoalFitQuadrantConclusion = {
+  type: GoalFitQuadrantType;
+  title: string;
+  summary: string;
+  advice: string;
+};
+
+export type GoalFitRiskInsightSeverity = "low" | "medium" | "high";
+
+export type GoalFitRiskInsight = {
+  id: string;
+  title: string;
+  description: string;
+  severity: GoalFitRiskInsightSeverity;
+  source: string;
+};
+
+export type GoalFitRecommendation = {
+  title: string;
+  description: string;
+};
+
+export type GoalFitResultCard = {
+  id: string;
+  title: string;
+  summary: string;
+  items?: string[];
+};
+
+export type GoalFitResult = {
+  targetCompany: CompanyType;
+  targetRole: RoleType;
+  targetCompanyLabel: string;
+  targetRoleLabel: string;
+  scores: GoalFitScoreResult;
+  overallConclusion: GoalFitOverallConclusion;
+  companyQuadrant: GoalFitQuadrantConclusion;
+  roleQuadrant: GoalFitQuadrantConclusion;
+  riskInsights: GoalFitRiskInsight[];
+  headhunterSummary: string;
+  recommendations: GoalFitRecommendation[];
+  cards: GoalFitResultCard[];
+  resultVersion: string;
+};
+
+export type GoalFitSession = {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  targetCompany: CompanyType;
+  targetRole: RoleType;
+  answers: GoalFitAnswerMap;
+  selectedQuestionIds: string[];
+  result: GoalFitResult;
+};

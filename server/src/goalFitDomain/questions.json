@@ -1,0 +1,6606 @@
+{
+  "version": "v3.0-engineered",
+  "description": "大学生第一次求职目标适配测试：122题工程化题库，仅含题库与评分字段，不含页面文案。",
+  "companyTypes": {
+    "G": "国企 / 事业单位 / 央国企平台",
+    "F": "外企 / 跨国公司",
+    "D": "国内大厂 / 大平台",
+    "V": "创业公司 / 融资型公司",
+    "M": "中小民企 / 传统民企"
+  },
+  "roleTypes": {
+    "SLS": "销售 / 商务 / 客户拓展",
+    "PM": "产品 / 项目类",
+    "OPS": "运营类",
+    "TECH": "技术 / 研发 / 测试 / 实施类",
+    "DATA": "数据 / 分析类",
+    "FUNC": "职能支持类",
+    "MKT": "市场 / 内容 / 广告类",
+    "SUP": "供应链 / 物流 / 交付类"
+  },
+  "defaultCompanyScore": 2.5,
+  "defaultRoleScore": 2.5,
+  "targetQuestions": [
+    {
+      "id": "T01",
+      "type": "targetCompany",
+      "text": "你预期进入哪类公司？",
+      "options": [
+        {
+          "id": "G",
+          "text": "国企 / 事业单位 / 央国企平台"
+        },
+        {
+          "id": "F",
+          "text": "外企 / 跨国公司"
+        },
+        {
+          "id": "D",
+          "text": "国内大厂 / 大平台"
+        },
+        {
+          "id": "V",
+          "text": "创业公司 / 融资型公司"
+        },
+        {
+          "id": "M",
+          "text": "中小民企 / 传统民企"
+        }
+      ]
+    },
+    {
+      "id": "T02",
+      "type": "targetRole",
+      "text": "你预期选择哪类岗位？",
+      "options": [
+        {
+          "id": "SLS",
+          "text": "销售 / 商务 / 客户拓展"
+        },
+        {
+          "id": "PM",
+          "text": "产品 / 项目类"
+        },
+        {
+          "id": "OPS",
+          "text": "运营类"
+        },
+        {
+          "id": "TECH",
+          "text": "技术 / 研发 / 测试 / 实施类"
+        },
+        {
+          "id": "DATA",
+          "text": "数据 / 分析类"
+        },
+        {
+          "id": "FUNC",
+          "text": "职能支持类"
+        },
+        {
+          "id": "MKT",
+          "text": "市场 / 内容 / 广告类"
+        },
+        {
+          "id": "SUP",
+          "text": "供应链 / 物流 / 交付类"
+        }
+      ]
+    }
+  ],
+  "drawRules": {
+    "A_BACKGROUND": [
+      "A01",
+      "A02",
+      "A03",
+      "A04",
+      "A05",
+      "A06",
+      "A08",
+      "A09"
+    ],
+    "B_PERSONALITY": [
+      "B01",
+      "B02",
+      "B03",
+      "B06",
+      "B07",
+      "B11"
+    ],
+    "C_MOTIVATION": [
+      "C01",
+      "C02",
+      "C03",
+      "C04"
+    ],
+    "D_WORKPLACE_SCENARIO": [
+      "D01",
+      "D03",
+      "D05",
+      "D06",
+      "D07",
+      "D08",
+      "D10",
+      "D16"
+    ],
+    "E_ROLE_SCENARIO": "use all 8 questions matching targetRole"
+  },
+  "questions": [
+    {
+      "id": "A01",
+      "module": "A_BACKGROUND",
+      "text": "你目前或即将获得的最高学历是？",
+      "options": [
+        {
+          "id": "A",
+          "text": "博士",
+          "mainScore": 5
+        },
+        {
+          "id": "B",
+          "text": "硕士",
+          "mainScore": 4.5
+        },
+        {
+          "id": "C",
+          "text": "本科",
+          "mainScore": 3.5
+        },
+        {
+          "id": "D",
+          "text": "大专 / 高职",
+          "mainScore": 2.5
+        },
+        {
+          "id": "E",
+          "text": "其他",
+          "mainScore": 1.5
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "A02",
+      "module": "A_BACKGROUND",
+      "text": "你的学校背景更接近哪一类？",
+      "options": [
+        {
+          "id": "A",
+          "text": "985 / 顶尖海外院校",
+          "mainScore": 5
+        },
+        {
+          "id": "B",
+          "text": "211 / 双一流 / 较好海外院校",
+          "mainScore": 4.5
+        },
+        {
+          "id": "C",
+          "text": "普通公办本科",
+          "mainScore": 3.5
+        },
+        {
+          "id": "D",
+          "text": "民办本科 / 独立学院",
+          "mainScore": 2.8
+        },
+        {
+          "id": "E",
+          "text": "大专 / 高职 / 其他",
+          "mainScore": 2.2
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "A03",
+      "module": "A_BACKGROUND",
+      "text": "你的专业和目标岗位的关系是？",
+      "options": [
+        {
+          "id": "A",
+          "text": "强相关，课程和训练直接对应目标岗位",
+          "mainScore": 5
+        },
+        {
+          "id": "B",
+          "text": "中等相关，有部分课程或项目能迁移",
+          "mainScore": 4
+        },
+        {
+          "id": "C",
+          "text": "弱相关，但我能解释迁移能力",
+          "mainScore": 3
+        },
+        {
+          "id": "D",
+          "text": "基本不相关，只是感兴趣",
+          "mainScore": 2
+        },
+        {
+          "id": "E",
+          "text": "不清楚两者有什么关系",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "A04",
+      "module": "A_BACKGROUND",
+      "text": "你的实习经历更接近哪种情况？",
+      "options": [
+        {
+          "id": "A",
+          "text": "2段以上相关实习，且至少1段公司质量较好",
+          "mainScore": 5
+        },
+        {
+          "id": "B",
+          "text": "1段目标岗位相关实习",
+          "mainScore": 4
+        },
+        {
+          "id": "C",
+          "text": "有实习，但和目标岗位关系不强",
+          "mainScore": 3
+        },
+        {
+          "id": "D",
+          "text": "没有实习，但有相关项目 / 作品",
+          "mainScore": 2.5
+        },
+        {
+          "id": "E",
+          "text": "没有实习，也没有相关项目",
+          "mainScore": 1
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "A05",
+      "module": "A_BACKGROUND",
+      "text": "你是否有能证明目标岗位能力的项目或作品？",
+      "options": [
+        {
+          "id": "A",
+          "text": "有完整项目，并能说明目标、过程、结果和个人贡献",
+          "mainScore": 5
+        },
+        {
+          "id": "B",
+          "text": "有项目，但结果和个人贡献还需要梳理",
+          "mainScore": 4
+        },
+        {
+          "id": "C",
+          "text": "有课程 / 社团 / 比赛经历，部分可迁移",
+          "mainScore": 3
+        },
+        {
+          "id": "D",
+          "text": "有零散经历，但暂时讲不成案例",
+          "mainScore": 2
+        },
+        {
+          "id": "E",
+          "text": "基本没有",
+          "mainScore": 1
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "A06",
+      "module": "A_BACKGROUND",
+      "text": "你对目标岗位常用工具的掌握程度是？",
+      "options": [
+        {
+          "id": "A",
+          "text": "能熟练使用，并在项目或实习中用过",
+          "mainScore": 5
+        },
+        {
+          "id": "B",
+          "text": "会用基础功能，有实际练习",
+          "mainScore": 4
+        },
+        {
+          "id": "C",
+          "text": "学过，但使用不熟",
+          "mainScore": 3
+        },
+        {
+          "id": "D",
+          "text": "只是听过，没真正用过",
+          "mainScore": 2
+        },
+        {
+          "id": "E",
+          "text": "不清楚这个岗位需要什么工具",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "A07",
+      "module": "A_BACKGROUND",
+      "text": "你是否具备目标岗位需要的语言、证书或专业资格？",
+      "options": [
+        {
+          "id": "A",
+          "text": "有明确相关证书 / 语言能力，能支持目标岗位",
+          "mainScore": 5
+        },
+        {
+          "id": "B",
+          "text": "有一定证书或语言基础，但不是强相关",
+          "mainScore": 4
+        },
+        {
+          "id": "C",
+          "text": "有基础，但暂时不能作为优势",
+          "mainScore": 3
+        },
+        {
+          "id": "D",
+          "text": "基本没有相关证明",
+          "mainScore": 2
+        },
+        {
+          "id": "E",
+          "text": "不清楚需要什么证书或资格",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "A08",
+      "module": "A_BACKGROUND",
+      "text": "如果面试官让你讲一段最能证明自己的经历，你现在能讲清楚吗？",
+      "options": [
+        {
+          "id": "A",
+          "text": "能讲清楚背景、任务、行动、结果和复盘",
+          "mainScore": 5
+        },
+        {
+          "id": "B",
+          "text": "大致能讲，但还需要整理逻辑",
+          "mainScore": 4
+        },
+        {
+          "id": "C",
+          "text": "有经历，但不知道怎么讲得有说服力",
+          "mainScore": 3
+        },
+        {
+          "id": "D",
+          "text": "只能讲做过什么，讲不出结果",
+          "mainScore": 2
+        },
+        {
+          "id": "E",
+          "text": "暂时想不到可讲经历",
+          "mainScore": 1
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "A09",
+      "module": "A_BACKGROUND",
+      "text": "你现在选择这个岗位，是因为？",
+      "options": [
+        {
+          "id": "A",
+          "text": "我了解过岗位日常、能力要求和发展路径",
+          "mainScore": 5
+        },
+        {
+          "id": "B",
+          "text": "我了解一部分，但还有很多不确定",
+          "mainScore": 4
+        },
+        {
+          "id": "C",
+          "text": "我觉得这个方向不错，但还没有深入了解",
+          "mainScore": 3,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        },
+        {
+          "id": "D",
+          "text": "身边人建议我选这个方向",
+          "mainScore": 2.5,
+          "riskTags": [
+            "MOTIVATION_MISMATCH"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "只是觉得先试试，有机会就投",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "A10",
+      "module": "A_BACKGROUND",
+      "text": "你看一份目标岗位JD时，通常能看出什么？",
+      "options": [
+        {
+          "id": "A",
+          "text": "能看出核心要求、隐含能力和面试重点",
+          "mainScore": 5
+        },
+        {
+          "id": "B",
+          "text": "能看出主要职责和基本要求",
+          "mainScore": 4
+        },
+        {
+          "id": "C",
+          "text": "只能大概理解岗位内容",
+          "mainScore": 3
+        },
+        {
+          "id": "D",
+          "text": "很多描述看得懂，但不知道意味着什么",
+          "mainScore": 2
+        },
+        {
+          "id": "E",
+          "text": "基本只看公司名、薪资和岗位标题",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B01",
+      "module": "B_PERSONALITY",
+      "text": "连续几天需要大量沟通、开会、跟人推进事情，你通常会怎样？",
+      "options": [
+        {
+          "id": "A",
+          "text": "越沟通越进入状态，容易找到机会",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5,
+            "M": 4
+          },
+          "roleScores": {
+            "SLS": 5,
+            "OPS": 4,
+            "MKT": 4,
+            "PM": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "可以完成，但需要独处恢复",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          },
+          "roleScores": {
+            "PM": 4,
+            "OPS": 4,
+            "FUNC": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "熟人沟通还可以，陌生沟通消耗明显",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 4,
+            "F": 4
+          },
+          "roleScores": {
+            "FUNC": 4,
+            "SUP": 4,
+            "DATA": 3
+          }
+        },
+        {
+          "id": "D",
+          "text": "更喜欢用文字、数据、材料解决问题",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          },
+          "roleScores": {
+            "DATA": 5,
+            "TECH": 5,
+            "FUNC": 4,
+            "PM": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "如果长期高频沟通，会明显影响状态",
+          "mainScore": 2,
+          "companyScores": {
+            "F": 3,
+            "G": 3
+          },
+          "roleScores": {
+            "TECH": 4,
+            "DATA": 4
+          },
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "B02",
+      "module": "B_PERSONALITY",
+      "text": "当任务没有标准答案时，你更接近哪种状态？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先拆目标，自己找路径推进",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          },
+          "roleScores": {
+            "PM": 5,
+            "OPS": 5,
+            "MKT": 4,
+            "SLS": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "先确认边界和优先级，再开始做",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          },
+          "roleScores": {
+            "PM": 5,
+            "DATA": 4,
+            "FUNC": 4,
+            "SUP": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "先参考过往案例，降低出错概率",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "F": 4
+          },
+          "roleScores": {
+            "FUNC": 5,
+            "SUP": 4,
+            "TECH": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "希望有人先给方向，否则容易卡住",
+          "mainScore": 2,
+          "companyScores": {
+            "G": 3,
+            "F": 3
+          },
+          "roleScores": {
+            "FUNC": 3
+          },
+          "riskTags": [
+            "NEEDS_TRAINING"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "会焦虑，担心自己做错",
+          "mainScore": 1,
+          "riskTags": [
+            "AMBIGUITY"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "B03",
+      "module": "B_PERSONALITY",
+      "text": "如果领导直接指出你做得不好，你更可能怎么反应？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先听清问题，问清标准，马上调整",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          },
+          "roleScores": {
+            "PM": 5,
+            "OPS": 5,
+            "FUNC": 4,
+            "SUP": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "会有压力，但能接受并改进",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "F": 4,
+            "D": 4
+          },
+          "roleScores": {
+            "SLS": 4,
+            "PM": 4,
+            "OPS": 4,
+            "TECH": 4,
+            "DATA": 4,
+            "FUNC": 4,
+            "MKT": 4,
+            "SUP": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "需要一点时间消化，但不会影响继续做事",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 4,
+            "F": 3
+          },
+          "roleScores": {
+            "FUNC": 4,
+            "DATA": 3,
+            "TECH": 3
+          }
+        },
+        {
+          "id": "D",
+          "text": "会怀疑自己是不是不适合这份工作",
+          "mainScore": 2,
+          "riskTags": [
+            "REJECTION_SENSITIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "很容易被打击，影响后续表现",
+          "mainScore": 1,
+          "riskTags": [
+            "REJECTION_SENSITIVE"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "B04",
+      "module": "B_PERSONALITY",
+      "text": "你更适合哪种工作规则？",
+      "options": [
+        {
+          "id": "A",
+          "text": "规则清楚、流程明确，我能稳定发挥",
+          "mainScore": 5,
+          "companyScores": {
+            "G": 5,
+            "F": 5
+          },
+          "roleScores": {
+            "FUNC": 5,
+            "SUP": 5,
+            "DATA": 4,
+            "TECH": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "大方向清楚，中间可以自己发挥",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          },
+          "roleScores": {
+            "PM": 5,
+            "OPS": 5,
+            "MKT": 4,
+            "SLS": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "规则可以不完美，但最好有人解释原因",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5,
+            "G": 4
+          },
+          "roleScores": {
+            "FUNC": 4,
+            "PM": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "规则太多会让我觉得效率低",
+          "mainScore": 3,
+          "companyScores": {
+            "V": 5,
+            "D": 4,
+            "M": 4
+          },
+          "roleScores": {
+            "MKT": 4,
+            "PM": 4,
+            "OPS": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "规则不清会让我很焦虑",
+          "mainScore": 2,
+          "companyScores": {
+            "G": 3,
+            "F": 3
+          },
+          "riskTags": [
+            "AMBIGUITY"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B05",
+      "module": "B_PERSONALITY",
+      "text": "面对重复、细致、需要长期保持准确的工作，你通常如何？",
+      "options": [
+        {
+          "id": "A",
+          "text": "能接受，细节稳定性是我的优势",
+          "mainScore": 5,
+          "companyScores": {
+            "G": 5,
+            "F": 5
+          },
+          "roleScores": {
+            "FUNC": 5,
+            "DATA": 5,
+            "SUP": 5,
+            "TECH": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "可以做，但希望知道它的业务意义",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 4,
+            "D": 4
+          },
+          "roleScores": {
+            "DATA": 4,
+            "OPS": 4,
+            "PM": 4,
+            "SUP": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "短期可以，长期会觉得枯燥",
+          "mainScore": 3,
+          "companyScores": {
+            "D": 3,
+            "V": 3
+          },
+          "roleScores": {
+            "OPS": 3,
+            "MKT": 3
+          }
+        },
+        {
+          "id": "D",
+          "text": "我更适合变化多、有创造性的工作",
+          "mainScore": 3,
+          "companyScores": {
+            "V": 5,
+            "D": 4
+          },
+          "roleScores": {
+            "MKT": 5,
+            "OPS": 4,
+            "PM": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "重复细节工作会让我明显失去动力",
+          "mainScore": 2,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B06",
+      "module": "B_PERSONALITY",
+      "text": "遇到问题时，你通常会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先自己判断，再带着方案沟通",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5,
+            "V": 4
+          },
+          "roleScores": {
+            "PM": 5,
+            "OPS": 5,
+            "DATA": 4,
+            "TECH": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "尽快向相关人确认，避免走偏",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          },
+          "roleScores": {
+            "PM": 5,
+            "FUNC": 5,
+            "SUP": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "先观察别人怎么做，再决定是否提问",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "M": 4
+          },
+          "roleScores": {
+            "FUNC": 4,
+            "SUP": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "如果没人问，我会先自己扛着",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "害怕显得自己不懂，所以不太敢问",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "B07",
+      "module": "B_PERSONALITY",
+      "text": "面对连续任务和较紧截止时间，你通常是？",
+      "options": [
+        {
+          "id": "A",
+          "text": "压力会激发我，我能快速进入状态",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          },
+          "roleScores": {
+            "SLS": 5,
+            "OPS": 5,
+            "MKT": 4,
+            "PM": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "可以承受，但需要清楚优先级",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          },
+          "roleScores": {
+            "PM": 5,
+            "FUNC": 4,
+            "SUP": 4,
+            "DATA": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "能完成，但不希望长期这样",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 4,
+            "F": 4
+          },
+          "roleScores": {
+            "FUNC": 4,
+            "DATA": 4,
+            "TECH": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "容易紧张，需要别人帮我拆任务",
+          "mainScore": 2,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "很容易乱掉，影响发挥",
+          "mainScore": 1,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "B08",
+      "module": "B_PERSONALITY",
+      "text": "进入一个新领域，你最常用的学习方式是？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先搭框架，再补知识点",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          },
+          "roleScores": {
+            "PM": 5,
+            "DATA": 5,
+            "TECH": 4,
+            "FUNC": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "边做边学，遇到问题马上补",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 5
+          },
+          "roleScores": {
+            "OPS": 5,
+            "MKT": 4,
+            "SLS": 4,
+            "PM": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "找前辈或成熟案例模仿",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "M": 4,
+            "F": 4
+          },
+          "roleScores": {
+            "FUNC": 4,
+            "SUP": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "希望有课程或培训系统带着走",
+          "mainScore": 3,
+          "companyScores": {
+            "F": 4,
+            "G": 4
+          },
+          "riskTags": [
+            "NEEDS_TRAINING"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "如果没人教，很容易不知道从哪开始",
+          "mainScore": 2,
+          "riskTags": [
+            "NEEDS_TRAINING"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B09",
+      "module": "B_PERSONALITY",
+      "text": "如果同事和你意见不同，你更可能怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先对齐目标，再讨论方案差异",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          },
+          "roleScores": {
+            "PM": 5,
+            "OPS": 5,
+            "FUNC": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "用数据或事实判断哪种方案更好",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          },
+          "roleScores": {
+            "DATA": 5,
+            "PM": 5,
+            "OPS": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "先照顾关系，再慢慢推进自己的想法",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "M": 5
+          },
+          "roleScores": {
+            "SLS": 4,
+            "FUNC": 4,
+            "SUP": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "如果冲突不大，我会让一步",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 4,
+            "M": 3
+          },
+          "roleScores": {
+            "FUNC": 3
+          }
+        },
+        {
+          "id": "E",
+          "text": "我会尽量避免冲突",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B10",
+      "module": "B_PERSONALITY",
+      "text": "你怎么看“工作和私人时间边界”？",
+      "options": [
+        {
+          "id": "A",
+          "text": "工作要有边界，紧急情况可以例外",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5
+          },
+          "roleScores": {
+            "FUNC": 5,
+            "DATA": 4,
+            "TECH": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "阶段性忙可以接受，但长期不行",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 4,
+            "D": 4
+          },
+          "roleScores": {
+            "PM": 4,
+            "OPS": 4,
+            "SUP": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "刚入职先配合团队节奏",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "M": 4,
+            "D": 3
+          },
+          "roleScores": {
+            "FUNC": 4,
+            "SUP": 4,
+            "SLS": 3
+          }
+        },
+        {
+          "id": "D",
+          "text": "如果对成长和收入有帮助，我可以高投入",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          },
+          "roleScores": {
+            "SLS": 5,
+            "OPS": 4,
+            "MKT": 4,
+            "PM": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "边界长期模糊会让我很消耗",
+          "mainScore": 2,
+          "companyScores": {
+            "F": 3
+          },
+          "riskTags": [
+            "BOUNDARY_CONFLICT"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "B11",
+      "module": "B_PERSONALITY",
+      "text": "如果你很努力，但结果不好，你更可能怎样？",
+      "options": [
+        {
+          "id": "A",
+          "text": "复盘方法，调整动作，继续尝试",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          },
+          "roleScores": {
+            "SLS": 5,
+            "OPS": 5,
+            "MKT": 4,
+            "PM": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "找数据或反馈看哪里出了问题",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          },
+          "roleScores": {
+            "DATA": 5,
+            "OPS": 5,
+            "PM": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "会难受，但能接受结果导向",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 4,
+            "D": 4,
+            "G": 3
+          },
+          "roleScores": {
+            "SLS": 4,
+            "PM": 4,
+            "OPS": 4,
+            "TECH": 4,
+            "DATA": 4,
+            "FUNC": 4,
+            "MKT": 4,
+            "SUP": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "希望别人看到我过程中的努力",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 4,
+            "M": 3
+          },
+          "roleScores": {
+            "FUNC": 3
+          }
+        },
+        {
+          "id": "E",
+          "text": "容易觉得自己不适合",
+          "mainScore": 2,
+          "riskTags": [
+            "REJECTION_SENSITIVE"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "B12",
+      "module": "B_PERSONALITY",
+      "text": "工作中遇到否定、失败或被拒绝后，你恢复速度如何？",
+      "options": [
+        {
+          "id": "A",
+          "text": "很快恢复，继续行动",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          },
+          "roleScores": {
+            "SLS": 5,
+            "MKT": 4,
+            "OPS": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "会受影响，但能靠复盘恢复",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          },
+          "roleScores": {
+            "PM": 4,
+            "DATA": 4,
+            "OPS": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "需要别人鼓励或确认",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 4,
+            "M": 3
+          },
+          "roleScores": {
+            "FUNC": 3
+          }
+        },
+        {
+          "id": "D",
+          "text": "会持续内耗一段时间",
+          "mainScore": 2,
+          "riskTags": [
+            "REJECTION_SENSITIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "容易因此回避类似任务",
+          "mainScore": 1,
+          "riskTags": [
+            "REJECTION_SENSITIVE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C01",
+      "module": "C_MOTIVATION",
+      "text": "你现在最希望第一份工作先解决什么？",
+      "options": [
+        {
+          "id": "A",
+          "text": "稳定收入和安全感",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "F": 3,
+            "M": 3
+          },
+          "motivationTags": [
+            "stable"
+          ]
+        },
+        {
+          "id": "B",
+          "text": "去一个说出去不错的平台",
+          "mainScore": 4,
+          "companyScores": {
+            "D": 5,
+            "F": 5,
+            "G": 4
+          },
+          "motivationTags": [
+            "status"
+          ]
+        },
+        {
+          "id": "C",
+          "text": "快速成长，学到东西",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5,
+            "V": 4
+          },
+          "motivationTags": [
+            "growth"
+          ]
+        },
+        {
+          "id": "D",
+          "text": "做出成果，有参与感",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 4
+          },
+          "motivationTags": [
+            "create"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "先就业，别继续空着",
+          "mainScore": 3,
+          "companyScores": {
+            "M": 5,
+            "G": 3
+          },
+          "motivationTags": [
+            "first_job"
+          ],
+          "riskTags": [
+            "MOTIVATION_MISMATCH"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "C02",
+      "module": "C_MOTIVATION",
+      "text": "如果同时拿到几个机会，你更可能选哪个？",
+      "options": [
+        {
+          "id": "A",
+          "text": "薪资一般，但稳定正规、家里认可",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5
+          },
+          "motivationTags": [
+            "stable",
+            "status"
+          ]
+        },
+        {
+          "id": "B",
+          "text": "平台大、薪资高，但竞争压力明显",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5
+          },
+          "motivationTags": [
+            "money",
+            "status",
+            "growth"
+          ]
+        },
+        {
+          "id": "C",
+          "text": "公司不大，但能参与核心项目",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5
+          },
+          "motivationTags": [
+            "create",
+            "growth"
+          ]
+        },
+        {
+          "id": "D",
+          "text": "岗位基础，但能尽快入职",
+          "mainScore": 3,
+          "companyScores": {
+            "M": 5,
+            "G": 3
+          },
+          "motivationTags": [
+            "first_job"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "公司名气不错，虽然工作内容不是最喜欢",
+          "mainScore": 3,
+          "companyScores": {
+            "D": 5,
+            "F": 4
+          },
+          "motivationTags": [
+            "status"
+          ],
+          "riskTags": [
+            "MOTIVATION_MISMATCH"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "C03",
+      "module": "C_MOTIVATION",
+      "text": "第一份工作里，你最不能接受什么？",
+      "options": [
+        {
+          "id": "A",
+          "text": "收入低，看不到涨薪",
+          "mainScore": 3,
+          "motivationTags": [
+            "money"
+          ]
+        },
+        {
+          "id": "B",
+          "text": "没人带，全靠自己摸索",
+          "mainScore": 3,
+          "motivationTags": [
+            "growth"
+          ],
+          "riskTags": [
+            "NEEDS_TRAINING"
+          ]
+        },
+        {
+          "id": "C",
+          "text": "天天被指标追着走",
+          "mainScore": 3,
+          "motivationTags": [
+            "stable"
+          ],
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        },
+        {
+          "id": "D",
+          "text": "公司不稳定，经常变化",
+          "mainScore": 3,
+          "motivationTags": [
+            "stable"
+          ],
+          "riskTags": [
+            "AMBIGUITY"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "工作太基础，看不到价值",
+          "mainScore": 3,
+          "motivationTags": [
+            "create",
+            "growth"
+          ],
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        },
+        {
+          "id": "F",
+          "text": "公司或岗位不够体面",
+          "mainScore": 3,
+          "motivationTags": [
+            "status"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "C04",
+      "module": "C_MOTIVATION",
+      "text": "你现在选择这个岗位，更多是因为？",
+      "options": [
+        {
+          "id": "A",
+          "text": "了解过日常工作，觉得能接受",
+          "mainScore": 5
+        },
+        {
+          "id": "B",
+          "text": "觉得方向发展不错，但还不太清楚具体做什么",
+          "mainScore": 3,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        },
+        {
+          "id": "C",
+          "text": "身边人建议我选这个方向",
+          "mainScore": 2.5,
+          "riskTags": [
+            "MOTIVATION_MISMATCH"
+          ]
+        },
+        {
+          "id": "D",
+          "text": "觉得这个岗位门槛相对合适",
+          "mainScore": 3,
+          "motivationTags": [
+            "first_job"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "只是觉得比其他选择看起来更好",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "C05",
+      "module": "C_MOTIVATION",
+      "text": "你觉得第一份工作里的成长主要来自哪里？",
+      "options": [
+        {
+          "id": "A",
+          "text": "系统培训和明确路径",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5,
+            "G": 4,
+            "D": 4
+          },
+          "motivationTags": [
+            "growth"
+          ],
+          "riskTags": [
+            "NEEDS_TRAINING"
+          ]
+        },
+        {
+          "id": "B",
+          "text": "高强度任务和快速反馈",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5
+          },
+          "motivationTags": [
+            "growth",
+            "money"
+          ]
+        },
+        {
+          "id": "C",
+          "text": "真实项目和自己试错",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 4
+          },
+          "motivationTags": [
+            "create",
+            "growth"
+          ]
+        },
+        {
+          "id": "D",
+          "text": "跟着领导和前辈学做事",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "M": 4
+          },
+          "motivationTags": [
+            "growth",
+            "stable"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "先稳定下来，以后再考虑成长",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 5,
+            "M": 4
+          },
+          "motivationTags": [
+            "stable",
+            "first_job"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C06",
+      "module": "C_MOTIVATION",
+      "text": "你怎么看第一份工作的薪资？",
+      "options": [
+        {
+          "id": "A",
+          "text": "薪资很重要，我愿意为高收入承受压力",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 4
+          },
+          "roleScores": {
+            "SLS": 5
+          },
+          "motivationTags": [
+            "money"
+          ]
+        },
+        {
+          "id": "B",
+          "text": "薪资不能太低，但稳定和发展也重要",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "F": 4,
+            "D": 4
+          },
+          "motivationTags": [
+            "stable",
+            "growth"
+          ]
+        },
+        {
+          "id": "C",
+          "text": "起薪可以普通，但平台和成长要好",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          },
+          "motivationTags": [
+            "growth",
+            "status"
+          ]
+        },
+        {
+          "id": "D",
+          "text": "先有工作更重要，薪资可以后面再谈",
+          "mainScore": 3,
+          "companyScores": {
+            "M": 5,
+            "G": 3
+          },
+          "motivationTags": [
+            "first_job"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "如果薪资低，我很难接受",
+          "mainScore": 3,
+          "motivationTags": [
+            "money"
+          ],
+          "riskTags": [
+            "MOTIVATION_MISMATCH"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C07",
+      "module": "C_MOTIVATION",
+      "text": "父母或身边人是否会影响你的选择？",
+      "options": [
+        {
+          "id": "A",
+          "text": "会，第一份工作需要他们认可",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "D": 4,
+            "F": 4
+          },
+          "motivationTags": [
+            "status",
+            "stable"
+          ]
+        },
+        {
+          "id": "B",
+          "text": "会参考，但最终看自己是否适合",
+          "mainScore": 5,
+          "companyScores": {
+            "G": 4,
+            "F": 4,
+            "D": 4,
+            "V": 4,
+            "M": 4
+          },
+          "motivationTags": [
+            "balanced"
+          ]
+        },
+        {
+          "id": "C",
+          "text": "如果平台够好，身边人认可会让我更安心",
+          "mainScore": 4,
+          "companyScores": {
+            "D": 5,
+            "F": 5,
+            "G": 4
+          },
+          "motivationTags": [
+            "status"
+          ]
+        },
+        {
+          "id": "D",
+          "text": "我更在意自己能不能做出东西",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 4
+          },
+          "motivationTags": [
+            "create"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "我现在比较迷茫，容易受别人建议影响",
+          "mainScore": 2,
+          "riskTags": [
+            "MOTIVATION_MISMATCH"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "C08",
+      "module": "C_MOTIVATION",
+      "text": "如果第一份工作选错了，你最担心什么？",
+      "options": [
+        {
+          "id": "A",
+          "text": "简历不好看，影响后面求职",
+          "mainScore": 3,
+          "companyScores": {
+            "D": 5,
+            "F": 4
+          },
+          "motivationTags": [
+            "status"
+          ]
+        },
+        {
+          "id": "B",
+          "text": "浪费时间，错过成长窗口",
+          "mainScore": 4,
+          "companyScores": {
+            "D": 5,
+            "V": 4
+          },
+          "motivationTags": [
+            "growth"
+          ]
+        },
+        {
+          "id": "C",
+          "text": "父母或身边人觉得我不稳定",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 5
+          },
+          "motivationTags": [
+            "status",
+            "stable"
+          ]
+        },
+        {
+          "id": "D",
+          "text": "自己会怀疑能力",
+          "mainScore": 2,
+          "riskTags": [
+            "REJECTION_SENSITIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "没关系，先试错再调整",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 4
+          },
+          "motivationTags": [
+            "create",
+            "growth"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D01",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "你刚入职一个团队，同事们每天中午一起吃饭，下班后也经常在群里聊天、约活动。你更接近哪种状态？",
+      "options": [
+        {
+          "id": "A",
+          "text": "愿意参与，这能让我更快融入团队",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "M": 5,
+            "D": 3
+          }
+        },
+        {
+          "id": "B",
+          "text": "适度参与，但希望工作和私人时间有边界",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "更希望职业化一点，工作沟通清楚就好",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "先观察团队习惯，再决定参与程度",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "M": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "如果不参与会影响评价，我会配合但消耗",
+          "mainScore": 2,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "D02",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "你发现公司有个流程效率很低，但大家一直这么做。你更可能怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先按流程执行，熟悉后再找机会优化",
+          "mainScore": 5,
+          "companyScores": {
+            "G": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "整理问题和影响，用数据建议调整",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "如果不影响结果，先接受，新人先把事做好",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "M": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "尝试绕开低效流程，先把结果做出来",
+          "mainScore": 4,
+          "companyScores": {
+            "V": 5,
+            "M": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "会很难受，觉得耗在无意义流程上",
+          "mainScore": 2,
+          "riskTags": [
+            "PROCESS_MISMATCH"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D03",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "入职后公司没有系统培训，很多事要自己问、自己查、自己试。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "整理资料和问题，再集中请教",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "找主管确认最重要任务，先做出结果",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "先观察几天，看看别人怎么做",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "M": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "能接受，但希望有人定期反馈",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5,
+            "G": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "会明显焦虑，担心做错没人提醒",
+          "mainScore": 2,
+          "riskTags": [
+            "NEEDS_TRAINING"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "D04",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "领导给你的任务明显超过你当前能力，但时间很紧。你更可能怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "拆任务，列出能做和需要支持的部分",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "先做初版，尽快让领导看到进展",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "努力完成，但希望领导告诉我标准",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "F": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "找同事请教，尽量避免直接暴露不会",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 4,
+            "M": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "压力很大，担心领导觉得我不行",
+          "mainScore": 2,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D05",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "你正按原计划推进项目，领导突然说方向要改。你更接近哪种反应？",
+      "options": [
+        {
+          "id": "A",
+          "text": "确认变化原因和新目标，再调整计划",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "虽然不舒服，但能接受变化是工作一部分",
+          "mainScore": 4,
+          "companyScores": {
+            "V": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "希望变化有明确说明，否则影响投入",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "如果变化频繁，会怀疑团队不专业",
+          "mainScore": 2,
+          "riskTags": [
+            "AMBIGUITY"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "先按新要求做，避免方向没定时表达太多",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "M": 4
+          }
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "D06",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "你入职后发现自己只负责一个很小的环节，短期看不到完整业务。你更可能怎么想？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先把环节做好，再理解它和整体业务的关系",
+          "mainScore": 5,
+          "companyScores": {
+            "G": 5,
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "可以接受，但希望知道未来通向哪里",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "有点失落，我更希望参与完整项目",
+          "mainScore": 3,
+          "companyScores": {
+            "V": 5,
+            "D": 3
+          }
+        },
+        {
+          "id": "D",
+          "text": "只要平台稳定，可以先接受基础工作",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5
+          }
+        },
+        {
+          "id": "E",
+          "text": "如果长期重复执行，会很快失去动力",
+          "mainScore": 2,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "D07",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "你负责一项工作，需要其他部门配合，对方一直不积极。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "明确配合事项、截止时间和影响，再正式同步",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "找共同上级或项目负责人推动",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "私下沟通，了解对方为什么不配合",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "M": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "先把自己能做的部分做好，等对方反馈",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 3
+          }
+        },
+        {
+          "id": "E",
+          "text": "不太习惯主动催别人，容易卡住",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "D08",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "有些团队里，领导不会把要求说清楚，需要你理解他的关注点和风格。你更接近哪种状态？",
+      "options": [
+        {
+          "id": "A",
+          "text": "主动观察领导关注点，调整汇报方式",
+          "mainScore": 5,
+          "companyScores": {
+            "M": 5,
+            "G": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "希望领导明确标准，减少猜测成本",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "能接受一定理解意图，但不喜欢过度揣摩",
+          "mainScore": 4,
+          "companyScores": {
+            "D": 4,
+            "F": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "向老员工请教，先弄清团队规则",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "M": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "长期靠猜会让我很消耗",
+          "mainScore": 2,
+          "riskTags": [
+            "BOUNDARY_CONFLICT"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "D09",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "团队很看重集体氛围，很多信息和机会来自日常交流。你会怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "主动参与，这也是工作的一部分",
+          "mainScore": 5,
+          "companyScores": {
+            "G": 5,
+            "M": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "适度参与，不让自己游离团队",
+          "mainScore": 4,
+          "companyScores": {
+            "D": 4,
+            "G": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "更希望信息通过正式渠道同步",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "观察谁关键，再有选择建立关系",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 5,
+            "G": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "不擅长这种环境，容易累",
+          "mainScore": 2,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D10",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "团队默认下班后还要处理消息，虽然没人明说。你更可能怎么反应？",
+      "options": [
+        {
+          "id": "A",
+          "text": "阶段性项目可以接受，但不希望长期常态",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 4,
+            "D": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "目标清楚、回报合理，我能接受高强度",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "尽量提高效率，减少被动加班",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "先配合团队节奏，不显得不合群",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "M": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "长期这样会明显影响状态",
+          "mainScore": 2,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "D11",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "你入职后发现岗位职责和面试时说的不完全一样，经常要做边界外工作。你会怎么想？",
+      "options": [
+        {
+          "id": "A",
+          "text": "如果和目标相关，可以接受阶段性扩展",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "先确认哪些是核心职责，避免长期失焦",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "新人先多做一点也可以，熟悉后再判断",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "M": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "我会比较介意，因为这说明公司不规范",
+          "mainScore": 3,
+          "companyScores": {
+            "F": 3
+          },
+          "riskTags": [
+            "BOUNDARY_CONFLICT"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "会很不安，担心自己被随意安排",
+          "mainScore": 2,
+          "riskTags": [
+            "BOUNDARY_CONFLICT"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D12",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "领导一天内多次追问进度，你会怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "主动建立进度同步节奏，减少被追问",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "先把关键进展和风险说清楚",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "会有压力，但可以配合",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "希望领导给我更多独立空间",
+          "mainScore": 3,
+          "companyScores": {
+            "F": 3
+          }
+        },
+        {
+          "id": "E",
+          "text": "会明显紧张，影响做事效率",
+          "mainScore": 2,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D13",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "你发现有些同事对新人不太友好，问问题时态度冷淡。你会怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先把问题准备清楚，减少打扰成本",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "找更愿意帮助的人建立沟通入口",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "M": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "不把态度个人化，先完成工作",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "会减少提问，尽量自己摸索",
+          "mainScore": 3,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "会很受影响，怀疑团队氛围",
+          "mainScore": 2,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D14",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "领导风格很强势，经常直接否定方案。你更可能怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先确认他否定的核心原因，再调整方案",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "用结果和数据证明方案价值",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "先按领导要求做，再找机会优化",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "M": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "会觉得不舒服，但还能继续做",
+          "mainScore": 3
+        },
+        {
+          "id": "E",
+          "text": "很容易被压制，不敢表达",
+          "mainScore": 2,
+          "riskTags": [
+            "REJECTION_SENSITIVE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D15",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "你发现团队里有很多隐性关系和非正式规则。你会怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先观察，不急着表态站队",
+          "mainScore": 5,
+          "companyScores": {
+            "G": 5,
+            "M": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "保持职业化，只围绕事情沟通",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "找可靠的人了解规则，避免踩坑",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "M": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "觉得复杂，但可以适应",
+          "mainScore": 3
+        },
+        {
+          "id": "E",
+          "text": "很排斥，会明显影响工作状态",
+          "mainScore": 2,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D16",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "团队里资源和机会不会主动分配，需要自己争取。你会怎样？",
+      "options": [
+        {
+          "id": "A",
+          "text": "主动表达想参与，并说明自己能贡献什么",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "先把当前事情做好，用结果换机会",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4,
+            "G": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "找领导沟通自己的发展想法",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "M": 4,
+            "F": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "希望组织有更公平清晰的机会机制",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5
+          }
+        },
+        {
+          "id": "E",
+          "text": "不太敢争取，怕显得功利",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        }
+      ],
+      "requiredInMVP": true
+    },
+    {
+      "id": "D17",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "你参与的工作成果被更资深同事拿去汇报，你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "保留过程记录，找合适机会说明贡献",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "先观察是否是团队正常分工",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "F": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "私下和对方沟通，明确后续分工",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 4,
+            "F": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "会不舒服，但不太敢说",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "会很受伤，影响积极性",
+          "mainScore": 2,
+          "riskTags": [
+            "REJECTION_SENSITIVE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D18",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "每天有很多零散任务，打断你原来的计划。你会怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "建任务清单，按优先级处理",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "快速响应，先解决最紧急的业务问题",
+          "mainScore": 5,
+          "companyScores": {
+            "M": 5,
+            "V": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "希望领导帮我明确哪些最重要",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "F": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "可以做，但长期会觉得没有成长",
+          "mainScore": 3,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "容易乱，效率下降",
+          "mainScore": 2,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D19",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "你不太清楚自己怎样才算表现好。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "主动问清评价标准和关键结果",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "观察优秀同事怎么做",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "M": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "先按领导最关注的事情推进",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 5,
+            "G": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "会不安，希望公司制度更透明",
+          "mainScore": 3,
+          "companyScores": {
+            "F": 3
+          },
+          "riskTags": [
+            "BOUNDARY_CONFLICT"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "如果长期不透明，会影响投入",
+          "mainScore": 2,
+          "riskTags": [
+            "BOUNDARY_CONFLICT"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D20",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "老板经常临时提出新想法，打断原计划。你会怎么应对？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先判断新想法是否影响核心目标",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "快速做小验证，再决定是否投入更多",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "先记录，再找机会统一确认优先级",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "老板说什么先做什么",
+          "mainScore": 3,
+          "companyScores": {
+            "M": 5
+          }
+        },
+        {
+          "id": "E",
+          "text": "频繁变化会让我很崩溃",
+          "mainScore": 2,
+          "riskTags": [
+            "AMBIGUITY"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D21",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "团队里很多事情没有明确方法，大家都在摸索。你更接近哪种状态？",
+      "options": [
+        {
+          "id": "A",
+          "text": "这反而给了我发挥空间",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "可以接受，但需要阶段性复盘",
+          "mainScore": 4,
+          "companyScores": {
+            "D": 5,
+            "F": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "希望至少有基本流程",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5,
+            "G": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "会先模仿别人，降低出错率",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "M": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "没有标准会让我很焦虑",
+          "mainScore": 2,
+          "riskTags": [
+            "AMBIGUITY"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D22",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "你刚入职没多久，领导就希望你像熟手一样独立负责。你会怎样？",
+      "options": [
+        {
+          "id": "A",
+          "text": "拆任务、找资源、边做边补",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "明确当前能力边界，争取必要支持",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "努力跟上，但希望有人给反馈",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "F": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "会压力很大，但不好意思说",
+          "mainScore": 2,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "会觉得公司不合理，不适合新人",
+          "mainScore": 3,
+          "riskTags": [
+            "MOTIVATION_MISMATCH"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D23",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "一件事出了问题，几个部门都不愿承担。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先把事实、节点、责任边界梳理清楚",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "找共同目标，推动大家先解决问题",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "找关键人私下沟通，降低冲突",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "M": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "等领导定责后再执行",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "容易卷入情绪，不知道怎么处理",
+          "mainScore": 2,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D24",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "公司很稳定，团队氛围也不错，但你感觉成长很慢。你会怎么想？",
+      "options": [
+        {
+          "id": "A",
+          "text": "如果稳定是当前优先级，可以接受",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "会主动寻找额外项目或学习机会",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5,
+            "V": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "会开始焦虑，担心被温水煮青蛙",
+          "mainScore": 3,
+          "companyScores": {
+            "D": 3,
+            "V": 3
+          },
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        },
+        {
+          "id": "D",
+          "text": "只要待遇和环境可以，成长慢也能接受",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "M": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "长期会失去动力",
+          "mainScore": 2,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D25",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "公司节奏很快，任务刚做完就要马上复盘和改下一版。你更可能怎样？",
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受，快速反馈有助成长",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "能适应，但需要优先级清楚",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "短期可以，长期会累",
+          "mainScore": 3
+        },
+        {
+          "id": "D",
+          "text": "希望节奏稳定一些，别总是变化",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 4,
+            "F": 3
+          }
+        },
+        {
+          "id": "E",
+          "text": "会明显跟不上",
+          "mainScore": 2,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D26",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "公司很重视汇报，哪怕事情不大也要同步。你会怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "建立固定汇报模板，减少沟通成本",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "G": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "重要节点主动同步，避免领导不确定",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "可以接受，汇报也是组织规则",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "会觉得形式主义，但先配合",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 4,
+            "M": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "很排斥，觉得影响做事效率",
+          "mainScore": 2,
+          "riskTags": [
+            "PROCESS_MISMATCH"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D27",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "你作为新人，被安排很多基础杂活。你更可能怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先做好基础工作，同时观察它和业务的关系",
+          "mainScore": 5,
+          "companyScores": {
+            "G": 5,
+            "F": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "接受一段时间，但会主动争取更核心任务",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "如果团队需要，我可以配合",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "M": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "会担心自己一直被边缘化",
+          "mainScore": 3,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "会很失落，觉得浪费时间",
+          "mainScore": 2,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "D28",
+      "module": "D_WORKPLACE_SCENARIO",
+      "text": "团队同事都很职业化，彼此不太聊私人话题。你会怎样？",
+      "options": [
+        {
+          "id": "A",
+          "text": "这挺好，工作边界清楚",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "可以接受，只要协作顺畅",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "会觉得少了一点归属感",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 4,
+            "M": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "希望团队更热情一些",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 4,
+            "M": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "会觉得孤立，影响状态",
+          "mainScore": 2,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "SLS01",
+      "module": "E_ROLE_SCENARIO",
+      "text": "你连续联系20个客户都没有回应，主管要求继续推进。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "复盘客户画像、话术和触达时间，再调整策略",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5,
+            "F": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "增加联系频次，先把量做上去",
+          "mainScore": 4,
+          "companyScores": {
+            "D": 5,
+            "M": 5,
+            "V": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "找主管要反馈，看是不是方向错了",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 4,
+            "D": 4,
+            "G": 3
+          }
+        },
+        {
+          "id": "D",
+          "text": "先维护已有回应客户，减少无效消耗",
+          "mainScore": 3,
+          "companyScores": {
+            "F": 4,
+            "G": 3
+          }
+        },
+        {
+          "id": "E",
+          "text": "会很受打击，开始怀疑自己不适合销售",
+          "mainScore": 1,
+          "riskTags": [
+            "REJECTION_SENSITIVE"
+          ]
+        }
+      ],
+      "roleBranch": "SLS",
+      "requiredInMVP": true
+    },
+    {
+      "id": "SLS02",
+      "module": "E_ROLE_SCENARIO",
+      "text": "客户直接说“不需要”，你更可能怎样？",
+      "options": [
+        {
+          "id": "A",
+          "text": "追问不需要的原因，判断是否还有机会",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5,
+            "M": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "记录原因，后续换角度再触达",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 4,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "礼貌结束，避免让客户反感",
+          "mainScore": 3,
+          "companyScores": {
+            "F": 4,
+            "G": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "觉得被拒绝很正常，继续找下一个",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "E",
+          "text": "被拒绝后会明显影响状态",
+          "mainScore": 1,
+          "riskTags": [
+            "REJECTION_SENSITIVE"
+          ]
+        }
+      ],
+      "roleBranch": "SLS",
+      "requiredInMVP": true
+    },
+    {
+      "id": "SLS03",
+      "module": "E_ROLE_SCENARIO",
+      "text": "月底业绩差距较大，领导要求你想办法冲刺。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "拆客户池，优先推进高概率客户",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "加大拜访和跟进密度",
+          "mainScore": 4,
+          "companyScores": {
+            "D": 5,
+            "M": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "找老客户或内部资源争取转介绍",
+          "mainScore": 5,
+          "companyScores": {
+            "M": 5,
+            "G": 4,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "尽力做，但不确定还能怎么突破",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "压力太大，会影响表达和行动",
+          "mainScore": 1,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ],
+      "roleBranch": "SLS",
+      "requiredInMVP": true
+    },
+    {
+      "id": "SLS04",
+      "module": "E_ROLE_SCENARIO",
+      "text": "岗位需要你主动联系陌生客户，你怎么看？",
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受，这是销售基本动作",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5,
+            "M": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "有压力，但能通过准备话术降低难度",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 4,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "更适合维护已有客户或顾问式沟通",
+          "mainScore": 3,
+          "companyScores": {
+            "F": 4,
+            "G": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "不太喜欢陌生外拓，但可以短期尝试",
+          "mainScore": 2,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "很排斥陌生联系",
+          "mainScore": 1,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        }
+      ],
+      "roleBranch": "SLS",
+      "requiredInMVP": true
+    },
+    {
+      "id": "SLS05",
+      "module": "E_ROLE_SCENARIO",
+      "text": "客户本来有意向，最后突然不买了。你会怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "复盘决策链、预算、竞品和时机",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "继续维护关系，等待下次机会",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "M": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "找主管一起判断是否还有挽回空间",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 4,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "接受结果，快速转向其他客户",
+          "mainScore": 4,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "E",
+          "text": "会很挫败，觉得努力白费",
+          "mainScore": 1,
+          "riskTags": [
+            "REJECTION_SENSITIVE"
+          ]
+        }
+      ],
+      "roleBranch": "SLS",
+      "requiredInMVP": true
+    },
+    {
+      "id": "SLS06",
+      "module": "E_ROLE_SCENARIO",
+      "text": "你发现产品没有竞品强，但仍要卖。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "找到细分场景和差异化价值",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "研究客户真实痛点，匹配能解决的部分",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "依靠关系维护和服务弥补产品短板",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 5,
+            "G": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "觉得产品不行，销售很难做",
+          "mainScore": 2,
+          "riskTags": [
+            "MOTIVATION_MISMATCH"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "不知道怎么讲，会缺乏信心",
+          "mainScore": 1,
+          "riskTags": [
+            "REJECTION_SENSITIVE"
+          ]
+        }
+      ],
+      "roleBranch": "SLS",
+      "requiredInMVP": true
+    },
+    {
+      "id": "SLS07",
+      "module": "E_ROLE_SCENARIO",
+      "text": "一个客户短期不会成交，但未来可能有机会。你会怎样？",
+      "options": [
+        {
+          "id": "A",
+          "text": "建立跟进节奏，持续提供信息价值",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "G": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "定期联系，维护关系温度",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 5,
+            "G": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "根据销售阶段判断投入精力",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "如果短期没结果，我会减少投入",
+          "mainScore": 3
+        },
+        {
+          "id": "E",
+          "text": "长期跟进会让我很没耐心",
+          "mainScore": 2,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        }
+      ],
+      "roleBranch": "SLS",
+      "requiredInMVP": true
+    },
+    {
+      "id": "SLS08",
+      "module": "E_ROLE_SCENARIO",
+      "text": "领导要求你每天汇报客户进度。你会怎么看？",
+      "options": [
+        {
+          "id": "A",
+          "text": "可以，销售过程需要可视化管理",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "用表格记录，方便复盘和推进",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "虽然麻烦，但能接受",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "更希望领导看结果，不要管太细",
+          "mainScore": 3,
+          "companyScores": {
+            "V": 4,
+            "M": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "会觉得被盯得很紧，压力很大",
+          "mainScore": 2,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ],
+      "roleBranch": "SLS",
+      "requiredInMVP": true
+    },
+    {
+      "id": "PM01",
+      "module": "E_ROLE_SCENARIO",
+      "text": "业务方只说“希望提升用户体验”，没有具体需求。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先追问场景、用户、问题和目标指标",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "快速整理几个可能方向让业务方选择",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "找历史数据和用户反馈验证问题",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "先按业务方大概意思做方案",
+          "mainScore": 3,
+          "companyScores": {
+            "M": 3
+          }
+        },
+        {
+          "id": "E",
+          "text": "不知道从哪里拆，会卡住",
+          "mainScore": 1,
+          "riskTags": [
+            "AMBIGUITY"
+          ]
+        }
+      ],
+      "roleBranch": "PM",
+      "requiredInMVP": true
+    },
+    {
+      "id": "PM02",
+      "module": "E_ROLE_SCENARIO",
+      "text": "业务要一个功能，技术说排期做不了。你会怎样？",
+      "options": [
+        {
+          "id": "A",
+          "text": "明确需求价值、优先级和替代方案",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "组织业务和技术一起对齐取舍",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "先做低成本版本验证价值",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "让业务和技术自己协调",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "容易夹在中间，不知道怎么推进",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        }
+      ],
+      "roleBranch": "PM",
+      "requiredInMVP": true
+    },
+    {
+      "id": "PM03",
+      "module": "E_ROLE_SCENARIO",
+      "text": "老板上午一个方向，下午又换。你会怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "记录变化背后的目标，确认核心优先级",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "快速做原型或小验证，减少空谈",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "先按老板要求推进，保持灵活",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 5,
+            "V": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "会觉得很混乱，影响判断",
+          "mainScore": 2,
+          "riskTags": [
+            "AMBIGUITY"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "希望有明确流程，否则做不下去",
+          "mainScore": 2,
+          "companyScores": {
+            "F": 3
+          },
+          "riskTags": [
+            "BOUNDARY_CONFLICT"
+          ]
+        }
+      ],
+      "roleBranch": "PM",
+      "requiredInMVP": true
+    },
+    {
+      "id": "PM04",
+      "module": "E_ROLE_SCENARIO",
+      "text": "项目快到截止日期，技术进度明显落后。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "重新评估范围、风险和关键路径",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "推动相关方确认是否砍需求或延期",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "先保证核心功能上线",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "等技术给最新时间",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "会很焦虑，不知道怎么协调",
+          "mainScore": 1,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ],
+      "roleBranch": "PM",
+      "requiredInMVP": true
+    },
+    {
+      "id": "PM05",
+      "module": "E_ROLE_SCENARIO",
+      "text": "用户说想要A，老板坚持做B。你怎么判断？",
+      "options": [
+        {
+          "id": "A",
+          "text": "看目标用户、业务目标和数据证据",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "做小范围测试，避免拍脑袋",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "先按老板方向做，但保留用户反馈",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 5,
+            "G": 3
+          }
+        },
+        {
+          "id": "D",
+          "text": "用户说什么就应该做什么",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "老板说什么就做什么",
+          "mainScore": 3,
+          "companyScores": {
+            "M": 4
+          }
+        }
+      ],
+      "roleBranch": "PM",
+      "requiredInMVP": true
+    },
+    {
+      "id": "PM06",
+      "module": "E_ROLE_SCENARIO",
+      "text": "产品 / 项目工作需要大量文档、会议和对齐，你怎么看？",
+      "options": [
+        {
+          "id": "A",
+          "text": "这是必要工作，能降低协作成本",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "可以接受，但希望文档服务于推进",
+          "mainScore": 4,
+          "companyScores": {
+            "D": 4,
+            "F": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "不喜欢文档，但可以做",
+          "mainScore": 3
+        },
+        {
+          "id": "D",
+          "text": "更喜欢直接做，不喜欢反复沟通",
+          "mainScore": 2,
+          "companyScores": {
+            "V": 3
+          },
+          "riskTags": [
+            "PROCESS_MISMATCH"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "文档和会议会让我很消耗",
+          "mainScore": 1,
+          "riskTags": [
+            "PROCESS_MISMATCH"
+          ]
+        }
+      ],
+      "roleBranch": "PM",
+      "requiredInMVP": true
+    },
+    {
+      "id": "PM07",
+      "module": "E_ROLE_SCENARIO",
+      "text": "业务、设计、技术各有诉求，你会怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先对齐共同目标，再拆冲突点",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "用优先级和数据做取舍",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "先找关键决策人确定方向",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 4,
+            "G": 4,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "尽量协调，但会觉得压力很大",
+          "mainScore": 3
+        },
+        {
+          "id": "E",
+          "text": "容易被多方意见带着走",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        }
+      ],
+      "roleBranch": "PM",
+      "requiredInMVP": true
+    },
+    {
+      "id": "PM08",
+      "module": "E_ROLE_SCENARIO",
+      "text": "项目结果不好，领导要求复盘。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "拆目标、过程、数据、决策和执行问题",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "找关键失败点，提出下一版改法",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "先承认问题，再说明客观原因",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "M": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "害怕复盘变成追责",
+          "mainScore": 2,
+          "riskTags": [
+            "REJECTION_SENSITIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "不知道怎么复盘，只能说以后改进",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ],
+      "roleBranch": "PM",
+      "requiredInMVP": true
+    },
+    {
+      "id": "OPS01",
+      "module": "E_ROLE_SCENARIO",
+      "text": "你负责的活动上线后数据不达预期。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "拆曝光、点击、转化、留存等环节",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "找用户反馈，看问题出在哪里",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "快速改一版再测试",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "先等活动跑完再说",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "会很沮丧，不知道哪里有问题",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ],
+      "roleBranch": "OPS",
+      "requiredInMVP": true
+    },
+    {
+      "id": "OPS02",
+      "module": "E_ROLE_SCENARIO",
+      "text": "你负责社群运营，但用户不说话。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "分析用户分层和活跃触发点",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "设计话题、活动和激励机制",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "找核心用户私聊，先激活小范围",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 5,
+            "G": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "每天发内容试试看",
+          "mainScore": 3
+        },
+        {
+          "id": "E",
+          "text": "用户不回应会让我很挫败",
+          "mainScore": 1,
+          "riskTags": [
+            "REJECTION_SENSITIVE"
+          ]
+        }
+      ],
+      "roleBranch": "OPS",
+      "requiredInMVP": true
+    },
+    {
+      "id": "OPS03",
+      "module": "E_ROLE_SCENARIO",
+      "text": "你发的内容阅读量很低。你会怎样？",
+      "options": [
+        {
+          "id": "A",
+          "text": "复盘标题、选题、渠道和用户需求",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "多测试不同内容形式",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "参考同类账号爆款进行调整",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 4,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "觉得可能是平台不给流量",
+          "mainScore": 2,
+          "riskTags": [
+            "MOTIVATION_MISMATCH"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "不知道怎么改，只能继续发",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ],
+      "roleBranch": "OPS",
+      "requiredInMVP": true
+    },
+    {
+      "id": "OPS04",
+      "module": "E_ROLE_SCENARIO",
+      "text": "运营工作很杂，活动、数据、用户、内容都要碰。你怎么看？",
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受，运营本来就是综合型工作",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5,
+            "M": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "能接受，但需要明确优先级",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "喜欢变化，但不希望长期混乱",
+          "mainScore": 4,
+          "companyScores": {
+            "V": 4,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "希望岗位边界清楚一点",
+          "mainScore": 3,
+          "companyScores": {
+            "F": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "太杂会让我不知道重点",
+          "mainScore": 2,
+          "riskTags": [
+            "AMBIGUITY"
+          ]
+        }
+      ],
+      "roleBranch": "OPS",
+      "requiredInMVP": true
+    },
+    {
+      "id": "OPS05",
+      "module": "E_ROLE_SCENARIO",
+      "text": "活动需要设计、产品、销售配合，但大家都很忙。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "明确每方任务、时间和影响",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "找关键人先推动最小版本",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "私下沟通，让大家愿意配合",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 5,
+            "G": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "等领导帮忙协调",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 3
+          }
+        },
+        {
+          "id": "E",
+          "text": "不太敢催别人",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        }
+      ],
+      "roleBranch": "OPS",
+      "requiredInMVP": true
+    },
+    {
+      "id": "OPS06",
+      "module": "E_ROLE_SCENARIO",
+      "text": "领导说这个月必须提升转化率。你会怎么想？",
+      "options": [
+        {
+          "id": "A",
+          "text": "拆指标链路，找到可优化环节",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "先做几个低成本实验",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "找历史案例和同行方法参考",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 4,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "会觉得压力大，但可以尝试",
+          "mainScore": 3
+        },
+        {
+          "id": "E",
+          "text": "不知道怎么影响转化率",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ],
+      "roleBranch": "OPS",
+      "requiredInMVP": true
+    },
+    {
+      "id": "OPS07",
+      "module": "E_ROLE_SCENARIO",
+      "text": "用户在群里公开抱怨产品或服务。你会怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先安抚，再收集问题并同步负责人",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "私聊关键用户，避免情绪扩散",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 5,
+            "G": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "公开回应处理进度，建立信任",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "等客服或产品处理",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "面对公开冲突会很紧张",
+          "mainScore": 1,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        }
+      ],
+      "roleBranch": "OPS",
+      "requiredInMVP": true
+    },
+    {
+      "id": "OPS08",
+      "module": "E_ROLE_SCENARIO",
+      "text": "运营经常需要重复执行细节，比如发消息、整理数据、复盘活动。你怎么看？",
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受，执行质量决定结果",
+          "mainScore": 5,
+          "companyScores": {
+            "G": 4,
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "能做，但要看到数据反馈",
+          "mainScore": 4,
+          "companyScores": {
+            "D": 5,
+            "F": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "短期可以，长期需要变化",
+          "mainScore": 3,
+          "companyScores": {
+            "V": 3
+          }
+        },
+        {
+          "id": "D",
+          "text": "觉得比较琐碎，兴趣不大",
+          "mainScore": 2,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "长期重复会很消耗",
+          "mainScore": 1,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        }
+      ],
+      "roleBranch": "OPS",
+      "requiredInMVP": true
+    },
+    {
+      "id": "TECH01",
+      "module": "E_ROLE_SCENARIO",
+      "text": "你遇到一个技术问题，查资料后还是解决不了。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "复现问题，整理日志和尝试过程再求助",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "继续查资料和实验，直到找到思路",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "找同学或同事快速讨论",
+          "mainScore": 4,
+          "companyScores": {
+            "D": 4,
+            "F": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "先绕过去做其他部分",
+          "mainScore": 3
+        },
+        {
+          "id": "E",
+          "text": "很容易卡住，不知道怎么问",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        }
+      ],
+      "roleBranch": "TECH",
+      "requiredInMVP": true
+    },
+    {
+      "id": "TECH02",
+      "module": "E_ROLE_SCENARIO",
+      "text": "开发 / 测试过程中需求一直变。你怎么看？",
+      "options": [
+        {
+          "id": "A",
+          "text": "确认变更范围和影响，再调整计划",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "可以接受，但要有变更记录",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "快速改，先满足业务需要",
+          "mainScore": 4,
+          "companyScores": {
+            "V": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "会觉得需求方不专业",
+          "mainScore": 3,
+          "riskTags": [
+            "AMBIGUITY"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "频繁变化会让我很崩溃",
+          "mainScore": 1,
+          "riskTags": [
+            "AMBIGUITY"
+          ]
+        }
+      ],
+      "roleBranch": "TECH",
+      "requiredInMVP": true
+    },
+    {
+      "id": "TECH03",
+      "module": "E_ROLE_SCENARIO",
+      "text": "项目文档很不完整，你需要自己理解系统。你会怎么办？",
+      "options": [
+        {
+          "id": "A",
+          "text": "边读代码 / 系统边补文档",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "找关键人确认核心逻辑",
+          "mainScore": 4,
+          "companyScores": {
+            "D": 4,
+            "F": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "先跑通主要流程，再慢慢理解",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "没文档会明显影响我",
+          "mainScore": 2,
+          "riskTags": [
+            "NEEDS_TRAINING"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "不知道从哪里开始",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ],
+      "roleBranch": "TECH",
+      "requiredInMVP": true
+    },
+    {
+      "id": "TECH04",
+      "module": "E_ROLE_SCENARIO",
+      "text": "你发现一个问题，但开发认为不是bug。你会怎样？",
+      "options": [
+        {
+          "id": "A",
+          "text": "提供复现步骤、截图、日志和影响范围",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "和开发一起确认预期逻辑",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "找产品或业务确认需求",
+          "mainScore": 4,
+          "companyScores": {
+            "D": 4,
+            "F": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "如果对方坚持，我就算了",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "容易和对方冲突",
+          "mainScore": 2,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        }
+      ],
+      "roleBranch": "TECH",
+      "requiredInMVP": true
+    },
+    {
+      "id": "TECH05",
+      "module": "E_ROLE_SCENARIO",
+      "text": "岗位需要你快速学习新工具或新框架。你会怎样？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先看官方文档和案例，再做小demo",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "直接在项目里边用边学",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "找教程跟着练",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "F": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "希望有人带我入门",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 4
+          },
+          "riskTags": [
+            "NEEDS_TRAINING"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "自学能力比较弱",
+          "mainScore": 1,
+          "riskTags": [
+            "NEEDS_TRAINING"
+          ]
+        }
+      ],
+      "roleBranch": "TECH",
+      "requiredInMVP": true
+    },
+    {
+      "id": "TECH06",
+      "module": "E_ROLE_SCENARIO",
+      "text": "系统上线后出现问题，业务催得很急。你会怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先定位影响范围和优先级",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "先止损，再彻底排查原因",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "及时同步进度，避免信息不透明",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "会很紧张，怕背责任",
+          "mainScore": 2,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "容易乱，不知道先做什么",
+          "mainScore": 1,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ],
+      "roleBranch": "TECH",
+      "requiredInMVP": true
+    },
+    {
+      "id": "TECH07",
+      "module": "E_ROLE_SCENARIO",
+      "text": "技术岗位也会有很多重复调试、测试、改bug。你怎么看？",
+      "options": [
+        {
+          "id": "A",
+          "text": "能接受，稳定性来自细节",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "G": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "可以接受，但希望能沉淀工具或方法",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "短期可以，长期希望做更复杂内容",
+          "mainScore": 4
+        },
+        {
+          "id": "D",
+          "text": "重复工作会让我兴趣下降",
+          "mainScore": 2,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "很难长期坚持",
+          "mainScore": 1,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        }
+      ],
+      "roleBranch": "TECH",
+      "requiredInMVP": true
+    },
+    {
+      "id": "TECH08",
+      "module": "E_ROLE_SCENARIO",
+      "text": "业务方听不懂技术限制，还要求你快点实现。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "用业务语言解释限制和替代方案",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "给出可行版本和不可行部分",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "找产品或项目经理协助沟通",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 4,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "会觉得对方不懂还乱提需求",
+          "mainScore": 2,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "不擅长解释，容易沉默",
+          "mainScore": 1,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        }
+      ],
+      "roleBranch": "TECH",
+      "requiredInMVP": true
+    },
+    {
+      "id": "DATA01",
+      "module": "E_ROLE_SCENARIO",
+      "text": "领导只说“用户留存不好，你分析一下”。你会怎么开始？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先定义留存口径和分析目标",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "拆用户分层、渠道、行为路径",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "先跑基础数据，看异常点",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 4,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "直接做一份图表汇报",
+          "mainScore": 3,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "不知道从哪下手",
+          "mainScore": 1,
+          "riskTags": [
+            "AMBIGUITY"
+          ]
+        }
+      ],
+      "roleBranch": "DATA",
+      "requiredInMVP": true
+    },
+    {
+      "id": "DATA02",
+      "module": "E_ROLE_SCENARIO",
+      "text": "不同部门对同一个指标口径不一致。你会怎么办？",
+      "options": [
+        {
+          "id": "A",
+          "text": "梳理口径差异和适用场景",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "推动相关方统一口径",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "在报告中明确口径说明",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "按领导常用口径做",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 4,
+            "M": 3
+          }
+        },
+        {
+          "id": "E",
+          "text": "会很困惑，不知道用哪个",
+          "mainScore": 1,
+          "riskTags": [
+            "AMBIGUITY"
+          ]
+        }
+      ],
+      "roleBranch": "DATA",
+      "requiredInMVP": true
+    },
+    {
+      "id": "DATA03",
+      "module": "E_ROLE_SCENARIO",
+      "text": "你发现数据异常，但业务方觉得不重要。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "判断异常影响范围和可能原因",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "用简单图表说明风险",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "先记录，持续观察是否扩大",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "F": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "既然业务不关心，就不深入了",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "不知道怎么说服业务",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        }
+      ],
+      "roleBranch": "DATA",
+      "requiredInMVP": true
+    },
+    {
+      "id": "DATA04",
+      "module": "E_ROLE_SCENARIO",
+      "text": "你做完分析后，业务方问“所以我该怎么做”。你会怎样？",
+      "options": [
+        {
+          "id": "A",
+          "text": "给出明确建议和优先级",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "说明数据结论、限制和可能动作",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "和业务一起讨论可执行方案",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "只提供数据结果，不负责业务动作",
+          "mainScore": 3,
+          "companyScores": {
+            "F": 3
+          }
+        },
+        {
+          "id": "E",
+          "text": "不太会把数据转成建议",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ],
+      "roleBranch": "DATA",
+      "requiredInMVP": true
+    },
+    {
+      "id": "DATA05",
+      "module": "E_ROLE_SCENARIO",
+      "text": "岗位需要SQL、Excel、BI或Python，你当前不熟。你会怎样？",
+      "options": [
+        {
+          "id": "A",
+          "text": "根据目标岗位要求制定学习计划",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "找真实数据集练习",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 4,
+            "D": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "先掌握最常用功能",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "F": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "等入职后再学",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "工具有点劝退我",
+          "mainScore": 1,
+          "riskTags": [
+            "MOTIVATION_MISMATCH"
+          ]
+        }
+      ],
+      "roleBranch": "DATA",
+      "requiredInMVP": true
+    },
+    {
+      "id": "DATA06",
+      "module": "E_ROLE_SCENARIO",
+      "text": "汇报时有人质疑你的结论。你会怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "回到口径、样本和假设逐项解释",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "接受质疑，补充验证",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "说明当前结论的边界",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "会有点慌，担心自己错了",
+          "mainScore": 2,
+          "riskTags": [
+            "REJECTION_SENSITIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "容易防御，不喜欢被质疑",
+          "mainScore": 2,
+          "riskTags": [
+            "REJECTION_SENSITIVE"
+          ]
+        }
+      ],
+      "roleBranch": "DATA",
+      "requiredInMVP": true
+    },
+    {
+      "id": "DATA07",
+      "module": "E_ROLE_SCENARIO",
+      "text": "大量时间花在清洗数据、核对字段上。你怎么看？",
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受，这是分析质量基础",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "G": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "能接受，但希望沉淀自动化方法",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "短期可以，长期希望更多业务分析",
+          "mainScore": 4
+        },
+        {
+          "id": "D",
+          "text": "觉得很枯燥",
+          "mainScore": 2,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "很难长期做细致核对",
+          "mainScore": 1,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        }
+      ],
+      "roleBranch": "DATA",
+      "requiredInMVP": true
+    },
+    {
+      "id": "DATA08",
+      "module": "E_ROLE_SCENARIO",
+      "text": "你发现自己能做图表，但不理解业务。你会怎样？",
+      "options": [
+        {
+          "id": "A",
+          "text": "主动找业务方了解流程和决策场景",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "看业务资料和历史报告补背景",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "从数据异常反推业务问题",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "只要数据做对就行",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "不太愿意和业务沟通",
+          "mainScore": 1,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        }
+      ],
+      "roleBranch": "DATA",
+      "requiredInMVP": true
+    },
+    {
+      "id": "FUNC01",
+      "module": "E_ROLE_SCENARIO",
+      "text": "公司有制度，但很多人执行不规范。你会怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先明确制度要求和实际偏差",
+          "mainScore": 5,
+          "companyScores": {
+            "G": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "用流程和模板降低执行难度",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "先和关键人沟通，减少抵触",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "M": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "直接要求大家按制度执行",
+          "mainScore": 3,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "害怕得罪人，不好推动",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        }
+      ],
+      "roleBranch": "FUNC",
+      "requiredInMVP": true
+    },
+    {
+      "id": "FUNC02",
+      "module": "E_ROLE_SCENARIO",
+      "text": "职能岗有很多重复、细致、容易出错的事务。你怎么看？",
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受，准确性很重要",
+          "mainScore": 5,
+          "companyScores": {
+            "G": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "能做，并希望优化流程",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "短期可以，长期希望做更有价值的事",
+          "mainScore": 3,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        },
+        {
+          "id": "D",
+          "text": "会觉得琐碎",
+          "mainScore": 2,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "很难长期保持耐心",
+          "mainScore": 1,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        }
+      ],
+      "roleBranch": "FUNC",
+      "requiredInMVP": true
+    },
+    {
+      "id": "FUNC03",
+      "module": "E_ROLE_SCENARIO",
+      "text": "业务部门催你处理事情，语气还不太好。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先确认需求和时效，按优先级处理",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "解释流程和所需材料",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "G": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "先处理紧急问题，再补流程",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "会觉得委屈，但能做",
+          "mainScore": 3
+        },
+        {
+          "id": "E",
+          "text": "容易影响情绪",
+          "mainScore": 1,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        }
+      ],
+      "roleBranch": "FUNC",
+      "requiredInMVP": true
+    },
+    {
+      "id": "FUNC04",
+      "module": "E_ROLE_SCENARIO",
+      "text": "你接触到敏感信息，同学或同事私下问你。你会怎样？",
+      "options": [
+        {
+          "id": "A",
+          "text": "明确拒绝透露，遵守保密要求",
+          "mainScore": 5,
+          "companyScores": {
+            "G": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "只说公开信息，不碰敏感内容",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "G": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "看关系亲近程度，注意分寸",
+          "mainScore": 3,
+          "companyScores": {
+            "M": 4,
+            "G": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "觉得没那么严重",
+          "mainScore": 1,
+          "riskTags": [
+            "PROCESS_MISMATCH"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "不知道哪些能说哪些不能说",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ],
+      "roleBranch": "FUNC",
+      "requiredInMVP": true
+    },
+    {
+      "id": "FUNC05",
+      "module": "E_ROLE_SCENARIO",
+      "text": "领导临时要一份汇报材料，时间很紧。你会怎么办？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先确认用途、对象和重点",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "G": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "找历史模板快速整理",
+          "mainScore": 5,
+          "companyScores": {
+            "G": 5,
+            "F": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "先做一版框架给领导确认",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "直接开始写，边写边改",
+          "mainScore": 3
+        },
+        {
+          "id": "E",
+          "text": "会很慌，不知道怎么组织",
+          "mainScore": 1,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ],
+      "roleBranch": "FUNC",
+      "requiredInMVP": true
+    },
+    {
+      "id": "FUNC06",
+      "module": "E_ROLE_SCENARIO",
+      "text": "你发现一个内部流程可以优化，但不是你的直接职责。你会怎样？",
+      "options": [
+        {
+          "id": "A",
+          "text": "整理问题和影响，找合适机会建议",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "先在自己负责部分小范围优化",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 4,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "先观察是否适合提出",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 5,
+            "M": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "觉得不是我的事，不主动管",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "想提但怕被认为多事",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        }
+      ],
+      "roleBranch": "FUNC",
+      "requiredInMVP": true
+    },
+    {
+      "id": "FUNC07",
+      "module": "E_ROLE_SCENARIO",
+      "text": "职能岗经常同时处理多个小任务。你会怎么管理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "建清单，按时效和重要性排序",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "G": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "用工具记录，避免遗漏",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "先处理领导最关注的事情",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 5,
+            "G": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "忙起来容易漏事",
+          "mainScore": 2,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "多任务会让我明显焦虑",
+          "mainScore": 1,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ],
+      "roleBranch": "FUNC",
+      "requiredInMVP": true
+    },
+    {
+      "id": "FUNC08",
+      "module": "E_ROLE_SCENARIO",
+      "text": "领导要求严格执行制度，业务部门希望灵活处理。你会怎么办？",
+      "options": [
+        {
+          "id": "A",
+          "text": "明确红线，红线内寻找灵活方案",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "G": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "向领导说明业务情况，争取可行处理",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 4,
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "先维护关系，再慢慢推进制度",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 5,
+            "G": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "两边都不想得罪，容易犹豫",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "不知道怎么平衡",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ],
+      "roleBranch": "FUNC",
+      "requiredInMVP": true
+    },
+    {
+      "id": "MKT01",
+      "module": "E_ROLE_SCENARIO",
+      "text": "你做的内容数据很差。你会怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "复盘选题、标题、渠道和用户需求",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "快速测试多个版本",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "参考竞品和爆款逻辑调整",
+          "mainScore": 5,
+          "companyScores": {
+            "M": 4,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "觉得可能是平台流量不好",
+          "mainScore": 2,
+          "riskTags": [
+            "MOTIVATION_MISMATCH"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "不知道怎么改",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ],
+      "roleBranch": "MKT",
+      "requiredInMVP": true
+    },
+    {
+      "id": "MKT02",
+      "module": "E_ROLE_SCENARIO",
+      "text": "你提出的创意被领导否定。你会怎么办？",
+      "options": [
+        {
+          "id": "A",
+          "text": "问清否定原因和目标偏差",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "快速改一版新方案",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "保留创意，换更合适时机使用",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 4,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "会有挫败感，但能继续",
+          "mainScore": 3
+        },
+        {
+          "id": "E",
+          "text": "很容易受打击",
+          "mainScore": 1,
+          "riskTags": [
+            "REJECTION_SENSITIVE"
+          ]
+        }
+      ],
+      "roleBranch": "MKT",
+      "requiredInMVP": true
+    },
+    {
+      "id": "MKT03",
+      "module": "E_ROLE_SCENARIO",
+      "text": "市场热点变化很快，原计划可能失效。你怎么看？",
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受，市场工作本来要快速响应",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "能接受，但需要判断是否跟热点",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "希望计划稳定，不想总追变化",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 4,
+            "F": 3
+          }
+        },
+        {
+          "id": "D",
+          "text": "会觉得很累",
+          "mainScore": 2,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "完全跟不上变化",
+          "mainScore": 1,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ],
+      "roleBranch": "MKT",
+      "requiredInMVP": true
+    },
+    {
+      "id": "MKT04",
+      "module": "E_ROLE_SCENARIO",
+      "text": "方案被反复修改，你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "确认修改背后的核心目标",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "管理版本和反馈，避免混乱",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "快速调整，先满足对方要求",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "会觉得对方不专业",
+          "mainScore": 2,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "被反复改会很消耗",
+          "mainScore": 2,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ],
+      "roleBranch": "MKT",
+      "requiredInMVP": true
+    },
+    {
+      "id": "MKT05",
+      "module": "E_ROLE_SCENARIO",
+      "text": "你喜欢的创意数据不好，普通方案反而效果好。你会怎么选择？",
+      "options": [
+        {
+          "id": "A",
+          "text": "以目标和数据为准",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "结合数据优化创意表达",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "做A/B测试判断",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "还是更相信自己的审美",
+          "mainScore": 2,
+          "riskTags": [
+            "MOTIVATION_MISMATCH"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "会很纠结",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ],
+      "roleBranch": "MKT",
+      "requiredInMVP": true
+    },
+    {
+      "id": "MKT06",
+      "module": "E_ROLE_SCENARIO",
+      "text": "岗位需要写文案、做展示、对外沟通。你怎么看？",
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受，表达是这个岗位核心",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 4
+          }
+        },
+        {
+          "id": "B",
+          "text": "有压力，但能通过准备提升",
+          "mainScore": 4,
+          "companyScores": {
+            "F": 4,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "更擅长幕后策划，不太喜欢对外",
+          "mainScore": 3,
+          "companyScores": {
+            "F": 3
+          }
+        },
+        {
+          "id": "D",
+          "text": "不太适应公开表达",
+          "mainScore": 2,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "很排斥被看见",
+          "mainScore": 1,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        }
+      ],
+      "roleBranch": "MKT",
+      "requiredInMVP": true
+    },
+    {
+      "id": "MKT07",
+      "module": "E_ROLE_SCENARIO",
+      "text": "市场工作经常多个项目同时推进。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "建项目表，拆节点和责任人",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "先抓最影响结果的任务",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "V": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "快速响应临时需求",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 5,
+            "V": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "会觉得杂乱",
+          "mainScore": 2,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "很容易漏事",
+          "mainScore": 1,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ],
+      "roleBranch": "MKT",
+      "requiredInMVP": true
+    },
+    {
+      "id": "MKT08",
+      "module": "E_ROLE_SCENARIO",
+      "text": "领导要求内容或广告尽快看到转化效果。你会怎么办？",
+      "options": [
+        {
+          "id": "A",
+          "text": "拆曝光、点击、转化链路",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "先做小预算测试",
+          "mainScore": 5,
+          "companyScores": {
+            "V": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "复盘用户和渠道匹配度",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "觉得创意不应该只看数据",
+          "mainScore": 2,
+          "riskTags": [
+            "MOTIVATION_MISMATCH"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "不知道怎么影响转化",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ],
+      "roleBranch": "MKT",
+      "requiredInMVP": true
+    },
+    {
+      "id": "SUP01",
+      "module": "E_ROLE_SCENARIO",
+      "text": "系统库存和实际库存不一致，业务又催着发货。你会怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先核对差异范围和影响订单",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "G": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "先保障最紧急订单，再追查原因",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "M": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "立即同步相关部门，避免继续出错",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "等仓库确认后再说",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 3
+          }
+        },
+        {
+          "id": "E",
+          "text": "会很紧张，不知道先处理哪边",
+          "mainScore": 1,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ],
+      "roleBranch": "SUP",
+      "requiredInMVP": true
+    },
+    {
+      "id": "SUP02",
+      "module": "E_ROLE_SCENARIO",
+      "text": "供应商或仓库导致发货延误，客户在催。你会怎么办？",
+      "options": [
+        {
+          "id": "A",
+          "text": "确认延误原因、预计时间和替代方案",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "先同步风险，避免信息不透明",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "协调资源优先处理关键订单",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "M": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "等上游给结果",
+          "mainScore": 2,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "不擅长催人，容易卡住",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        }
+      ],
+      "roleBranch": "SUP",
+      "requiredInMVP": true
+    },
+    {
+      "id": "SUP03",
+      "module": "E_ROLE_SCENARIO",
+      "text": "采购、仓库、运输、业务都说不是自己的问题。你会怎么处理？",
+      "options": [
+        {
+          "id": "A",
+          "text": "梳理节点、责任和证据",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "先推动解决问题，再复盘责任",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "M": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "找关键负责人协调",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "M": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "等领导判断",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "容易被多方意见弄乱",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        }
+      ],
+      "roleBranch": "SUP",
+      "requiredInMVP": true
+    },
+    {
+      "id": "SUP04",
+      "module": "E_ROLE_SCENARIO",
+      "text": "现场临时出现异常，需要快速判断。你会怎么做？",
+      "options": [
+        {
+          "id": "A",
+          "text": "先判断风险等级和影响范围",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "立即协调资源止损",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "M": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "按流程上报并记录",
+          "mainScore": 5,
+          "companyScores": {
+            "G": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "会先找有经验的人处理",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "突发情况会让我慌",
+          "mainScore": 1,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ],
+      "roleBranch": "SUP",
+      "requiredInMVP": true
+    },
+    {
+      "id": "SUP05",
+      "module": "E_ROLE_SCENARIO",
+      "text": "供应链 / 物流工作需要大量核对单据、数据、节点。你怎么看？",
+      "options": [
+        {
+          "id": "A",
+          "text": "可以接受，准确性是基础",
+          "mainScore": 5,
+          "companyScores": {
+            "G": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "能做，并希望优化成标准流程",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "短期可以，长期会枯燥",
+          "mainScore": 3,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        },
+        {
+          "id": "D",
+          "text": "觉得太细碎",
+          "mainScore": 2,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "很难保持耐心",
+          "mainScore": 1,
+          "riskTags": [
+            "GROWTH_GAP"
+          ]
+        }
+      ],
+      "roleBranch": "SUP",
+      "requiredInMVP": true
+    },
+    {
+      "id": "SUP06",
+      "module": "E_ROLE_SCENARIO",
+      "text": "系统显示已完成，但现场反馈没完成。你会怎么办？",
+      "options": [
+        {
+          "id": "A",
+          "text": "同时核对系统记录和现场证据",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "G": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "找到差异节点，推动修正",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "先按现场情况处理，系统后补",
+          "mainScore": 4,
+          "companyScores": {
+            "M": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "不知道该信系统还是现场",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "等上级判断",
+          "mainScore": 2,
+          "companyScores": {
+            "G": 3
+          },
+          "riskTags": [
+            "LOW_RESOURCE_INITIATIVE"
+          ]
+        }
+      ],
+      "roleBranch": "SUP",
+      "requiredInMVP": true
+    },
+    {
+      "id": "SUP07",
+      "module": "E_ROLE_SCENARIO",
+      "text": "更快的方案成本高，更便宜的方案时效慢。你会怎么判断？",
+      "options": [
+        {
+          "id": "A",
+          "text": "根据订单重要性和客户影响判断",
+          "mainScore": 5,
+          "companyScores": {
+            "D": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "给出成本、时效、风险对比",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 4
+          }
+        },
+        {
+          "id": "C",
+          "text": "找领导或业务确认取舍",
+          "mainScore": 4,
+          "companyScores": {
+            "G": 4,
+            "F": 4
+          }
+        },
+        {
+          "id": "D",
+          "text": "选最稳妥的方案",
+          "mainScore": 3,
+          "companyScores": {
+            "G": 4
+          }
+        },
+        {
+          "id": "E",
+          "text": "不知道怎么权衡",
+          "mainScore": 1,
+          "riskTags": [
+            "LOW_CLARITY"
+          ]
+        }
+      ],
+      "roleBranch": "SUP",
+      "requiredInMVP": true
+    },
+    {
+      "id": "SUP08",
+      "module": "E_ROLE_SCENARIO",
+      "text": "客户临时改交付要求，内部流程已经排好了。你会怎么办？",
+      "options": [
+        {
+          "id": "A",
+          "text": "评估变更影响，再决定是否接受",
+          "mainScore": 5,
+          "companyScores": {
+            "F": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "B",
+          "text": "协调内部资源尽量满足关键客户",
+          "mainScore": 5,
+          "companyScores": {
+            "M": 5,
+            "D": 5
+          }
+        },
+        {
+          "id": "C",
+          "text": "按流程判断能不能改",
+          "mainScore": 5,
+          "companyScores": {
+            "G": 5,
+            "F": 5
+          }
+        },
+        {
+          "id": "D",
+          "text": "觉得客户太麻烦",
+          "mainScore": 2,
+          "riskTags": [
+            "SOCIAL_DRAIN"
+          ]
+        },
+        {
+          "id": "E",
+          "text": "容易被临时变化打乱",
+          "mainScore": 1,
+          "riskTags": [
+            "HIGH_PRESSURE"
+          ]
+        }
+      ],
+      "roleBranch": "SUP",
+      "requiredInMVP": true
+    }
+  ]
+}
