@@ -19,6 +19,7 @@ import {
 import { loginAdmin, logoutAdmin, requireAdmin } from "./adminAuth.js";
 import { serverConfig } from "./config.js";
 import { initializeDatabase } from "./db.js";
+import { createWechatMiniappSession, MiniappIdentityError } from "./miniappIdentity.js";
 import {
   createOrReuseOrder,
   getOrder,
@@ -53,6 +54,7 @@ dotenv.config();
 initializeDatabase();
 
 const app = express();
+app.set("trust proxy", process.env.TRUST_PROXY_HOPS === "1" ? 1 : false);
 const port = serverConfig.port;
 const nodeEnv = serverConfig.nodeEnv;
 const frontendOrigin = serverConfig.frontendOrigin;
@@ -95,7 +97,25 @@ app.post("/api/wechat/notify", express.raw({ type: "application/json" }), async 
   }
 });
 
-app.use(express.json());
+app.use(express.json({ limit: "16kb" }));
+
+const miniappRateLimit = new Map<string, { count: number; resetAt: number }>();
+export function resetMiniappRateLimitForTest(): void { miniappRateLimit.clear(); }
+app.post("/api/miniapp/wechat/session", async (req, res) => {
+  const ip = getIp(req) ?? "unknown"; const now = Date.now(); const current = miniappRateLimit.get(ip);
+  if (current && current.resetAt > now && current.count >= 20) { res.status(429).json({ error: "RATE_LIMITED" }); return; }
+  miniappRateLimit.set(ip, current && current.resetAt > now ? { ...current, count: current.count + 1 } : { count: 1, resetAt: now + 60_000 });
+  try {
+    const body = req.body as Record<string, unknown>;
+    const result = await createWechatMiniappSession({ code: body.code as string, visitorId: body.visitorId as string });
+    res.set("Cache-Control", "no-store").json(result);
+  } catch (error) {
+    const code = error instanceof MiniappIdentityError ? error.code : "SESSION_CREATION_FAILED";
+    const status = code === "INVALID_REQUEST" ? 400 : code === "RATE_LIMITED" ? 429 : 500;
+    console.error("[miniapp-session]", code);
+    res.status(status).json({ error: code });
+  }
+});
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
@@ -106,9 +126,7 @@ app.get("/api/pricing/goal-fit-report", (_req, res) => {
 });
 
 function getIp(req: express.Request): string | null {
-  const forwarded = req.headers["x-forwarded-for"];
-  if (typeof forwarded === "string") return forwarded.split(",")[0]?.trim() ?? null;
-  return req.socket.remoteAddress ?? null;
+  return req.ip || req.socket.remoteAddress || null;
 }
 
 function getAnalyticsQuery(req: express.Request) {
@@ -622,6 +640,7 @@ app.get("/api/unlock/status", (req, res) => {
   });
 });
 
-app.listen(port, () => {
+export { app };
+if (process.env.NODE_ENV !== "test") app.listen(port, () => {
   console.log(`Goal Fit payment server listening on http://127.0.0.1:${port}`);
 });

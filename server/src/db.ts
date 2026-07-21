@@ -284,6 +284,34 @@ export function initializeDatabase(): void {
       created_at TEXT NOT NULL,
       updated_at TEXT NOT NULL
     );
+
+    CREATE TABLE IF NOT EXISTS platform_identities (
+      id TEXT PRIMARY KEY,
+      platform TEXT NOT NULL,
+      app_id TEXT NOT NULL,
+      openid_ciphertext TEXT NOT NULL,
+      openid_hash TEXT NOT NULL,
+      unionid_ciphertext TEXT,
+      unionid_hash TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      UNIQUE (platform, app_id, openid_hash)
+    );
+
+    CREATE TABLE IF NOT EXISTS miniapp_sessions (
+      id TEXT PRIMARY KEY,
+      token_hash TEXT NOT NULL UNIQUE,
+      platform_identity_id TEXT NOT NULL,
+      visitor_id TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      revoked_at TEXT,
+      created_at TEXT NOT NULL,
+      last_seen_at TEXT NOT NULL,
+      FOREIGN KEY (platform_identity_id) REFERENCES platform_identities(id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_miniapp_sessions_identity
+      ON miniapp_sessions (platform_identity_id, expires_at);
   `);
 
   db.prepare(
