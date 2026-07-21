@@ -13,7 +13,9 @@
     "test-referral-discount": "tsx src/testReferralDiscount.ts",
     "test-referral-stats": "tsx src/testReferralStats.ts",
     "test-analytics": "tsx src/testAnalytics.ts",
-    "test-admin-analytics": "tsx src/testAdminAnalytics.ts"
+    "test-admin-analytics": "tsx src/testAdminAnalytics.ts",
+    "test-miniapp-identity": "tsx src/testMiniappIdentity.ts",
+    "test-miniapp-session-route": "tsx src/testMiniappSessionRoute.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
