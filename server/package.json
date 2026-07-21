@@ -16,7 +16,8 @@
     "test-admin-analytics": "tsx src/testAdminAnalytics.ts",
     "test-miniapp-identity": "tsx src/testMiniappIdentity.ts",
     "test-miniapp-session-route": "tsx src/testMiniappSessionRoute.ts",
-    "test-goal-fit-domain-parity": "tsx src/testGoalFitDomainParity.ts"
+    "test-goal-fit-domain-parity": "tsx src/testGoalFitDomainParity.ts",
+    "test-goal-fit-assessment-store": "tsx src/testGoalFitAssessmentStore.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
