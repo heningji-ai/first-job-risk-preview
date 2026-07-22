@@ -17,7 +17,16 @@
     "test-miniapp-identity": "tsx src/testMiniappIdentity.ts",
     "test-miniapp-session-route": "tsx src/testMiniappSessionRoute.ts",
     "test-goal-fit-domain-parity": "tsx src/testGoalFitDomainParity.ts",
-    "test-goal-fit-assessment-store": "tsx src/testGoalFitAssessmentStore.ts"
+    "test-goal-fit-assessment-store": "tsx src/testGoalFitAssessmentStore.ts",
+    "test-goal-fit-assessment-route": "tsx src/testGoalFitAssessmentRoute.ts",
+    "test-goal-fit-assessment-auth-route": "tsx src/testGoalFitAssessmentAuthRoute.ts",
+    "test-goal-fit-assessment-auth-edge-route": "tsx src/testGoalFitAssessmentAuthEdgeRoute.ts",
+    "test-goal-fit-assessment-complete-route": "tsx src/testGoalFitAssessmentCompleteRoute.ts",
+    "test-goal-fit-assessment-complete-validation-route": "tsx src/testGoalFitAssessmentCompleteValidationIsolatedRoute.ts",
+    "test-goal-fit-assessment-failure-route": "tsx src/testGoalFitAssessmentFailureRoute.ts",
+    "test-goal-fit-assessment-privacy-route": "tsx src/testGoalFitAssessmentPrivacyRoute.ts",
+    "test-goal-fit-assessment-latest-route": "tsx src/testGoalFitAssessmentLatestRoute.ts",
+    "test-goal-fit-assessment-free-result-parity-route": "tsx src/testGoalFitAssessmentFreeResultParityRoute.ts"
   },
   "dependencies": {
     "cors": "^2.8.5",
