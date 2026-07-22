@@ -1,0 +1,14 @@
+import assert from "node:assert/strict";
+process.env.GOAL_FIT_DB_PATH=`data/failure-${Date.now()}.db`;process.env.NODE_ENV="test";process.env.WECHAT_MINIAPP_APP_ID="wx";process.env.MINIAPP_IDENTITY_ENCRYPTION_KEY=Buffer.alloc(32,15).toString("base64");process.env.ASSESSMENT_DATA_ENCRYPTION_KEY=Buffer.alloc(32,16).toString("base64");
+const {app,setAssessmentStoreForTest,resetAssessmentRateLimitForTest}=await import("./index.js"),{AssessmentStoreError,createCompletedAssessmentSnapshot}=await import("./assessmentStore.js"),{db}=await import("./db.js"),{createWechatMiniappSession}=await import("./miniappIdentity.js"),{selectGoalFitQuestions}=await import("./goalFitDomain/index.js");
+const s=app.listen(0),base=`http://127.0.0.1:${(s.address() as any).port}`,t=(await createWechatMiniappSession({code:"mock-failure",visitorId:"visitor_12345678"})).sessionToken,q=selectGoalFitQuestions("D","PM"),baseBody={targetCompany:"D",targetRole:"PM",selectedQuestionIds:q.map(x=>x.id),answers:q.map(x=>({questionId:x.id,optionId:x.options[0].id}))};
+const post=(submissionId:string)=>fetch(`${base}/api/miniapp/goal-fit/assessments/complete`,{method:"POST",headers:{"content-type":"application/json",authorization:`Bearer ${t}`},body:JSON.stringify({...baseBody,submissionId})});
+const count=()=>({assessments:(db.prepare("SELECT count(*) count FROM assessments").get() as any).count,snapshots:(db.prepare("SELECT count(*) count FROM report_snapshots").get() as any).count});
+async function failure(submissionId:string, override:any, expected:unknown){ resetAssessmentRateLimitForTest(); setAssessmentStoreForTest(override); const before=count(),r=await post(submissionId); assert.equal(r.status,500); assert.deepEqual(await r.json(),expected); assert.deepEqual(count(),before); }
+try{
+ setAssessmentStoreForTest(()=>{throw new AssessmentStoreError("IDEMPOTENCY_CONFLICT");});let r=await post("sub_failure_conflict_123456");assert.equal(r.status,409);assert.deepEqual(await r.json(),{error:"IDEMPOTENCY_CONFLICT"});
+ await failure("sub_failure_secret_123456",()=>{throw new Error("TEST_SQLITE_ERROR_SECRET");},{error:"ASSESSMENT_SAVE_FAILED"});
+ await failure("sub_failure_before_assessment_123456",(input:any)=>createCompletedAssessmentSnapshot(input,"beforeAssessment"),{error:"ASSESSMENT_SAVE_FAILED"});
+ await failure("sub_failure_before_snapshot_123456",(input:any)=>createCompletedAssessmentSnapshot(input,"beforeSnapshot"),{error:"ASSESSMENT_SAVE_FAILED"});
+ resetAssessmentRateLimitForTest();setAssessmentStoreForTest(null);r=await post("sub_failure_success_123456");assert.equal(r.status,200);assert.deepEqual(count(),{assessments:1,snapshots:1});console.log("Goal Fit assessment failure route tests passed.");
+}finally{setAssessmentStoreForTest(null);resetAssessmentRateLimitForTest();s.close();}

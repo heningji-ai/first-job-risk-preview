@@ -19,6 +19,9 @@ import {
 import { loginAdmin, logoutAdmin, requireAdmin } from "./adminAuth.js";
 import { serverConfig } from "./config.js";
 import { initializeDatabase } from "./db.js";
+import { authenticateMiniappSession, MiniappAuthError } from "./miniappAuth.js";
+import { AssessmentStoreError, createCompletedAssessmentSnapshot, getAssessmentFreeResult, getLatestAssessment } from "./assessmentStore.js";
+import { selectGoalFitQuestions } from "./goalFitDomain/index.js";
 import { createWechatMiniappSession, MiniappIdentityError } from "./miniappIdentity.js";
 import {
   createOrReuseOrder,
@@ -98,6 +101,18 @@ app.post("/api/wechat/notify", express.raw({ type: "application/json" }), async 
 });
 
 app.use(express.json({ limit: "16kb" }));
+
+const assessmentRateLimit = new Map<string, { count: number; resetAt: number }>();
+export function resetAssessmentRateLimitForTest(): void { assessmentRateLimit.clear(); }
+let assessmentStoreOverride: typeof createCompletedAssessmentSnapshot | null = null;
+export function setAssessmentStoreForTest(value: typeof createCompletedAssessmentSnapshot | null): void { assessmentStoreOverride = value; }
+function assessmentError(res: express.Response, error: unknown) { const rawCode: string = error instanceof MiniappAuthError ? error.code : error instanceof AssessmentStoreError ? error.code : error instanceof Error ? error.message : "ASSESSMENT_SAVE_FAILED"; const known = ["MINIAPP_AUTH_REQUIRED","MINIAPP_SESSION_EXPIRED","ASSESSMENT_NOT_FOUND","IDEMPOTENCY_CONFLICT","INVALID_ASSESSMENT_REQUEST","ASSESSMENT_INCOMPLETE","INVALID_QUESTION","INVALID_OPTION","INVALID_QUESTION_SET","INVALID_COMPANY_TYPE","INVALID_ROLE_TYPE","ASSESSMENT_STORE_FAILED"]; const code: string = known.includes(rawCode) ? rawCode : "ASSESSMENT_SAVE_FAILED"; const status = code === "MINIAPP_AUTH_REQUIRED" || code === "MINIAPP_SESSION_EXPIRED" ? 401 : code === "ASSESSMENT_NOT_FOUND" ? 404 : code === "IDEMPOTENCY_CONFLICT" ? 409 : ["INVALID_ASSESSMENT_REQUEST","ASSESSMENT_INCOMPLETE","INVALID_QUESTION","INVALID_OPTION","INVALID_QUESTION_SET","INVALID_COMPANY_TYPE","INVALID_ROLE_TYPE"].includes(code) ? 400 : 500; res.status(status).json({ error: code === "INVALID_COMPANY_TYPE" || code === "INVALID_ROLE_TYPE" ? "INVALID_ASSESSMENT_REQUEST" : code === "ASSESSMENT_STORE_FAILED" ? "ASSESSMENT_SAVE_FAILED" : code }); }
+function auth(req: express.Request) { return authenticateMiniappSession(req.headers.authorization); }
+function validSubmissionId(value: unknown): value is string { return typeof value === "string" && /^sub_[A-Za-z0-9_-]{8,128}$/.test(value); }
+function completeBody(body: unknown) { if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("INVALID_ASSESSMENT_REQUEST"); const allowed = new Set(["submissionId","targetCompany","targetRole","selectedQuestionIds","answers"]); for (const key of Object.keys(body as object)) if (!allowed.has(key)) throw new Error("INVALID_ASSESSMENT_REQUEST"); const value = body as any; if (!validSubmissionId(value.submissionId)) throw new Error("INVALID_ASSESSMENT_REQUEST"); if (Array.isArray(value.answers) && typeof value.targetCompany === "string" && typeof value.targetRole === "string") { const expected=selectGoalFitQuestions(value.targetCompany as never,value.targetRole as never); if (value.answers.map((answer: any)=>answer?.questionId).join("\u0000")!==expected.map(question=>question.id).join("\u0000")) throw new Error("INVALID_QUESTION_SET"); } return value; }
+app.post("/api/miniapp/goal-fit/assessments/complete", (req,res) => { try { const context=auth(req), body=completeBody(req.body); const now=Date.now(), entry=assessmentRateLimit.get(context.platformIdentityId); if(entry && entry.resetAt>now && entry.count>=10) return void res.status(429).json({error:"RATE_LIMITED"}); assessmentRateLimit.set(context.platformIdentityId, entry&&entry.resetAt>now ? {...entry,count:entry.count+1}:{count:1,resetAt:now+60000}); const { idempotent: _idempotent, ...result }=(assessmentStoreOverride ?? createCompletedAssessmentSnapshot)({...body,platformIdentityId:context.platformIdentityId,visitorId:context.visitorId}); res.set("Cache-Control","no-store").json({...result,versions:{questionSetVersion:"goal-fit-question-set-v1.3",scoringVersion:"goal-fit-v1.3",reportVersion:"goal-fit-result-v1.3"}}); } catch(error) { assessmentError(res,error); } });
+app.get("/api/miniapp/goal-fit/assessments/latest", (req,res) => { try { const value=getLatestAssessment(auth(req).platformIdentityId); if(!value) return void res.status(404).json({error:"ASSESSMENT_NOT_FOUND"}); res.set("Cache-Control","no-store").json(value); } catch(error) { assessmentError(res,error); } });
+app.get("/api/miniapp/goal-fit/assessments/:assessmentId/free-result", (req,res) => { try { if(!/^asm_[A-Za-z0-9_-]{16,}$/.test(req.params.assessmentId)) throw new Error("INVALID_ASSESSMENT_REQUEST"); const value=getAssessmentFreeResult(req.params.assessmentId,auth(req).platformIdentityId); if(!value) return void res.status(404).json({error:"ASSESSMENT_NOT_FOUND"}); res.set("Cache-Control","no-store").json(value); } catch(error) { assessmentError(res,error); } });
 
 const miniappRateLimit = new Map<string, { count: number; resetAt: number }>();
 export function resetMiniappRateLimitForTest(): void { miniappRateLimit.clear(); }

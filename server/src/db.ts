@@ -15,6 +15,7 @@ fs.mkdirSync(path.dirname(databasePath), { recursive: true });
 export const db = new DatabaseSync(databasePath);
 
 db.exec("PRAGMA journal_mode = WAL");
+db.exec("PRAGMA foreign_keys = ON");
 
 export function runImmediateTransaction<T>(work: () => T): T {
   db.exec("BEGIN IMMEDIATE");
@@ -312,6 +313,39 @@ export function initializeDatabase(): void {
 
     CREATE INDEX IF NOT EXISTS idx_miniapp_sessions_identity
       ON miniapp_sessions (platform_identity_id, expires_at);
+
+    CREATE TABLE IF NOT EXISTS assessments (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      assessment_id TEXT NOT NULL UNIQUE,
+      platform_identity_id TEXT NOT NULL,
+      visitor_id TEXT NOT NULL,
+      submission_id TEXT NOT NULL,
+      target_company TEXT NOT NULL,
+      target_role TEXT NOT NULL,
+      question_set_version TEXT NOT NULL,
+      question_bank_hash TEXT NOT NULL,
+      scoring_version TEXT NOT NULL,
+      payload_ciphertext TEXT NOT NULL,
+      payload_hash TEXT NOT NULL,
+      status TEXT NOT NULL CHECK(status = 'completed'),
+      completed_at TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      UNIQUE(platform_identity_id, submission_id),
+      FOREIGN KEY(platform_identity_id) REFERENCES platform_identities(id)
+    );
+    CREATE TABLE IF NOT EXISTS report_snapshots (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      report_snapshot_id TEXT NOT NULL UNIQUE,
+      assessment_row_id INTEGER NOT NULL UNIQUE,
+      report_version TEXT NOT NULL,
+      free_result_json TEXT NOT NULL,
+      full_report_ciphertext TEXT NOT NULL,
+      full_report_hash TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      FOREIGN KEY(assessment_row_id) REFERENCES assessments(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_assessments_identity_completed ON assessments(platform_identity_id, completed_at);
   `);
 
   db.prepare(
