@@ -42,6 +42,11 @@ const orderColumns = `
   pricingMode,
   createdAt,
   updatedAt,
+  platformIdentityId,
+  assessmentId,
+  reportSnapshotId,
+  orderPurpose,
+  expiresAt,
   paidAt
 `;
 
@@ -95,6 +100,7 @@ export function createOrder(input: CreateOrderInput): OrderRecord {
     pricingMode: amount.pricingMode ?? (isFreeTrialOrder ? "free_trial" : "normal"),
     createdAt: now,
     updatedAt: now,
+    platformIdentityId: null, assessmentId: null, reportSnapshotId: null, orderPurpose: null, expiresAt: null,
     paidAt: isFreeTrialOrder ? now : null
   };
 
@@ -133,6 +139,11 @@ export function createOrder(input: CreateOrderInput): OrderRecord {
         @pricingMode,
         @createdAt,
         @updatedAt,
+        @platformIdentityId,
+        @assessmentId,
+        @reportSnapshotId,
+        @orderPurpose,
+        @expiresAt,
         @paidAt
       )
     `

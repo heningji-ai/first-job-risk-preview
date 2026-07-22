@@ -70,7 +70,12 @@ export function initializeDatabase(): void {
       analyticsReferralCode TEXT,
       createdAt TEXT NOT NULL,
       updatedAt TEXT NOT NULL,
-      paidAt TEXT
+      paidAt TEXT,
+      platformIdentityId TEXT,
+      assessmentId TEXT,
+      reportSnapshotId TEXT,
+      orderPurpose TEXT,
+      expiresAt TEXT
     );
 
     CREATE INDEX IF NOT EXISTS idx_orders_session_status
@@ -443,6 +448,9 @@ export function initializeDatabase(): void {
   if (!columnNames.has("pricingMode")) {
     db.exec("ALTER TABLE orders ADD COLUMN pricingMode TEXT");
   }
+
+  for (const name of ["platformIdentityId","assessmentId","reportSnapshotId","orderPurpose","expiresAt"]) { if (!columnNames.has(name)) db.exec(`ALTER TABLE orders ADD COLUMN ${name} TEXT`); }
+  db.exec("CREATE INDEX IF NOT EXISTS idx_orders_platform_identity ON orders (platformIdentityId); CREATE INDEX IF NOT EXISTS idx_orders_assessment ON orders (assessmentId); CREATE INDEX IF NOT EXISTS idx_orders_report_snapshot ON orders (reportSnapshotId);");
 
   migrateAnalyticsPlatformColumns();
   db.exec(`

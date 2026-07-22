@@ -42,6 +42,11 @@ export type OrderRecord = {
   createdAt: string;
   updatedAt: string;
   paidAt: string | null;
+  platformIdentityId?: string | null;
+  assessmentId?: string | null;
+  reportSnapshotId?: string | null;
+  orderPurpose?: string | null;
+  expiresAt?: string | null;
 };
 
 export type CreateOrderInput = {
