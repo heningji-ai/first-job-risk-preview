@@ -18,11 +18,15 @@ import {
 } from "./analytics.js";
 import { loginAdmin, logoutAdmin, requireAdmin } from "./adminAuth.js";
 import { serverConfig } from "./config.js";
-import { initializeDatabase } from "./db.js";
+import { db, initializeDatabase } from "./db.js";
 import { authenticateMiniappSession, MiniappAuthError } from "./miniappAuth.js";
 import { AssessmentStoreError, createCompletedAssessmentSnapshot, getAssessmentFreeResult, getLatestAssessment } from "./assessmentStore.js";
 import { selectGoalFitQuestions } from "./goalFitDomain/index.js";
-import { createWechatMiniappSession, MiniappIdentityError } from "./miniappIdentity.js";
+import { createWechatMiniappSession, exchangeWechatMiniappCode, MiniappIdentityError } from "./miniappIdentity.js";
+import { createOrReuseGoalFitPaymentOrder, GoalFitPaymentOrderError } from "./goalFitMiniappPaymentOrderStore.js";
+import { createOrReuseGoalFitVirtualPaymentAttempt, GoalFitVirtualPaymentAttemptError } from "./miniappVirtualPaymentAttempt.js";
+import { createGoalFitVirtualPaymentParams, MiniappVirtualPaymentError, getConfiguredVirtualPaymentEnv } from "./miniappVirtualPayment.js";
+import crypto from "node:crypto";
 import {
   createOrReuseOrder,
   getOrder,
@@ -113,6 +117,44 @@ function completeBody(body: unknown) { if (!body || typeof body !== "object" || 
 app.post("/api/miniapp/goal-fit/assessments/complete", (req,res) => { try { const context=auth(req), body=completeBody(req.body); const now=Date.now(), entry=assessmentRateLimit.get(context.platformIdentityId); if(entry && entry.resetAt>now && entry.count>=10) return void res.status(429).json({error:"RATE_LIMITED"}); assessmentRateLimit.set(context.platformIdentityId, entry&&entry.resetAt>now ? {...entry,count:entry.count+1}:{count:1,resetAt:now+60000}); const { idempotent: _idempotent, ...result }=(assessmentStoreOverride ?? createCompletedAssessmentSnapshot)({...body,platformIdentityId:context.platformIdentityId,visitorId:context.visitorId}); res.set("Cache-Control","no-store").json({...result,versions:{questionSetVersion:"goal-fit-question-set-v1.3",scoringVersion:"goal-fit-v1.3",reportVersion:"goal-fit-result-v1.3"}}); } catch(error) { assessmentError(res,error); } });
 app.get("/api/miniapp/goal-fit/assessments/latest", (req,res) => { try { const value=getLatestAssessment(auth(req).platformIdentityId); if(!value) return void res.status(404).json({error:"ASSESSMENT_NOT_FOUND"}); res.set("Cache-Control","no-store").json(value); } catch(error) { assessmentError(res,error); } });
 app.get("/api/miniapp/goal-fit/assessments/:assessmentId/free-result", (req,res) => { try { if(!/^asm_[A-Za-z0-9_-]{16,}$/.test(req.params.assessmentId)) throw new Error("INVALID_ASSESSMENT_REQUEST"); const value=getAssessmentFreeResult(req.params.assessmentId,auth(req).platformIdentityId); if(!value) return void res.status(404).json({error:"ASSESSMENT_NOT_FOUND"}); res.set("Cache-Control","no-store").json(value); } catch(error) { assessmentError(res,error); } });
+const virtualPaymentBodyKeys = new Set(["code", "requestId"]);
+function virtualPaymentBody(body: unknown): { code: string; requestId: string } {
+  if (!body || typeof body !== "object" || Array.isArray(body)) throw new Error("INVALID_REQUEST_BODY");
+  for (const key of Object.keys(body)) if (!virtualPaymentBodyKeys.has(key)) throw new Error("INVALID_REQUEST_BODY");
+  const value = body as Record<string, unknown>;
+  if (typeof value.code !== "string" || !/^[A-Za-z0-9_-]{8,512}$/.test(value.code)) throw new Error("INVALID_WECHAT_LOGIN_CODE");
+  if (typeof value.requestId !== "string" || !/^(?:req_[A-Za-z0-9_-]{8,128}|[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12})$/i.test(value.requestId)) throw new Error("INVALID_PAYMENT_REQUEST_ID");
+  return { code: value.code, requestId: value.requestId };
+}
+function virtualPaymentError(res: express.Response, error: unknown): void {
+  const raw = error instanceof MiniappAuthError || error instanceof MiniappIdentityError || error instanceof GoalFitPaymentOrderError || error instanceof GoalFitVirtualPaymentAttemptError || error instanceof MiniappVirtualPaymentError ? error.code : error instanceof Error ? error.message : "PAYMENT_ATTEMPT_CREATE_FAILED";
+  const known = new Set(["INVALID_REQUEST_BODY", "INVALID_ASSESSMENT_ID", "INVALID_WECHAT_LOGIN_CODE", "INVALID_PAYMENT_REQUEST_ID", "MINIAPP_AUTH_REQUIRED", "MINIAPP_SESSION_EXPIRED", "WECHAT_CODE_EXCHANGE_FAILED", "WECHAT_SESSION_KEY_MISSING", "MINIAPP_IDENTITY_MISMATCH", "VIRTUAL_PAYMENT_NOT_CONFIGURED", "INVALID_PAYMENT_ENV", "ASSESSMENT_NOT_FOUND", "REPORT_SNAPSHOT_NOT_FOUND", "REPORT_NOT_PURCHASABLE", "PRICE_NOT_AVAILABLE", "ALREADY_PURCHASED", "ORDER_CREATE_FAILED", "PAYMENT_ATTEMPT_CREATE_FAILED", "VIRTUAL_PAYMENT_SIGNING_FAILED"]);
+  const code = known.has(raw) ? raw : "PAYMENT_ATTEMPT_CREATE_FAILED";
+  const status = ["MINIAPP_AUTH_REQUIRED", "MINIAPP_SESSION_EXPIRED"].includes(code) ? 401 : ["ASSESSMENT_NOT_FOUND", "REPORT_SNAPSHOT_NOT_FOUND"].includes(code) ? 404 : ["ALREADY_PURCHASED"].includes(code) ? 409 : ["VIRTUAL_PAYMENT_NOT_CONFIGURED", "INVALID_PAYMENT_ENV", "PRICE_NOT_AVAILABLE"].includes(code) ? 503 : ["INVALID_REQUEST_BODY", "INVALID_ASSESSMENT_ID", "INVALID_WECHAT_LOGIN_CODE", "INVALID_PAYMENT_REQUEST_ID", "WECHAT_CODE_EXCHANGE_FAILED", "WECHAT_SESSION_KEY_MISSING", "MINIAPP_IDENTITY_MISMATCH", "REPORT_NOT_PURCHASABLE"].includes(code) ? 400 : 500;
+  res.status(status).json({ error: code });
+}
+app.post("/api/miniapp/goal-fit/assessments/:assessmentId/virtual-payment-params", async (req, res) => {
+  try {
+    if (!/^asm_[A-Za-z0-9_-]{16,}$/.test(req.params.assessmentId)) throw new Error("INVALID_ASSESSMENT_ID");
+    const context = auth(req);
+    const body = virtualPaymentBody(req.body);
+    const env = getConfiguredVirtualPaymentEnv();
+    const exchange = await exchangeWechatMiniappCode(body.code);
+    if (!exchange.sessionKey) throw new Error("WECHAT_SESSION_KEY_MISSING");
+    const openidHash = crypto.createHash("sha256").update(exchange.openid, "utf8").digest("hex");
+    const identity = db.prepare("SELECT id FROM platform_identities WHERE id = ? AND platform = 'wechat_miniapp' AND app_id = ? AND openid_hash = ?").get(context.platformIdentityId, serverConfig.miniapp.appId, openidHash) as { id: string } | undefined;
+    if (!identity) throw new Error("MINIAPP_IDENTITY_MISMATCH");
+    const order = createOrReuseGoalFitPaymentOrder({ platformIdentityId: context.platformIdentityId, assessmentId: req.params.assessmentId, now: new Date() });
+    const attempt = createOrReuseGoalFitVirtualPaymentAttempt({ orderId: order.orderId, platformIdentityId: context.platformIdentityId, assessmentId: req.params.assessmentId, requestId: body.requestId, env, now: new Date() });
+    const payment = createGoalFitVirtualPaymentParams({ goodsPrice: order.amount, providerOutTradeNo: attempt.providerOutTradeNo, sessionKey: exchange.sessionKey });
+    res.set("Cache-Control", "no-store").json({ orderId: order.orderId, paymentAttemptId: attempt.id, mode: payment.mode, signData: payment.signData, paySig: payment.paySig, signature: payment.signature });
+  } catch (error) {
+    if (error instanceof MiniappIdentityError && error.code === "WECHAT_CODE_EXCHANGE_FAILED") return virtualPaymentError(res, error);
+    if (error instanceof Error && error.message === "WECHAT_SESSION_KEY_MISSING") return virtualPaymentError(res, error);
+    if (error instanceof Error && error.message === "MINIAPP_IDENTITY_MISMATCH") return virtualPaymentError(res, error);
+    virtualPaymentError(res, error);
+  }
+});
 
 const miniappRateLimit = new Map<string, { count: number; resetAt: number }>();
 export function resetMiniappRateLimitForTest(): void { miniappRateLimit.clear(); }

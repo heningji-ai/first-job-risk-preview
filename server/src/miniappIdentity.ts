@@ -6,6 +6,7 @@ const PLATFORM = "wechat_miniapp";
 const SESSION_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const visitorPattern = /^visitor_[A-Za-z0-9_-]{8,128}$/;
 
+export type WechatMiniappCodeExchange = { openid: string; unionid?: string; sessionKey?: string };
 type WechatIdentity = { openid: string; unionid?: string };
 type ExchangeProvider = (code: string) => Promise<WechatIdentity>;
 
@@ -36,18 +37,23 @@ export function decryptIdentity(value: string): string {
 }
 export function isMiniappSessionExpired(expiresAt: string, now = Date.now()): boolean { return new Date(expiresAt).getTime() <= now; }
 
-async function exchangeWechatCode(code: string): Promise<WechatIdentity> {
+export async function exchangeWechatMiniappCode(code: string): Promise<WechatMiniappCodeExchange> {
   if (process.env.NODE_ENV === "test") {
     if (code === "mock_exchange_failure") throw new MiniappIdentityError("WECHAT_CODE_EXCHANGE_FAILED");
-    return { openid: `mock-openid-${code}` };
+    return { openid: `mock-openid-${code}`, sessionKey: `mock-session-key-${code}` };
   }
   const appId = requiredEnv("WECHAT_MINIAPP_APP_ID"); const secret = requiredEnv("WECHAT_MINIAPP_APP_SECRET");
   let response: Response;
   try { response = await fetch(`https://api.weixin.qq.com/sns/jscode2session?appid=${encodeURIComponent(appId)}&secret=${encodeURIComponent(secret)}&js_code=${encodeURIComponent(code)}&grant_type=authorization_code`); } catch { throw new MiniappIdentityError("WECHAT_CODE_EXCHANGE_FAILED"); }
-  const data = await response.json().catch(() => null) as { openid?: unknown; unionid?: unknown; errcode?: unknown } | null;
-  if (!response.ok || !data || typeof data.openid !== "string" || !data.openid) throw new MiniappIdentityError("WECHAT_CODE_EXCHANGE_FAILED");
-  return { openid: data.openid, unionid: typeof data.unionid === "string" ? data.unionid : undefined };
+  const data = await response.json().catch(() => null) as { openid?: unknown; unionid?: unknown; session_key?: unknown; errcode?: unknown } | null;
+  if (!response.ok || !data || typeof data.openid !== "string" || !data.openid || typeof data.session_key !== "string" || !data.session_key) throw new MiniappIdentityError("WECHAT_CODE_EXCHANGE_FAILED");
+  return { openid: data.openid, unionid: typeof data.unionid === "string" ? data.unionid : undefined, sessionKey: data.session_key };
 }
+
+const exchangeWechatCode = async (code: string): Promise<WechatIdentity> => {
+  const identity = await exchangeWechatMiniappCode(code);
+  return { openid: identity.openid, unionid: identity.unionid };
+};
 
 export class MiniappIdentityError extends Error { constructor(readonly code: "INVALID_REQUEST" | "WECHAT_CODE_EXCHANGE_FAILED" | "WECHAT_CONFIGURATION_MISSING" | "SESSION_CREATION_FAILED" | "RATE_LIMITED") { super(code); } }
 

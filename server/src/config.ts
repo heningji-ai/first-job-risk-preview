@@ -41,6 +41,15 @@ export const serverConfig = {
     ),
     notifyUrl: getEnv("WECHAT_PAY_NOTIFY_URL"),
     description: getEnv("WECHAT_PAY_DESCRIPTION", "第一份工作预演完整报告")
+  },
+  miniappVirtualPayment: {
+    offerId: getEnv("WECHAT_MINIAPP_VIRTUAL_PAYMENT_OFFER_ID"),
+    env: getEnv("WECHAT_MINIAPP_VIRTUAL_PAYMENT_ENV"),
+    appKeyProd: getEnv("WECHAT_MINIAPP_VIRTUAL_PAYMENT_APP_KEY_PROD"),
+    appKeySandbox: getEnv("WECHAT_MINIAPP_VIRTUAL_PAYMENT_APP_KEY_SANDBOX")
+  },
+  miniapp: {
+    appId: getEnv("WECHAT_MINIAPP_APP_ID")
   }
 };
 
