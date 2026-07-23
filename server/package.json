@@ -21,6 +21,7 @@
     "test-goal-fit-miniapp-payment-order-store-happy-path": "tsx src/testGoalFitMiniappPaymentOrderStoreHappyPath.ts",
     "test-goal-fit-miniapp-payment-order-store-failures": "tsx src/testGoalFitMiniappPaymentOrderStoreFailures.ts",
     "test-goal-fit-miniapp-payment-order-store-statuses": "tsx src/testGoalFitMiniappPaymentOrderStoreStatuses.ts",
+    "test-goal-fit-miniapp-payment-order-busy-retry": "tsx src/testGoalFitMiniappPaymentOrderBusyRetry.ts",
     "test-goal-fit-assessment-store": "tsx src/testGoalFitAssessmentStore.ts",
     "test-goal-fit-assessment-route": "tsx src/testGoalFitAssessmentRoute.ts",
     "test-goal-fit-assessment-auth-route": "tsx src/testGoalFitAssessmentAuthRoute.ts",

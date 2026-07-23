@@ -12,21 +12,65 @@ export const databasePath = process.env.GOAL_FIT_DB_PATH
 fs.mkdirSync(dataDir, { recursive: true });
 fs.mkdirSync(path.dirname(databasePath), { recursive: true });
 
-export const db = new DatabaseSync(databasePath);
+export function configureDatabaseConnection(connection: DatabaseSync, enableWal = false, busyTimeoutMs = 1000): DatabaseSync {
+  if (enableWal) connection.exec("PRAGMA journal_mode = WAL");
+  connection.exec("PRAGMA foreign_keys = ON");
+  connection.exec(`PRAGMA busy_timeout = ${busyTimeoutMs}`);
+  return connection;
+}
 
-db.exec("PRAGMA journal_mode = WAL");
-db.exec("PRAGMA foreign_keys = ON");
+export function openConfiguredDatabaseConnection(
+  filePath: string,
+  enableWal = false,
+  options?: { busyTimeoutMs?: number }
+): DatabaseSync {
+  const busyTimeoutMs = options?.busyTimeoutMs ?? 1000;
+  return configureDatabaseConnection(new DatabaseSync(filePath, { timeout: busyTimeoutMs }), enableWal, busyTimeoutMs);
+}
 
-export function runImmediateTransaction<T>(work: () => T): T {
-  db.exec("BEGIN IMMEDIATE");
+export const db = openConfiguredDatabaseConnection(databasePath, true);
+
+export const GOAL_FIT_ORDER_BUSY_RETRY_DELAYS_MS = [25, 50, 100] as const;
+
+export function isSqliteBusyOrLockedError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const value = error as { code?: unknown; message?: unknown; cause?: unknown };
+  const code = typeof value.code === "string" ? value.code : "";
+  if (code === "SQLITE_BUSY" || code === "SQLITE_LOCKED") return true;
+  const message = typeof value.message === "string" ? value.message : "";
+  return /^(?:SQLITE_BUSY|SQLITE_LOCKED)|database(?: table)? is locked/i.test(message);
+}
+
+function sleepSync(milliseconds: number): void {
+  Atomics.wait(new Int32Array(new SharedArrayBuffer(4)), 0, 0, milliseconds);
+}
+
+export function runImmediateTransactionWithBusyRetry<T>(
+  work: () => T,
+  options?: { onBusyRetry?: (event: { attempt: number; delayMs: number }) => void },
+  database: DatabaseSync = db
+): T {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return runImmediateTransaction(work, database);
+    } catch (error) {
+      if (!isSqliteBusyOrLockedError(error) || attempt >= GOAL_FIT_ORDER_BUSY_RETRY_DELAYS_MS.length) throw error;
+      const delayMs = GOAL_FIT_ORDER_BUSY_RETRY_DELAYS_MS[attempt];
+      options?.onBusyRetry?.({ attempt: attempt + 1, delayMs });
+      sleepSync(delayMs);
+    }
+  }
+}
+export function runImmediateTransaction<T>(work: () => T, database: DatabaseSync = db): T {
+  database.exec("BEGIN IMMEDIATE");
 
   try {
     const result = work();
-    db.exec("COMMIT");
+    database.exec("COMMIT");
     return result;
   } catch (error) {
     try {
-      db.exec("ROLLBACK");
+      database.exec("ROLLBACK");
     } catch {
       // Preserve the original failure.
     }
@@ -451,6 +495,7 @@ export function initializeDatabase(): void {
 
   for (const name of ["platformIdentityId","assessmentId","reportSnapshotId","orderPurpose","expiresAt"]) { if (!columnNames.has(name)) db.exec(`ALTER TABLE orders ADD COLUMN ${name} TEXT`); }
   db.exec("CREATE INDEX IF NOT EXISTS idx_orders_platform_identity ON orders (platformIdentityId); CREATE INDEX IF NOT EXISTS idx_orders_assessment ON orders (assessmentId); CREATE INDEX IF NOT EXISTS idx_orders_report_snapshot ON orders (reportSnapshotId);");
+  db.exec("CREATE UNIQUE INDEX IF NOT EXISTS uq_orders_goal_fit_pending ON orders (platformIdentityId, assessmentId, orderPurpose) WHERE orderPurpose = 'goal_fit_full_report' AND platformIdentityId IS NOT NULL AND assessmentId IS NOT NULL AND status = 'pending';");
 
   migrateAnalyticsPlatformColumns();
   db.exec(`

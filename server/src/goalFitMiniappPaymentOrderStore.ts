@@ -1,4 +1,6 @@
-import { db, runImmediateTransaction } from "./db.js";
+import { nanoid } from "nanoid";
+import type { DatabaseSync } from "node:sqlite";
+import { db, runImmediateTransactionWithBusyRetry } from "./db.js";
 import { createOrder, getOrder, getGoalFitPaymentOrders, updateGoalFitPaymentOrderStatus } from "./orders.js";
 import { calculateGoalFitOrderAmount } from "./pricing.js";
 
@@ -71,14 +73,247 @@ function toPublicOrder(order: ReturnType<typeof getOrder>, input: { assessmentId
   };
 }
 
-export function createOrReuseGoalFitPaymentOrder(input: {
+type GoalFitPaymentOrderInput = {
   platformIdentityId: string;
   assessmentId: string;
   now: Date;
-}) {
+};
+
+type GoalFitPaymentOrderRecord = NonNullable<ReturnType<typeof getOrder>>;
+
+type GoalFitPaymentOrderStore = {
+  createOrReuseGoalFitPaymentOrder: (input: GoalFitPaymentOrderInput) => ReturnType<typeof toPublicOrder>;
+};
+
+const orderColumns = `
+  id,
+  outTradeNo,
+  sessionId,
+  status,
+  accessMode,
+  originalAmountCents,
+  discountAmountCents,
+  payAmountCents,
+  couponCode,
+  paymentProvider,
+  paymentMode,
+  wechatPrepayId,
+  wechatCodeUrl,
+  wechatTransactionId,
+  sourceReferralCode,
+  referralVisitId,
+  analyticsVisitorId,
+  analyticsSource,
+  analyticsChannel,
+  analyticsCampaign,
+  analyticsReferralCode,
+  basePriceCents,
+  salePriceCents,
+  discountCents,
+  finalAmountCents,
+  pricingRuleId,
+  pricingSnapshotJson,
+  pricingMode,
+  createdAt,
+  updatedAt,
+  platformIdentityId,
+  assessmentId,
+  reportSnapshotId,
+  orderPurpose,
+  expiresAt,
+  paidAt
+`;
+
+function createOutTradeNo(): string {
+  return `GF${Date.now()}${nanoid(10).toUpperCase()}`;
+}
+
+function mapOrder(row: unknown): GoalFitPaymentOrderRecord | null {
+  if (!row || typeof row !== "object") return null;
+  return row as GoalFitPaymentOrderRecord;
+}
+
+function getInjectedPaymentPrice(connection: DatabaseSync, now: Date): GoalFitPaymentPrice {
+  if (paymentPriceReaderForTest) return paymentPriceReaderForTest();
+
+  const row = connection
+    .prepare(
+      `
+        SELECT id, product_key, base_price_cents, sale_price_cents, invite_discount_cents,
+               free_trial_enabled, free_trial_start_at, free_trial_end_at, enabled
+        FROM product_pricing_rules
+        WHERE product_key = ? AND enabled = 1
+        ORDER BY updated_at DESC, id DESC
+        LIMIT 1
+      `
+    )
+    .get("goal_fit_report") as
+    | {
+        product_key: string;
+        base_price_cents: number;
+        sale_price_cents: number;
+        invite_discount_cents: number;
+        free_trial_enabled: number;
+        free_trial_start_at: string | null;
+        free_trial_end_at: string | null;
+        enabled: number;
+      }
+    | undefined;
+
+  if (!row) throw new GoalFitPaymentOrderError("PRICE_NOT_AVAILABLE");
+
+  const currentTime = now.getTime();
+  const freeTrialActive =
+    row.enabled === 1 &&
+    row.free_trial_enabled === 1 &&
+    (!row.free_trial_start_at || currentTime >= new Date(row.free_trial_start_at).getTime()) &&
+    (!row.free_trial_end_at || currentTime <= new Date(row.free_trial_end_at).getTime());
+
+  return {
+    productKey: GOAL_FIT_FULL_REPORT_PURPOSE,
+    amount: freeTrialActive ? 0 : Number(row.sale_price_cents),
+    currency: "CNY"
+  };
+}
+
+function getInjectedGoalFitPaymentOrders(
+  connection: DatabaseSync,
+  input: { platformIdentityId: string; assessmentId: string; orderPurpose: string }
+): GoalFitPaymentOrderRecord[] {
+  return connection
+    .prepare(
+      `SELECT ${orderColumns} FROM orders WHERE platformIdentityId = ? AND assessmentId = ? AND orderPurpose = ? ORDER BY createdAt DESC`
+    )
+    .all(input.platformIdentityId, input.assessmentId, input.orderPurpose) as GoalFitPaymentOrderRecord[];
+}
+
+function updateInjectedGoalFitPaymentOrderStatus(
+  connection: DatabaseSync,
+  orderId: string,
+  status: string,
+  now: string
+): GoalFitPaymentOrderRecord | null {
+  connection.prepare("UPDATE orders SET status = ?, updatedAt = ? WHERE id = ?").run(status, now, orderId);
+  return getInjectedOrder(connection, orderId);
+}
+
+function getInjectedOrder(connection: DatabaseSync, orderId: string): GoalFitPaymentOrderRecord | null {
+  return mapOrder(connection.prepare(`SELECT ${orderColumns} FROM orders WHERE id = ?`).get(orderId));
+}
+
+function createInjectedOrder(
+  connection: DatabaseSync,
+  input: {
+    platformIdentityId: string;
+    assessmentId: string;
+    reportSnapshotId: string;
+    now: Date;
+    price: GoalFitPaymentPrice;
+  }
+): GoalFitPaymentOrderRecord {
+  const now = input.now.toISOString();
+  const expiresAt = new Date(input.now.getTime() + GOAL_FIT_PAYMENT_ORDER_TTL_MS).toISOString();
+  const order = {
+    id: nanoid(),
+    outTradeNo: createOutTradeNo(),
+    sessionId: input.platformIdentityId,
+    status: "pending",
+    accessMode: "direct",
+    originalAmountCents: input.price.amount,
+    discountAmountCents: 0,
+    payAmountCents: input.price.amount,
+    couponCode: null,
+    paymentProvider: "wechat",
+    paymentMode: "jsapi",
+    wechatPrepayId: null,
+    wechatCodeUrl: null,
+    wechatTransactionId: null,
+    sourceReferralCode: null,
+    referralVisitId: null,
+    analyticsVisitorId: null,
+    analyticsSource: null,
+    analyticsChannel: null,
+    analyticsCampaign: null,
+    analyticsReferralCode: null,
+    basePriceCents: input.price.amount,
+    salePriceCents: input.price.amount,
+    discountCents: 0,
+    finalAmountCents: input.price.amount,
+    pricingRuleId: null,
+    pricingSnapshotJson: null,
+    pricingMode: "normal",
+    createdAt: now,
+    updatedAt: now,
+    platformIdentityId: input.platformIdentityId,
+    assessmentId: input.assessmentId,
+    reportSnapshotId: input.reportSnapshotId,
+    orderPurpose: GOAL_FIT_FULL_REPORT_PURPOSE,
+    expiresAt,
+    paidAt: null
+  };
+
+  connection
+    .prepare(
+      `
+        INSERT INTO orders (
+          ${orderColumns}
+        ) VALUES (
+          @id,
+          @outTradeNo,
+          @sessionId,
+          @status,
+          @accessMode,
+          @originalAmountCents,
+          @discountAmountCents,
+          @payAmountCents,
+          @couponCode,
+          @paymentProvider,
+          @paymentMode,
+          @wechatPrepayId,
+          @wechatCodeUrl,
+          @wechatTransactionId,
+          @sourceReferralCode,
+          @referralVisitId,
+          @analyticsVisitorId,
+          @analyticsSource,
+          @analyticsChannel,
+          @analyticsCampaign,
+          @analyticsReferralCode,
+          @basePriceCents,
+          @salePriceCents,
+          @discountCents,
+          @finalAmountCents,
+          @pricingRuleId,
+          @pricingSnapshotJson,
+          @pricingMode,
+          @createdAt,
+          @updatedAt,
+          @platformIdentityId,
+          @assessmentId,
+          @reportSnapshotId,
+          @orderPurpose,
+          @expiresAt,
+          @paidAt
+        )
+      `
+    )
+    .run(order);
+
+  return order as GoalFitPaymentOrderRecord;
+}
+
+export function createGoalFitMiniappPaymentOrderStore(options?: {
+  connection?: DatabaseSync;
+  onBusyRetry?: (event: { attempt: number; delayMs: number }) => void;
+}): GoalFitPaymentOrderStore {
+  const connection = options?.connection ?? db;
+  const useInjectedConnection = Boolean(options?.connection);
+
+  return {
+    createOrReuseGoalFitPaymentOrder(input) {
   try {
-    return runImmediateTransaction(() => {
-      const assessment = db
+        return runImmediateTransactionWithBusyRetry(() => {
+      const assessment = connection
         .prepare(
           "SELECT assessment_id, status FROM assessments WHERE assessment_id = ? AND platform_identity_id = ?"
         )
@@ -87,7 +322,7 @@ export function createOrReuseGoalFitPaymentOrder(input: {
       if (!assessment) throw new GoalFitPaymentOrderError("ASSESSMENT_NOT_FOUND");
       if (assessment.status !== "completed") throw new GoalFitPaymentOrderError("REPORT_NOT_PURCHASABLE");
 
-      const snapshot = db
+      const snapshot = connection
         .prepare(
           `
             SELECT rs.report_snapshot_id, rs.full_report_ciphertext, rs.full_report_hash, rs.report_version
@@ -114,7 +349,7 @@ export function createOrReuseGoalFitPaymentOrder(input: {
         throw new GoalFitPaymentOrderError("REPORT_NOT_PURCHASABLE");
       }
 
-      const price = getPaymentPrice(input.now);
+          const price = useInjectedConnection ? getInjectedPaymentPrice(connection, input.now) : getPaymentPrice(input.now);
       if (
         price.productKey !== GOAL_FIT_FULL_REPORT_PURPOSE ||
         !Number.isInteger(price.amount) ||
@@ -124,11 +359,17 @@ export function createOrReuseGoalFitPaymentOrder(input: {
         throw new GoalFitPaymentOrderError("PRICE_NOT_AVAILABLE");
       }
 
-      const historicalOrders = getGoalFitPaymentOrders({
-        platformIdentityId: input.platformIdentityId,
-        assessmentId: input.assessmentId,
-        orderPurpose: GOAL_FIT_FULL_REPORT_PURPOSE
-      });
+          const historicalOrders = useInjectedConnection
+            ? getInjectedGoalFitPaymentOrders(connection, {
+                platformIdentityId: input.platformIdentityId,
+                assessmentId: input.assessmentId,
+                orderPurpose: GOAL_FIT_FULL_REPORT_PURPOSE
+              })
+            : getGoalFitPaymentOrders({
+                platformIdentityId: input.platformIdentityId,
+                assessmentId: input.assessmentId,
+                orderPurpose: GOAL_FIT_FULL_REPORT_PURPOSE
+              });
       if (historicalOrders.some((order) => order.status === "paid")) {
         throw new GoalFitPaymentOrderError("ALREADY_PURCHASED");
       }
@@ -140,40 +381,59 @@ export function createOrReuseGoalFitPaymentOrder(input: {
       }
       for (const order of historicalOrders) {
         if (order.status === "pending" && (!hasNonEmptyString(order.expiresAt) || Date.parse(order.expiresAt) <= input.now.getTime())) {
-          updateGoalFitPaymentOrderStatus(order.id, "expired", input.now.toISOString());
+              if (useInjectedConnection) updateInjectedGoalFitPaymentOrderStatus(connection, order.id, "expired", input.now.toISOString());
+              else updateGoalFitPaymentOrderStatus(order.id, "expired", input.now.toISOString());
         }
       }
 
-      const created = createOrder({
-        sessionId: input.platformIdentityId,
-        accessMode: "direct",
-        couponCode: null,
-        paymentMode: "jsapi"
-      });
-      const expiresAt = new Date(input.now.getTime() + GOAL_FIT_PAYMENT_ORDER_TTL_MS).toISOString();
-      db.prepare(
-        `
-          UPDATE orders
-          SET platformIdentityId = ?, assessmentId = ?, reportSnapshotId = ?, orderPurpose = ?, expiresAt = ?
-          WHERE id = ?
-        `
-      ).run(
-        input.platformIdentityId,
-        input.assessmentId,
-        snapshot.report_snapshot_id,
-        GOAL_FIT_FULL_REPORT_PURPOSE,
-        expiresAt,
-        created.id
-      );
+          const order = useInjectedConnection
+            ? createInjectedOrder(connection, {
+                platformIdentityId: input.platformIdentityId,
+                assessmentId: input.assessmentId,
+                reportSnapshotId: snapshot.report_snapshot_id,
+                now: input.now,
+                price
+              })
+            : (() => {
+                const created = createOrder({
+                  sessionId: input.platformIdentityId,
+                  accessMode: "direct",
+                  couponCode: null,
+                  paymentMode: "jsapi"
+                });
+                const expiresAt = new Date(input.now.getTime() + GOAL_FIT_PAYMENT_ORDER_TTL_MS).toISOString();
+                connection
+                  .prepare(
+                    `
+                      UPDATE orders
+                      SET platformIdentityId = ?, assessmentId = ?, reportSnapshotId = ?, orderPurpose = ?, expiresAt = ?
+                      WHERE id = ?
+                    `
+                  )
+                  .run(
+                    input.platformIdentityId,
+                    input.assessmentId,
+                    snapshot.report_snapshot_id,
+                    GOAL_FIT_FULL_REPORT_PURPOSE,
+                    expiresAt,
+                    created.id
+                  );
 
-      const order = getOrder(created.id);
+                return getOrder(created.id);
+              })();
       if (!order || order.payAmountCents !== price.amount) {
         throw new GoalFitPaymentOrderError("ORDER_CREATE_FAILED");
       }
       return toPublicOrder(order, { assessmentId: input.assessmentId, reportSnapshotId: snapshot.report_snapshot_id }, false);
-    });
+    }, options?.onBusyRetry ? { onBusyRetry: options.onBusyRetry } : undefined, connection);
   } catch (error) {
     if (error instanceof GoalFitPaymentOrderError) throw error;
     throw new GoalFitPaymentOrderError("ORDER_CREATE_FAILED");
   }
+    }
+  };
+}
+
+export function createOrReuseGoalFitPaymentOrder(input: GoalFitPaymentOrderInput) {
+  return createGoalFitMiniappPaymentOrderStore().createOrReuseGoalFitPaymentOrder(input);
 }
