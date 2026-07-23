@@ -25,6 +25,7 @@
     "test-goal-fit-miniapp-payment-order-winner-recovery": "tsx src/testGoalFitMiniappPaymentOrderWinnerRecovery.ts",
     "test-goal-fit-miniapp-payment-order-concurrency": "tsx src/testGoalFitMiniappPaymentOrderConcurrency.ts",
     "test-goal-fit-miniapp-payment-order-expired-concurrency": "tsx src/testGoalFitMiniappPaymentOrderExpiredConcurrency.ts",
+    "test-goal-fit-miniapp-virtual-payment-attempt": "tsx src/testGoalFitMiniappVirtualPaymentAttempt.ts",
     "test-goal-fit-assessment-store": "tsx src/testGoalFitAssessmentStore.ts",
     "test-goal-fit-assessment-route": "tsx src/testGoalFitAssessmentRoute.ts",
     "test-goal-fit-assessment-auth-route": "tsx src/testGoalFitAssessmentAuthRoute.ts",

@@ -160,6 +160,41 @@ export function initializeDatabase(): void {
     CREATE INDEX IF NOT EXISTS idx_orders_session_status
       ON orders (sessionId, status, updatedAt);
 
+    CREATE TABLE IF NOT EXISTS miniapp_virtual_payment_attempts (
+      id TEXT PRIMARY KEY,
+      order_id TEXT NOT NULL,
+      request_id TEXT NOT NULL,
+      provider_out_trade_no TEXT NOT NULL UNIQUE,
+      platform_identity_id TEXT NOT NULL,
+      assessment_id TEXT NOT NULL,
+      env INTEGER NOT NULL CHECK (env IN (0, 1)),
+      status TEXT NOT NULL CHECK (status IN ('prepared', 'paid', 'closed', 'failed', 'superseded')),
+      wx_order_id TEXT,
+      channel_order_id TEXT,
+      wxpay_order_id TEXT,
+      order_type INTEGER,
+      paid_fee INTEGER,
+      paid_at TEXT,
+      failure_code TEXT,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      FOREIGN KEY (order_id) REFERENCES orders(id),
+      FOREIGN KEY (platform_identity_id) REFERENCES platform_identities(id),
+      FOREIGN KEY (assessment_id) REFERENCES assessments(assessment_id),
+      UNIQUE (order_id, request_id)
+    );
+
+    CREATE INDEX IF NOT EXISTS idx_miniapp_virtual_attempt_order
+      ON miniapp_virtual_payment_attempts (order_id);
+    CREATE INDEX IF NOT EXISTS idx_miniapp_virtual_attempt_identity
+      ON miniapp_virtual_payment_attempts (platform_identity_id);
+    CREATE INDEX IF NOT EXISTS idx_miniapp_virtual_attempt_assessment
+      ON miniapp_virtual_payment_attempts (assessment_id);
+    CREATE INDEX IF NOT EXISTS idx_miniapp_virtual_attempt_provider_no
+      ON miniapp_virtual_payment_attempts (provider_out_trade_no);
+    CREATE INDEX IF NOT EXISTS idx_miniapp_virtual_attempt_status
+      ON miniapp_virtual_payment_attempts (status);
+
     CREATE INDEX IF NOT EXISTS idx_orders_out_trade_no
       ON orders (outTradeNo);
 
