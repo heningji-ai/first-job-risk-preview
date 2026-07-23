@@ -29,6 +29,7 @@ import { createGoalFitVirtualPaymentParams, MiniappVirtualPaymentError, getConfi
 import { getCurrentMiniappIdentity, fulfillGoalFitVirtualPayment, GoalFitVirtualPaymentFulfillmentError } from "./goalFitVirtualPaymentFulfillment.js";
 import { getGoalFitVirtualPaymentAttemptById, updateGoalFitVirtualPaymentAttemptProviderState } from "./miniappVirtualPaymentAttempt.js";
 import { notifyWechatVirtualPaymentGoods, queryWechatVirtualPaymentOrder, VirtualPaymentProviderError } from "./miniappVirtualPaymentProvider.js";
+import { handleEncryptedMessagePush, MiniappMessagePushError, verifyMessagePushUrl } from "./wechatMiniappMessagePush.js";
 import crypto from "node:crypto";
 import {
   createOrReuseOrder,
@@ -233,6 +234,27 @@ app.post("/api/miniapp/wechat/session", async (req, res) => {
 
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
+});
+
+app.get("/api/miniapp/wechat/message-push", (req, res) => {
+  try {
+    const echostr = verifyMessagePushUrl(req.query as Record<string, unknown>);
+    res.type("text/plain").send(echostr);
+  } catch (error) {
+    const code = error instanceof MiniappMessagePushError ? error.code : "MESSAGE_PUSH_SIGNATURE_INVALID";
+    res.status(code === "MESSAGE_PUSH_NOT_CONFIGURED" ? 503 : code === "MESSAGE_PUSH_INVALID_REQUEST" ? 400 : 403).type("text/plain").send("fail");
+  }
+});
+
+app.post("/api/miniapp/wechat/message-push", (req, res) => {
+  try {
+    const body = req.body as Record<string, unknown>;
+    const result = handleEncryptedMessagePush({ timestamp: req.query.timestamp, nonce: req.query.nonce, msgSignature: req.query.msg_signature, encrypted: body?.Encrypt, encryptType: req.query.encrypt_type });
+    res.type("text/plain").send(result);
+  } catch (error) {
+    const code = error instanceof MiniappMessagePushError ? error.code : "MESSAGE_PUSH_INVALID_REQUEST";
+    res.status(code === "MESSAGE_PUSH_NOT_CONFIGURED" ? 503 : code === "MESSAGE_PUSH_SIGNATURE_INVALID" || code === "MESSAGE_PUSH_DECRYPT_FAILED" ? 403 : code === "PAYMENT_ATTEMPT_NOT_FOUND" || code === "MINIAPP_IDENTITY_MISMATCH" || code === "PROVIDER_PAYMENT_MISMATCH" ? 403 : 400).type("text/plain").send("fail");
+  }
 });
 
 app.get("/api/pricing/goal-fit-report", (_req, res) => {

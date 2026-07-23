@@ -50,7 +50,9 @@ export const serverConfig = {
   },
   miniapp: {
     appId: getEnv("WECHAT_MINIAPP_APP_ID"),
-    appSecret: getEnv("WECHAT_MINIAPP_APP_SECRET")
+    appSecret: getEnv("WECHAT_MINIAPP_APP_SECRET"),
+    messageToken: getEnv("WECHAT_MINIAPP_MESSAGE_TOKEN"),
+    messageEncodingAesKey: getEnv("WECHAT_MINIAPP_MESSAGE_ENCODING_AES_KEY")
   }
 };
 
