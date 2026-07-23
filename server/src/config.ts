@@ -49,7 +49,8 @@ export const serverConfig = {
     appKeySandbox: getEnv("WECHAT_MINIAPP_VIRTUAL_PAYMENT_APP_KEY_SANDBOX")
   },
   miniapp: {
-    appId: getEnv("WECHAT_MINIAPP_APP_ID")
+    appId: getEnv("WECHAT_MINIAPP_APP_ID"),
+    appSecret: getEnv("WECHAT_MINIAPP_APP_SECRET")
   }
 };
 

@@ -46,6 +46,9 @@ export type GoalFitVirtualPaymentAttempt = {
   failureCode: string | null;
   createdAt: string;
   updatedAt: string;
+  providerDeliveryState: "not_started" | "pending" | "succeeded" | "failed";
+  providerDeliveryUpdatedAt: string | null;
+  providerDeliveryFailureCode: string | null;
   reused: boolean;
 };
 
@@ -72,8 +75,20 @@ function mapAttempt(row: Record<string, unknown>, reused: boolean): GoalFitVirtu
     failureCode: row.failure_code == null ? null : String(row.failure_code),
     createdAt: String(row.created_at),
     updatedAt: String(row.updated_at),
+    providerDeliveryState: (row.provider_delivery_state ?? "not_started") as GoalFitVirtualPaymentAttempt["providerDeliveryState"],
+    providerDeliveryUpdatedAt: row.provider_delivery_updated_at == null ? null : String(row.provider_delivery_updated_at),
+    providerDeliveryFailureCode: row.provider_delivery_failure_code == null ? null : String(row.provider_delivery_failure_code),
     reused,
   };
+}
+
+export function getGoalFitVirtualPaymentAttemptById(id: string, connection: DatabaseSync = db): GoalFitVirtualPaymentAttempt | null {
+  const row = connection.prepare("SELECT * FROM miniapp_virtual_payment_attempts WHERE id = ?").get(id) as Record<string, unknown> | undefined;
+  return row ? mapAttempt(row, false) : null;
+}
+
+export function updateGoalFitVirtualPaymentAttemptProviderState(input: { id: string; status?: GoalFitVirtualPaymentAttemptStatus; providerDeliveryState?: "not_started" | "pending" | "succeeded" | "failed"; failureCode?: string | null; now: string }, connection: DatabaseSync = db): void {
+  connection.prepare("UPDATE miniapp_virtual_payment_attempts SET status = COALESCE(?, status), provider_delivery_state = COALESCE(?, provider_delivery_state), provider_delivery_failure_code = ?, provider_delivery_updated_at = ?, updated_at = ? WHERE id = ?").run(input.status ?? null, input.providerDeliveryState ?? null, input.failureCode ?? null, input.now, input.now, input.id);
 }
 
 function getAttempt(connection: DatabaseSync, orderId: string, requestId: string): GoalFitVirtualPaymentAttempt | null {

@@ -195,6 +195,27 @@ export function initializeDatabase(): void {
     CREATE INDEX IF NOT EXISTS idx_miniapp_virtual_attempt_status
       ON miniapp_virtual_payment_attempts (status);
 
+    CREATE TABLE IF NOT EXISTS goal_fit_report_entitlements (
+      id TEXT PRIMARY KEY,
+      platform_identity_id TEXT NOT NULL,
+      assessment_id TEXT NOT NULL,
+      report_snapshot_id TEXT NOT NULL,
+      order_id TEXT NOT NULL UNIQUE,
+      payment_attempt_id TEXT NOT NULL,
+      status TEXT NOT NULL CHECK(status IN ('active', 'revoked', 'refunded')),
+      source TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      UNIQUE(platform_identity_id, assessment_id),
+      FOREIGN KEY(platform_identity_id) REFERENCES platform_identities(id),
+      FOREIGN KEY(assessment_id) REFERENCES assessments(assessment_id),
+      FOREIGN KEY(report_snapshot_id) REFERENCES report_snapshots(report_snapshot_id),
+      FOREIGN KEY(order_id) REFERENCES orders(id),
+      FOREIGN KEY(payment_attempt_id) REFERENCES miniapp_virtual_payment_attempts(id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_goal_fit_entitlements_identity ON goal_fit_report_entitlements(platform_identity_id, created_at);
+    CREATE INDEX IF NOT EXISTS idx_goal_fit_entitlements_assessment ON goal_fit_report_entitlements(assessment_id);
+
     CREATE INDEX IF NOT EXISTS idx_orders_out_trade_no
       ON orders (outTradeNo);
 
@@ -502,6 +523,11 @@ export function initializeDatabase(): void {
 
   const columns = db.prepare("PRAGMA table_info(orders)").all() as Array<{ name: string }>;
   const columnNames = new Set(columns.map((column) => column.name));
+
+  const attemptColumns = new Set((db.prepare("PRAGMA table_info(miniapp_virtual_payment_attempts)").all() as Array<{ name: string }>).map((column) => column.name));
+  if (!attemptColumns.has("provider_delivery_state")) db.exec("ALTER TABLE miniapp_virtual_payment_attempts ADD COLUMN provider_delivery_state TEXT NOT NULL DEFAULT 'not_started' CHECK(provider_delivery_state IN ('not_started','pending','succeeded','failed'))");
+  if (!attemptColumns.has("provider_delivery_updated_at")) db.exec("ALTER TABLE miniapp_virtual_payment_attempts ADD COLUMN provider_delivery_updated_at TEXT");
+  if (!attemptColumns.has("provider_delivery_failure_code")) db.exec("ALTER TABLE miniapp_virtual_payment_attempts ADD COLUMN provider_delivery_failure_code TEXT");
 
   if (!columnNames.has("wechatTransactionId")) {
     db.exec("ALTER TABLE orders ADD COLUMN wechatTransactionId TEXT");

@@ -1,6 +1,7 @@
 import crypto from "node:crypto";
 import { nanoid } from "nanoid";
 import { db, runImmediateTransaction } from "./db.js";
+import type { DatabaseSync } from "node:sqlite";
 import { QUESTION_BANK_SHA256, QUESTION_SET_VERSION, REPORT_VERSION, SCORING_VERSION, buildGoalFitFreeResult, buildGoalFitReport, normalizeGoalFitAnswers } from "./goalFitDomain/index.js";
 import type { CompanyType, RoleType } from "./goalFitDomain/goalFitTypes.js";
 
@@ -20,4 +21,4 @@ export function createCompletedAssessmentSnapshot(input: { platformIdentityId: s
 function publicRow(row: any) { return row ? { assessmentId: row.assessment_id, reportSnapshotId: row.report_snapshot_id, freeResult: JSON.parse(row.free_result_json), completedAt: row.completed_at, versions: { questionSetVersion: row.question_set_version, scoringVersion: row.scoring_version, reportVersion: row.report_version } } : null; }
 export function getAssessmentFreeResult(assessmentId: string, platformIdentityId: string) { return publicRow(db.prepare("SELECT a.assessment_id,r.report_snapshot_id,r.free_result_json,a.completed_at,a.question_set_version,a.scoring_version,r.report_version FROM assessments a JOIN report_snapshots r ON r.assessment_row_id=a.id WHERE a.assessment_id=? AND a.platform_identity_id=?").get(assessmentId,platformIdentityId)); }
 export function getLatestAssessment(platformIdentityId: string) { return publicRow(db.prepare("SELECT a.assessment_id,r.report_snapshot_id,r.free_result_json,a.completed_at,a.question_set_version,a.scoring_version,r.report_version,a.id FROM assessments a JOIN report_snapshots r ON r.assessment_row_id=a.id WHERE a.platform_identity_id=? ORDER BY a.completed_at DESC,a.id DESC LIMIT 1").get(platformIdentityId)); }
-export function decryptFullReport(reportSnapshotId: string) { const row = db.prepare("SELECT full_report_ciphertext FROM report_snapshots WHERE report_snapshot_id=?").get(reportSnapshotId) as any; return row ? decryptAssessmentData(row.full_report_ciphertext) : null; }
+export function decryptFullReport(reportSnapshotId: string, connection: DatabaseSync = db) { const row = connection.prepare("SELECT full_report_ciphertext FROM report_snapshots WHERE report_snapshot_id=?").get(reportSnapshotId) as any; return row ? decryptAssessmentData(row.full_report_ciphertext) : null; }

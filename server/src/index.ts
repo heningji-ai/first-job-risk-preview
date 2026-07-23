@@ -20,12 +20,15 @@ import { loginAdmin, logoutAdmin, requireAdmin } from "./adminAuth.js";
 import { serverConfig } from "./config.js";
 import { db, initializeDatabase } from "./db.js";
 import { authenticateMiniappSession, MiniappAuthError } from "./miniappAuth.js";
-import { AssessmentStoreError, createCompletedAssessmentSnapshot, getAssessmentFreeResult, getLatestAssessment } from "./assessmentStore.js";
+import { AssessmentStoreError, createCompletedAssessmentSnapshot, decryptFullReport, getAssessmentFreeResult, getLatestAssessment } from "./assessmentStore.js";
 import { selectGoalFitQuestions } from "./goalFitDomain/index.js";
 import { createWechatMiniappSession, exchangeWechatMiniappCode, MiniappIdentityError } from "./miniappIdentity.js";
 import { createOrReuseGoalFitPaymentOrder, GoalFitPaymentOrderError } from "./goalFitMiniappPaymentOrderStore.js";
 import { createOrReuseGoalFitVirtualPaymentAttempt, GoalFitVirtualPaymentAttemptError } from "./miniappVirtualPaymentAttempt.js";
 import { createGoalFitVirtualPaymentParams, MiniappVirtualPaymentError, getConfiguredVirtualPaymentEnv } from "./miniappVirtualPayment.js";
+import { getCurrentMiniappIdentity, fulfillGoalFitVirtualPayment, GoalFitVirtualPaymentFulfillmentError } from "./goalFitVirtualPaymentFulfillment.js";
+import { getGoalFitVirtualPaymentAttemptById, updateGoalFitVirtualPaymentAttemptProviderState } from "./miniappVirtualPaymentAttempt.js";
+import { notifyWechatVirtualPaymentGoods, queryWechatVirtualPaymentOrder, VirtualPaymentProviderError } from "./miniappVirtualPaymentProvider.js";
 import crypto from "node:crypto";
 import {
   createOrReuseOrder,
@@ -154,6 +157,60 @@ app.post("/api/miniapp/goal-fit/assessments/:assessmentId/virtual-payment-params
     if (error instanceof Error && error.message === "MINIAPP_IDENTITY_MISMATCH") return virtualPaymentError(res, error);
     virtualPaymentError(res, error);
   }
+});
+function publicMiniappPaymentStatus(input: { paymentAttemptId: string; orderId: string; status: "pending" | "paid" | "closed" | "review_required"; reportAvailable: boolean; assessmentId?: string }) {
+  return { paymentAttemptId: input.paymentAttemptId, orderId: input.orderId, status: input.status, reportAvailable: input.reportAvailable, ...(input.assessmentId ? { assessmentId: input.assessmentId } : {}) };
+}
+app.post("/api/miniapp/goal-fit/payment-attempts/:paymentAttemptId/confirm", async (req, res) => {
+  try {
+    if (!req.body || typeof req.body !== "object" || Array.isArray(req.body) || Object.keys(req.body).length > 0) throw new Error("INVALID_REQUEST_BODY");
+    const context = auth(req);
+    const attempt = getGoalFitVirtualPaymentAttemptById(req.params.paymentAttemptId);
+    if (!attempt || attempt.platformIdentityId !== context.platformIdentityId) return void res.status(404).json({ error: "PAYMENT_ATTEMPT_NOT_FOUND" });
+    const existingEntitlement = db.prepare("SELECT id FROM goal_fit_report_entitlements WHERE payment_attempt_id = ? AND status = 'active'").get(attempt.id) as { id: string } | undefined;
+    if (attempt.status === "paid" && existingEntitlement) return void res.set("Cache-Control", "no-store").json(publicMiniappPaymentStatus({ paymentAttemptId: attempt.id, orderId: attempt.orderId, status: "paid", reportAvailable: true, assessmentId: attempt.assessmentId }));
+    if (attempt.status === "closed") return void res.set("Cache-Control", "no-store").json(publicMiniappPaymentStatus({ paymentAttemptId: attempt.id, orderId: attempt.orderId, status: "closed", reportAvailable: false }));
+    const identity = getCurrentMiniappIdentity(db, context.platformIdentityId);
+    if (!identity) return void res.status(401).json({ error: "MINIAPP_AUTH_REQUIRED" });
+    const provider = await queryWechatVirtualPaymentOrder({ openid: identity.openid, env: attempt.env as 0 | 1, providerOutTradeNo: attempt.providerOutTradeNo });
+    if ([0, 1].includes(provider.status)) return void res.set("Cache-Control", "no-store").json(publicMiniappPaymentStatus({ paymentAttemptId: attempt.id, orderId: attempt.orderId, status: "pending", reportAvailable: false }));
+    if (provider.status === 6) { updateGoalFitVirtualPaymentAttemptProviderState({ id: attempt.id, status: "closed", now: new Date().toISOString() }); return void res.set("Cache-Control", "no-store").json(publicMiniappPaymentStatus({ paymentAttemptId: attempt.id, orderId: attempt.orderId, status: "closed", reportAvailable: false })); }
+    if (![2, 3, 4].includes(provider.status)) return void res.set("Cache-Control", "no-store").json(publicMiniappPaymentStatus({ paymentAttemptId: attempt.id, orderId: attempt.orderId, status: "review_required", reportAvailable: false }));
+    const fulfilled = fulfillGoalFitVirtualPayment({ paymentAttemptId: attempt.id, trustedProviderResult: provider });
+    if (provider.status === 2 || provider.status === 3) {
+      updateGoalFitVirtualPaymentAttemptProviderState({ id: attempt.id, providerDeliveryState: "pending", now: new Date().toISOString() });
+      const delivered = await notifyWechatVirtualPaymentGoods({ env: attempt.env as 0 | 1, providerOutTradeNo: attempt.providerOutTradeNo });
+      updateGoalFitVirtualPaymentAttemptProviderState({ id: attempt.id, providerDeliveryState: delivered ? "succeeded" : "failed", failureCode: delivered ? null : "DELIVERY_NOTIFICATION_FAILED", now: new Date().toISOString() });
+    } else {
+      updateGoalFitVirtualPaymentAttemptProviderState({ id: attempt.id, providerDeliveryState: "succeeded", now: new Date().toISOString() });
+    }
+    res.set("Cache-Control", "no-store").json(publicMiniappPaymentStatus({ paymentAttemptId: attempt.id, orderId: fulfilled.orderId, status: "paid", reportAvailable: true, assessmentId: fulfilled.assessmentId }));
+  } catch (error) {
+    const code = error instanceof MiniappAuthError || error instanceof VirtualPaymentProviderError || error instanceof GoalFitVirtualPaymentFulfillmentError ? error.code : error instanceof Error ? error.message : "PAYMENT_CONFIRMATION_UNAVAILABLE";
+    const known = new Set(["MINIAPP_AUTH_REQUIRED", "MINIAPP_SESSION_EXPIRED", "PAYMENT_ATTEMPT_NOT_FOUND", "WECHAT_ACCESS_TOKEN_UNAVAILABLE", "VIRTUAL_PAYMENT_QUERY_FAILED", "VIRTUAL_PAYMENT_QUERY_TRANSIENT", "VIRTUAL_PAYMENT_QUERY_INVALID_RESPONSE", "PROVIDER_ORDER_STATUS_UNSUPPORTED", "PROVIDER_PAYMENT_MISMATCH", "PROVIDER_PAYMENT_CONFLICT", "ENTITLEMENT_CREATE_FAILED", "INVALID_REQUEST_BODY"]);
+    res.status(code === "MINIAPP_AUTH_REQUIRED" || code === "MINIAPP_SESSION_EXPIRED" ? 401 : code === "INVALID_REQUEST_BODY" ? 400 : 502).json({ error: known.has(code) ? code : "PAYMENT_CONFIRMATION_UNAVAILABLE" });
+  }
+});
+app.get("/api/miniapp/goal-fit/assessments/:assessmentId/full-report", (req, res) => {
+  try {
+    if (!/^asm_[A-Za-z0-9_-]{16,}$/.test(req.params.assessmentId)) return void res.status(404).json({ error: "FULL_REPORT_NOT_ENTITLED" });
+    const context = auth(req);
+    const entitlement = db.prepare("SELECT report_snapshot_id FROM goal_fit_report_entitlements WHERE platform_identity_id = ? AND assessment_id = ? AND status = 'active'").get(context.platformIdentityId, req.params.assessmentId) as { report_snapshot_id: string } | undefined;
+    if (!entitlement) return void res.status(403).json({ error: "FULL_REPORT_NOT_ENTITLED" });
+    const report = decryptFullReport(entitlement.report_snapshot_id);
+    if (!report) return void res.status(500).json({ error: "FULL_REPORT_NOT_ENTITLED" });
+    res.set("Cache-Control", "no-store").json({ assessmentId: req.params.assessmentId, reportSnapshotId: entitlement.report_snapshot_id, fullReport: report });
+  } catch (error) { const code = error instanceof MiniappAuthError ? error.code : "FULL_REPORT_NOT_ENTITLED"; res.status(code === "MINIAPP_AUTH_REQUIRED" || code === "MINIAPP_SESSION_EXPIRED" ? 401 : 403).json({ error: code }); }
+});
+app.get("/api/miniapp/goal-fit/purchases/latest", (req, res) => {
+  try {
+    const context = auth(req);
+    const entitlement = db.prepare("SELECT assessment_id, report_snapshot_id FROM goal_fit_report_entitlements WHERE platform_identity_id = ? AND status = 'active' ORDER BY created_at DESC LIMIT 1").get(context.platformIdentityId) as { assessment_id: string; report_snapshot_id: string } | undefined;
+    if (!entitlement) return void res.set("Cache-Control", "no-store").json({ purchase: null });
+    const report = decryptFullReport(entitlement.report_snapshot_id);
+    if (!report) return void res.status(500).json({ error: "FULL_REPORT_NOT_ENTITLED" });
+    res.set("Cache-Control", "no-store").json({ purchase: { assessmentId: entitlement.assessment_id, reportSnapshotId: entitlement.report_snapshot_id, fullReport: report } });
+  } catch (error) { const code = error instanceof MiniappAuthError ? error.code : "FULL_REPORT_NOT_ENTITLED"; res.status(code === "MINIAPP_AUTH_REQUIRED" || code === "MINIAPP_SESSION_EXPIRED" ? 401 : 500).json({ error: code }); }
 });
 
 const miniappRateLimit = new Map<string, { count: number; resetAt: number }>();
