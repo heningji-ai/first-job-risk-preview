@@ -1,5 +1,5 @@
 import { db, runImmediateTransaction } from "./db.js";
-import { createOrder, getOrder } from "./orders.js";
+import { createOrder, getOrder, getGoalFitPaymentOrders, updateGoalFitPaymentOrderStatus } from "./orders.js";
 import { calculateGoalFitOrderAmount } from "./pricing.js";
 
 export const GOAL_FIT_PAYMENT_ORDER_TTL_MS = 30 * 60 * 1000;
@@ -10,7 +10,8 @@ type PaymentOrderErrorCode =
   | "REPORT_SNAPSHOT_NOT_FOUND"
   | "REPORT_NOT_PURCHASABLE"
   | "PRICE_NOT_AVAILABLE"
-  | "ORDER_CREATE_FAILED";
+  | "ORDER_CREATE_FAILED"
+  | "ALREADY_PURCHASED";
 
 type GoalFitPaymentPrice = {
   productKey: string;
@@ -123,26 +124,24 @@ export function createOrReuseGoalFitPaymentOrder(input: {
         throw new GoalFitPaymentOrderError("PRICE_NOT_AVAILABLE");
       }
 
-      const existing = db
-        .prepare(
-          `
-            SELECT id FROM orders
-            WHERE platformIdentityId = ?
-              AND assessmentId = ?
-              AND orderPurpose = ?
-              AND status = 'pending'
-            ORDER BY createdAt DESC
-            LIMIT 1
-          `
-        )
-        .get(input.platformIdentityId, input.assessmentId, GOAL_FIT_FULL_REPORT_PURPOSE) as { id: string } | undefined;
-
-      if (existing) {
-        const order = getOrder(existing.id);
-        if (!order || !hasNonEmptyString(order.expiresAt) || Date.parse(order.expiresAt) <= input.now.getTime()) {
-          throw new GoalFitPaymentOrderError("ORDER_CREATE_FAILED");
+      const historicalOrders = getGoalFitPaymentOrders({
+        platformIdentityId: input.platformIdentityId,
+        assessmentId: input.assessmentId,
+        orderPurpose: GOAL_FIT_FULL_REPORT_PURPOSE
+      });
+      if (historicalOrders.some((order) => order.status === "paid")) {
+        throw new GoalFitPaymentOrderError("ALREADY_PURCHASED");
+      }
+      const activePending = historicalOrders.find(
+        (order) => order.status === "pending" && hasNonEmptyString(order.expiresAt) && Date.parse(order.expiresAt) > input.now.getTime()
+      );
+      if (activePending) {
+        return toPublicOrder(activePending, { assessmentId: input.assessmentId, reportSnapshotId: snapshot.report_snapshot_id }, true);
+      }
+      for (const order of historicalOrders) {
+        if (order.status === "pending" && (!hasNonEmptyString(order.expiresAt) || Date.parse(order.expiresAt) <= input.now.getTime())) {
+          updateGoalFitPaymentOrderStatus(order.id, "expired", input.now.toISOString());
         }
-        return toPublicOrder(order, { assessmentId: input.assessmentId, reportSnapshotId: snapshot.report_snapshot_id }, true);
       }
 
       const created = createOrder({

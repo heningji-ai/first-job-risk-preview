@@ -337,3 +337,12 @@ export function getPaidOrderBySessionId(sessionId: string): OrderRecord | null {
 export function isPaymentMode(value: unknown): value is PaymentMode {
   return value === "mock" || value === "native" || value === "jsapi" || value === "h5" || value === "free_trial";
 }
+
+export function getGoalFitPaymentOrders(input: { platformIdentityId: string; assessmentId: string; orderPurpose: string }): OrderRecord[] {
+  return db.prepare(`SELECT ${orderColumns} FROM orders WHERE platformIdentityId = ? AND assessmentId = ? AND orderPurpose = ? ORDER BY createdAt DESC`).all(input.platformIdentityId, input.assessmentId, input.orderPurpose) as OrderRecord[];
+}
+
+export function updateGoalFitPaymentOrderStatus(orderId: string, status: OrderStatus, now: string): OrderRecord | null {
+  db.prepare("UPDATE orders SET status = ?, updatedAt = ? WHERE id = ?").run(status, now, orderId);
+  return getOrder(orderId);
+}
