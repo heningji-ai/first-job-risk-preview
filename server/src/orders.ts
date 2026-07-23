@@ -339,7 +339,7 @@ export function isPaymentMode(value: unknown): value is PaymentMode {
 }
 
 export function getGoalFitPaymentOrders(input: { platformIdentityId: string; assessmentId: string; orderPurpose: string }): OrderRecord[] {
-  return db.prepare(`SELECT ${orderColumns} FROM orders WHERE platformIdentityId = ? AND assessmentId = ? AND orderPurpose = ? ORDER BY createdAt DESC`).all(input.platformIdentityId, input.assessmentId, input.orderPurpose) as OrderRecord[];
+  return db.prepare(`SELECT ${orderColumns} FROM orders WHERE platformIdentityId = ? AND assessmentId = ? AND orderPurpose = ? ORDER BY createdAt ASC, id ASC`).all(input.platformIdentityId, input.assessmentId, input.orderPurpose) as OrderRecord[];
 }
 
 export function updateGoalFitPaymentOrderStatus(orderId: string, status: OrderStatus, now: string): OrderRecord | null {

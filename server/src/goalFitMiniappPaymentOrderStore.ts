@@ -85,6 +85,14 @@ type GoalFitPaymentOrderStore = {
   createOrReuseGoalFitPaymentOrder: (input: GoalFitPaymentOrderInput) => ReturnType<typeof toPublicOrder>;
 };
 
+type SqliteConstraintLike = {
+  code?: unknown;
+  errcode?: unknown;
+  errno?: unknown;
+  message?: unknown;
+  cause?: unknown;
+};
+
 const orderColumns = `
   id,
   outTradeNo,
@@ -131,6 +139,35 @@ function createOutTradeNo(): string {
 function mapOrder(row: unknown): GoalFitPaymentOrderRecord | null {
   if (!row || typeof row !== "object") return null;
   return row as GoalFitPaymentOrderRecord;
+}
+
+export function isGoalFitPendingUniqueConstraintError(error: unknown): boolean {
+  if (!error || typeof error !== "object") return false;
+  const value = error as SqliteConstraintLike;
+  const code = typeof value.code === "string" ? value.code : "";
+  const errcode = typeof value.errcode === "number" ? value.errcode : undefined;
+  const errno = typeof value.errno === "number" ? value.errno : undefined;
+  const message = typeof value.message === "string" ? value.message : "";
+  const cause = typeof value.cause === "object" && value.cause ? value.cause : undefined;
+
+  const isConstraint =
+    code === "SQLITE_CONSTRAINT" ||
+    code === "ERR_SQLITE_ERROR" ||
+    errcode === 19 ||
+    errcode === 2067 ||
+    errno === 19 ||
+    errno === 2067 ||
+    (cause ? isGoalFitPendingUniqueConstraintError(cause) : false);
+  if (!isConstraint) return false;
+
+  const normalized = message.replace(/\s+/g, " ").toLowerCase();
+  const hasGoalFitPendingColumns =
+    normalized.includes("orders.platformidentityid") &&
+    normalized.includes("orders.assessmentid") &&
+    normalized.includes("orders.orderpurpose");
+  const hasGoalFitPendingIndex = normalized.includes("uq_orders_goal_fit_pending");
+
+  return hasGoalFitPendingIndex || hasGoalFitPendingColumns;
 }
 
 function getInjectedPaymentPrice(connection: DatabaseSync, now: Date): GoalFitPaymentPrice {
@@ -182,7 +219,7 @@ function getInjectedGoalFitPaymentOrders(
 ): GoalFitPaymentOrderRecord[] {
   return connection
     .prepare(
-      `SELECT ${orderColumns} FROM orders WHERE platformIdentityId = ? AND assessmentId = ? AND orderPurpose = ? ORDER BY createdAt DESC`
+      `SELECT ${orderColumns} FROM orders WHERE platformIdentityId = ? AND assessmentId = ? AND orderPurpose = ? ORDER BY createdAt ASC, id ASC`
     )
     .all(input.platformIdentityId, input.assessmentId, input.orderPurpose) as GoalFitPaymentOrderRecord[];
 }
@@ -209,6 +246,7 @@ function createInjectedOrder(
     reportSnapshotId: string;
     now: Date;
     price: GoalFitPaymentPrice;
+    throwBeforeInsert?: () => void;
   }
 ): GoalFitPaymentOrderRecord {
   const now = input.now.toISOString();
@@ -252,6 +290,7 @@ function createInjectedOrder(
     paidAt: null
   };
 
+  input.throwBeforeInsert?.();
   connection
     .prepare(
       `
@@ -305,12 +344,47 @@ function createInjectedOrder(
 export function createGoalFitMiniappPaymentOrderStore(options?: {
   connection?: DatabaseSync;
   onBusyRetry?: (event: { attempt: number; delayMs: number }) => void;
+  throwBeforeOrderInsertForTest?: () => void;
+  beforeWinnerRecoveryForTest?: () => void;
 }): GoalFitPaymentOrderStore {
   const connection = options?.connection ?? db;
   const useInjectedConnection = Boolean(options?.connection);
 
   return {
     createOrReuseGoalFitPaymentOrder(input) {
+      const recoverWinner = () => {
+        const historicalOrders = useInjectedConnection
+          ? getInjectedGoalFitPaymentOrders(connection, {
+              platformIdentityId: input.platformIdentityId,
+              assessmentId: input.assessmentId,
+              orderPurpose: GOAL_FIT_FULL_REPORT_PURPOSE
+            })
+          : getGoalFitPaymentOrders({
+              platformIdentityId: input.platformIdentityId,
+              assessmentId: input.assessmentId,
+              orderPurpose: GOAL_FIT_FULL_REPORT_PURPOSE
+            });
+
+        if (historicalOrders.some((order) => order.status === "paid")) {
+          throw new GoalFitPaymentOrderError("ALREADY_PURCHASED");
+        }
+
+        const activePending = historicalOrders.find(
+          (order) =>
+            order.status === "pending" &&
+            hasNonEmptyString(order.expiresAt) &&
+            Date.parse(order.expiresAt) > input.now.getTime()
+        );
+        if (!activePending) return null;
+
+        return toPublicOrder(
+          activePending,
+          { assessmentId: input.assessmentId, reportSnapshotId: activePending.reportSnapshotId ?? "" },
+          true
+        );
+      };
+
+      for (let createAttempt = 0; createAttempt < 2; createAttempt += 1) {
   try {
         return runImmediateTransactionWithBusyRetry(() => {
       const assessment = connection
@@ -392,9 +466,11 @@ export function createGoalFitMiniappPaymentOrderStore(options?: {
                 assessmentId: input.assessmentId,
                 reportSnapshotId: snapshot.report_snapshot_id,
                 now: input.now,
-                price
+                price,
+                throwBeforeInsert: options?.throwBeforeOrderInsertForTest
               })
             : (() => {
+                options?.throwBeforeOrderInsertForTest?.();
                 const created = createOrder({
                   sessionId: input.platformIdentityId,
                   accessMode: "direct",
@@ -428,8 +504,17 @@ export function createGoalFitMiniappPaymentOrderStore(options?: {
     }, options?.onBusyRetry ? { onBusyRetry: options.onBusyRetry } : undefined, connection);
   } catch (error) {
     if (error instanceof GoalFitPaymentOrderError) throw error;
+    if (isGoalFitPendingUniqueConstraintError(error)) {
+      options?.beforeWinnerRecoveryForTest?.();
+      const recovered = recoverWinner();
+      if (recovered) return recovered;
+      if (createAttempt === 0) continue;
+    }
     throw new GoalFitPaymentOrderError("ORDER_CREATE_FAILED");
   }
+      }
+
+      throw new GoalFitPaymentOrderError("ORDER_CREATE_FAILED");
     }
   };
 }

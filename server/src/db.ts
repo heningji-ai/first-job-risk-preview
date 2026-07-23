@@ -88,6 +88,41 @@ export function migrateAnalyticsPlatformColumns(database: DatabaseSync = db): vo
   }
 }
 
+const GOAL_FIT_PENDING_INDEX_SQL =
+  "CREATE UNIQUE INDEX uq_orders_goal_fit_pending ON orders (platformIdentityId, assessmentId, orderPurpose) WHERE orderPurpose = 'goal_fit_full_report' AND platformIdentityId IS NOT NULL AND assessmentId IS NOT NULL AND status = 'pending'";
+
+export function migrateGoalFitPendingUniqueIndex(database: DatabaseSync = db): void {
+  const index = database
+    .prepare("SELECT name, sql FROM sqlite_master WHERE type = 'index' AND name = ?")
+    .get("uq_orders_goal_fit_pending") as { name: string; sql: string | null } | undefined;
+
+  const normalizedSql = index?.sql?.replace(/\s+/g, " ").trim().toLowerCase() ?? "";
+  const expectedSql = GOAL_FIT_PENDING_INDEX_SQL.replace(/\s+/g, " ").trim().toLowerCase();
+  if (normalizedSql === expectedSql) return;
+
+  if (index) {
+    const duplicate = database
+      .prepare(
+        `SELECT platformIdentityId, assessmentId, orderPurpose, COUNT(*) AS count
+         FROM orders
+         WHERE orderPurpose = 'goal_fit_full_report'
+           AND platformIdentityId IS NOT NULL
+           AND assessmentId IS NOT NULL
+           AND status = 'pending'
+         GROUP BY platformIdentityId, assessmentId, orderPurpose
+         HAVING COUNT(*) > 1
+         LIMIT 1`
+      )
+      .get() as { platformIdentityId: string; assessmentId: string; orderPurpose: string; count: number } | undefined;
+    if (duplicate) {
+      throw new Error("Goal Fit pending order migration blocked: duplicate active pending orders require manual resolution.");
+    }
+    database.exec("DROP INDEX uq_orders_goal_fit_pending");
+  }
+
+  database.exec(GOAL_FIT_PENDING_INDEX_SQL);
+}
+
 export function initializeDatabase(): void {
   db.exec(`
     CREATE TABLE IF NOT EXISTS orders (
@@ -495,7 +530,7 @@ export function initializeDatabase(): void {
 
   for (const name of ["platformIdentityId","assessmentId","reportSnapshotId","orderPurpose","expiresAt"]) { if (!columnNames.has(name)) db.exec(`ALTER TABLE orders ADD COLUMN ${name} TEXT`); }
   db.exec("CREATE INDEX IF NOT EXISTS idx_orders_platform_identity ON orders (platformIdentityId); CREATE INDEX IF NOT EXISTS idx_orders_assessment ON orders (assessmentId); CREATE INDEX IF NOT EXISTS idx_orders_report_snapshot ON orders (reportSnapshotId);");
-  db.exec("CREATE UNIQUE INDEX IF NOT EXISTS uq_orders_goal_fit_pending ON orders (platformIdentityId, assessmentId, orderPurpose) WHERE orderPurpose = 'goal_fit_full_report' AND platformIdentityId IS NOT NULL AND assessmentId IS NOT NULL AND status = 'pending';");
+  migrateGoalFitPendingUniqueIndex(db);
 
   migrateAnalyticsPlatformColumns();
   db.exec(`
