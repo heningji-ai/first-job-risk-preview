@@ -1,7 +1,180 @@
 import { db, runImmediateTransaction } from "./db.js";
-import { calculateGoalFitOrderAmount } from "./pricing.js";
 import { createOrder, getOrder } from "./orders.js";
-export const GOAL_FIT_PAYMENT_ORDER_TTL_MS=30*60*1000;
-export class GoalFitPaymentOrderError extends Error { constructor(readonly code:"ASSESSMENT_NOT_FOUND"|"REPORT_SNAPSHOT_NOT_FOUND"|"REPORT_NOT_PURCHASABLE"|"ORDER_CREATE_FAILED"|"ORDER_REQUIRES_REPLACEMENT"){super(code)} }
-export function createOrReuseGoalFitPaymentOrder(input:{platformIdentityId:string;assessmentId:string;now:Date}){try{return runImmediateTransaction(()=>{const a=db.prepare("SELECT assessment_id,status FROM assessments WHERE assessment_id=? AND platform_identity_id=?").get(input.assessmentId,input.platformIdentityId) as any;if(!a)throw new GoalFitPaymentOrderError("ASSESSMENT_NOT_FOUND");if(a.status!=="completed")throw new GoalFitPaymentOrderError("REPORT_NOT_PURCHASABLE");const r=db.prepare("SELECT report_snapshot_id,full_report_ciphertext,full_report_hash,report_version FROM report_snapshots rs JOIN assessments a ON a.id=rs.assessment_row_id WHERE a.assessment_id=?").get(input.assessmentId) as any;if(!r)throw new GoalFitPaymentOrderError("REPORT_SNAPSHOT_NOT_FOUND");if(!r.full_report_ciphertext||!r.full_report_hash||!r.report_version)throw new GoalFitPaymentOrderError("REPORT_NOT_PURCHASABLE");const old=db.prepare("SELECT id FROM orders WHERE platformIdentityId=? AND assessmentId=? AND orderPurpose='goal_fit_full_report' AND status='pending' ORDER BY createdAt DESC LIMIT 1").get(input.platformIdentityId,input.assessmentId) as any;if(old){const x=getOrder(old.id)!;if(!x.expiresAt||Date.parse(x.expiresAt)<=input.now.getTime())throw new GoalFitPaymentOrderError("ORDER_REQUIRES_REPLACEMENT");return {orderId:x.id,outTradeNo:x.outTradeNo,assessmentId:input.assessmentId,reportSnapshotId:r.report_snapshot_id,orderPurpose:"goal_fit_full_report",status:x.status,amount:x.payAmountCents,currency:"CNY",expiresAt:x.expiresAt,reused:true};}const amount=calculateGoalFitOrderAmount("direct",null,input.now);if(!Number.isInteger(amount.payAmountCents)||amount.payAmountCents<=0)throw new GoalFitPaymentOrderError("ORDER_CREATE_FAILED");const x=createOrder({sessionId:input.platformIdentityId,accessMode:"direct",couponCode:null,paymentMode:"jsapi"});const expiresAt=new Date(input.now.getTime()+GOAL_FIT_PAYMENT_ORDER_TTL_MS).toISOString();db.prepare("UPDATE orders SET platformIdentityId=?,assessmentId=?,reportSnapshotId=?,orderPurpose=?,expiresAt=? WHERE id=?").run(input.platformIdentityId,input.assessmentId,r.report_snapshot_id,"goal_fit_full_report",expiresAt,x.id);return {orderId:x.id,outTradeNo:x.outTradeNo,assessmentId:input.assessmentId,reportSnapshotId:r.report_snapshot_id,orderPurpose:"goal_fit_full_report",status:"pending",amount:x.payAmountCents,currency:"CNY",expiresAt,reused:false};});}catch(e){if(e instanceof GoalFitPaymentOrderError)throw e;throw new GoalFitPaymentOrderError("ORDER_CREATE_FAILED")}}
+import { calculateGoalFitOrderAmount } from "./pricing.js";
 
+export const GOAL_FIT_PAYMENT_ORDER_TTL_MS = 30 * 60 * 1000;
+const GOAL_FIT_FULL_REPORT_PURPOSE = "goal_fit_full_report";
+
+type PaymentOrderErrorCode =
+  | "ASSESSMENT_NOT_FOUND"
+  | "REPORT_SNAPSHOT_NOT_FOUND"
+  | "REPORT_NOT_PURCHASABLE"
+  | "PRICE_NOT_AVAILABLE"
+  | "ORDER_CREATE_FAILED";
+
+type GoalFitPaymentPrice = {
+  productKey: string;
+  amount: number;
+  currency: string;
+};
+
+let paymentPriceReaderForTest: (() => GoalFitPaymentPrice) | null = null;
+
+export function setGoalFitPaymentPriceReaderForTest(
+  reader: (() => GoalFitPaymentPrice) | null
+): void {
+  paymentPriceReaderForTest = reader;
+}
+
+export class GoalFitPaymentOrderError extends Error {
+  constructor(readonly code: PaymentOrderErrorCode) {
+    super(code);
+    this.name = "GoalFitPaymentOrderError";
+  }
+}
+
+function getPaymentPrice(now: Date): GoalFitPaymentPrice {
+  try {
+    if (paymentPriceReaderForTest) return paymentPriceReaderForTest();
+    const amount = calculateGoalFitOrderAmount("direct", null, now);
+    return {
+      productKey: GOAL_FIT_FULL_REPORT_PURPOSE,
+      amount: amount.payAmountCents,
+      currency: "CNY"
+    };
+  } catch {
+    throw new GoalFitPaymentOrderError("PRICE_NOT_AVAILABLE");
+  }
+}
+
+function hasNonEmptyString(value: unknown): value is string {
+  return typeof value === "string" && value.trim().length > 0;
+}
+
+function toPublicOrder(order: ReturnType<typeof getOrder>, input: { assessmentId: string; reportSnapshotId: string }, reused: boolean) {
+  if (!order || !hasNonEmptyString(order.expiresAt)) {
+    throw new GoalFitPaymentOrderError("ORDER_CREATE_FAILED");
+  }
+
+  return {
+    orderId: order.id,
+    outTradeNo: order.outTradeNo,
+    assessmentId: input.assessmentId,
+    reportSnapshotId: input.reportSnapshotId,
+    orderPurpose: GOAL_FIT_FULL_REPORT_PURPOSE,
+    status: order.status,
+    amount: order.payAmountCents,
+    currency: "CNY",
+    expiresAt: order.expiresAt,
+    reused
+  };
+}
+
+export function createOrReuseGoalFitPaymentOrder(input: {
+  platformIdentityId: string;
+  assessmentId: string;
+  now: Date;
+}) {
+  try {
+    return runImmediateTransaction(() => {
+      const assessment = db
+        .prepare(
+          "SELECT assessment_id, status FROM assessments WHERE assessment_id = ? AND platform_identity_id = ?"
+        )
+        .get(input.assessmentId, input.platformIdentityId) as { assessment_id: string; status: string } | undefined;
+
+      if (!assessment) throw new GoalFitPaymentOrderError("ASSESSMENT_NOT_FOUND");
+      if (assessment.status !== "completed") throw new GoalFitPaymentOrderError("REPORT_NOT_PURCHASABLE");
+
+      const snapshot = db
+        .prepare(
+          `
+            SELECT rs.report_snapshot_id, rs.full_report_ciphertext, rs.full_report_hash, rs.report_version
+            FROM report_snapshots rs
+            JOIN assessments a ON a.id = rs.assessment_row_id
+            WHERE a.assessment_id = ?
+          `
+        )
+        .get(input.assessmentId) as
+        | {
+            report_snapshot_id: string;
+            full_report_ciphertext: unknown;
+            full_report_hash: unknown;
+            report_version: unknown;
+          }
+        | undefined;
+
+      if (!snapshot) throw new GoalFitPaymentOrderError("REPORT_SNAPSHOT_NOT_FOUND");
+      if (
+        !hasNonEmptyString(snapshot.full_report_ciphertext) ||
+        !hasNonEmptyString(snapshot.full_report_hash) ||
+        !hasNonEmptyString(snapshot.report_version)
+      ) {
+        throw new GoalFitPaymentOrderError("REPORT_NOT_PURCHASABLE");
+      }
+
+      const price = getPaymentPrice(input.now);
+      if (
+        price.productKey !== GOAL_FIT_FULL_REPORT_PURPOSE ||
+        !Number.isInteger(price.amount) ||
+        price.amount <= 0 ||
+        price.currency !== "CNY"
+      ) {
+        throw new GoalFitPaymentOrderError("PRICE_NOT_AVAILABLE");
+      }
+
+      const existing = db
+        .prepare(
+          `
+            SELECT id FROM orders
+            WHERE platformIdentityId = ?
+              AND assessmentId = ?
+              AND orderPurpose = ?
+              AND status = 'pending'
+            ORDER BY createdAt DESC
+            LIMIT 1
+          `
+        )
+        .get(input.platformIdentityId, input.assessmentId, GOAL_FIT_FULL_REPORT_PURPOSE) as { id: string } | undefined;
+
+      if (existing) {
+        const order = getOrder(existing.id);
+        if (!order || !hasNonEmptyString(order.expiresAt) || Date.parse(order.expiresAt) <= input.now.getTime()) {
+          throw new GoalFitPaymentOrderError("ORDER_CREATE_FAILED");
+        }
+        return toPublicOrder(order, { assessmentId: input.assessmentId, reportSnapshotId: snapshot.report_snapshot_id }, true);
+      }
+
+      const created = createOrder({
+        sessionId: input.platformIdentityId,
+        accessMode: "direct",
+        couponCode: null,
+        paymentMode: "jsapi"
+      });
+      const expiresAt = new Date(input.now.getTime() + GOAL_FIT_PAYMENT_ORDER_TTL_MS).toISOString();
+      db.prepare(
+        `
+          UPDATE orders
+          SET platformIdentityId = ?, assessmentId = ?, reportSnapshotId = ?, orderPurpose = ?, expiresAt = ?
+          WHERE id = ?
+        `
+      ).run(
+        input.platformIdentityId,
+        input.assessmentId,
+        snapshot.report_snapshot_id,
+        GOAL_FIT_FULL_REPORT_PURPOSE,
+        expiresAt,
+        created.id
+      );
+
+      const order = getOrder(created.id);
+      if (!order || order.payAmountCents !== price.amount) {
+        throw new GoalFitPaymentOrderError("ORDER_CREATE_FAILED");
+      }
+      return toPublicOrder(order, { assessmentId: input.assessmentId, reportSnapshotId: snapshot.report_snapshot_id }, false);
+    });
+  } catch (error) {
+    if (error instanceof GoalFitPaymentOrderError) throw error;
+    throw new GoalFitPaymentOrderError("ORDER_CREATE_FAILED");
+  }
+}
